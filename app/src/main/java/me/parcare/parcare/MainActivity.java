@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
     private PermissionsManager permissionsManager;
+    private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
 
     @Override
@@ -66,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
+                com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
+                double searchedLat = searchedLocation.latitude;
+                double searchedLng = searchedLocation.longitude;
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(searchedLat, searchedLng), DEFAULT_SNAP_ZOOM));
                 Log.i(TAG, "Place: " + place.getName());
             }
 
@@ -151,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             // If we have the last location of the user, we can move the camera to that position.
             Location lastLocation = locationEngine.getLastLocation();
             if (lastLocation != null) {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), DEFAULT_SNAP_ZOOM));
             }
 
             locationEngineListener = new LocationEngineListener() {
@@ -167,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         // listener so the camera isn't constantly updating when the user location
                         // changes. When the user disables and then enables the location again, this
                         // listener is registered again and will adjust the camera once again.
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location), 16));
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location), DEFAULT_SNAP_ZOOM));
                         locationEngine.removeLocationEngineListener(this);
                     }
                 }

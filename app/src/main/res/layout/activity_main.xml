@@ -12,6 +12,8 @@
         mapbox:mapbox_styleUrl="@string/mapbox_style_mapbox_streets"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        mapbox:mapbox_cameraTargetLat="47.6553"
+        mapbox:mapbox_cameraTargetLng="-122.3035"
         mapbox:mapbox_cameraTilt="20"
         mapbox:mapbox_cameraZoom="12" >
 
