@@ -16,6 +16,7 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -29,6 +30,12 @@ import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity implements PermissionsListener {
 
     private MapView mMapView;
@@ -37,8 +44,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
     private PermissionsManager permissionsManager;
+
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
+
+    public static final String BASE_URL = "http://placeholder.com/";
+
     private LatLngPC closestSpot;
 
     @Override
@@ -61,7 +72,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        
+
+        /*
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        final PCRetrofitInterface parCareService = retrofit.create(PCRetrofitInterface.class);
+        */
+
         // Initialize autocomplete search bar onto view
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
@@ -77,6 +97,28 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     // Snaps camera to the location of whatever was searched
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(searchedLat, searchedLng), DEFAULT_SNAP_ZOOM));
                     Log.i(TAG, "Place: " + place.getName());
+                    /*
+                    String searchedLatString = searchedLat + "";
+                    String searchedLngString = searchedLng + "";
+                    Call<LatLngPC> call = parCareService.getClosestSpot(searchedLatString, searchedLngString);
+                    call.enqueue(new Callback<LatLngPC>() {
+                        @Override
+                        public void onResponse(Call<LatLngPC> call, Response<LatLngPC> response) {
+                            closestSpot = response.body();
+                            double spotLat = Double.valueOf(closestSpot.getLatitude());
+                            double spotLng = Double.valueOf(closestSpot.getLatitude());
+                            map.addMarker(new MarkerOptions())
+                                    .position(new LatLng(spotLat, spotLng))
+                                    .title("Closest Parking Spot Here");
+                        }
+
+                        @Override
+                        public void onFailure(Call<LatLngPC> call, Throwable t) {
+                            Log.e(TAG, "Unable to receive response from server", t);
+                        }
+                    });
+                    */
+
                 }
             }
 
