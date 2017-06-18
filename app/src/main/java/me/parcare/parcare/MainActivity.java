@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private PermissionsManager permissionsManager;
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
+    private LatLngPC closestSpot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
+        
+        // Initialize autocomplete search bar onto view
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         autocompleteFragment.getView().setBackgroundColor(Color.WHITE);
@@ -67,11 +70,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
-                com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
-                double searchedLat = searchedLocation.latitude;
-                double searchedLng = searchedLocation.longitude;
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(searchedLat, searchedLng), DEFAULT_SNAP_ZOOM));
-                Log.i(TAG, "Place: " + place.getName());
+                if (place != null) {
+                    com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
+                    double searchedLat = searchedLocation.latitude;
+                    double searchedLng = searchedLocation.longitude;
+                    // Snaps camera to the location of whatever was searched
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(searchedLat, searchedLng), DEFAULT_SNAP_ZOOM));
+                    Log.i(TAG, "Place: " + place.getName());
+                }
             }
 
 
