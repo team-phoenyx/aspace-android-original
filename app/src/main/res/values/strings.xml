@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ParCare</string>
+    <string name="access_token">pk.eyJ1IjoicGFyY2FyZSIsImEiOiJjajN2cXA5NmwwMDdwMnJtd3F6MGp4N253In0.xsQBiYMlip8D0SZt1CoaIA</string>
 </resources>
