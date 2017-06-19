@@ -16,7 +16,10 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.MarkerView;
+import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -44,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
     private PermissionsManager permissionsManager;
+    private MarkerViewOptions destinationMarkerOptions;
+    private MarkerView destinationMarker;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -94,9 +99,31 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
                     double searchedLat = searchedLocation.latitude;
                     double searchedLng = searchedLocation.longitude;
+                    LatLng searchedLatLng = new LatLng(searchedLat, searchedLng);
                     // Snaps camera to the location of whatever was searched
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(searchedLat, searchedLng), DEFAULT_SNAP_ZOOM));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, DEFAULT_SNAP_ZOOM));
                     Log.i(TAG, "Place: " + place.getName());
+
+                    // Place a new marker at searched position if first search, or reposition
+                    // previously searched destination marker to new search.
+                    if (destinationMarkerOptions == null) {
+                        destinationMarkerOptions = new MarkerViewOptions()
+                                .position(searchedLatLng)
+                                .title(place.getName().toString());
+                    } else {
+                        destinationMarkerOptions = destinationMarkerOptions
+                                .position(searchedLatLng)
+                                .title(place.getName().toString());
+                    }
+
+                    if (destinationMarker == null) {
+                        map.addMarker(destinationMarkerOptions);
+                    } else {
+                        destinationMarker.setPosition(searchedLatLng);
+                    }
+
+                    destinationMarker = destinationMarkerOptions.getMarker();
+
                     /*
                     String searchedLatString = searchedLat + "";
                     String searchedLngString = searchedLng + "";
@@ -106,10 +133,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         public void onResponse(Call<LatLngPC> call, Response<LatLngPC> response) {
                             closestSpot = response.body();
                             double spotLat = Double.valueOf(closestSpot.getLatitude());
-                            double spotLng = Double.valueOf(closestSpot.getLatitude());
-                            map.addMarker(new MarkerOptions())
+                            double spotLng = Double.valueOf(closestSpot.getLongitude());
+                            map.addMarker(new MarkerOptions()
                                     .position(new LatLng(spotLat, spotLng))
-                                    .title("Closest Parking Spot Here");
+                                    .title("Closest Parking Spot Here"));
                         }
 
                         @Override
