@@ -3,7 +3,6 @@ package me.parcare.parcare;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +16,8 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -35,12 +30,6 @@ import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.mapbox.mapboxsdk.maps.MapView.REGION_DID_CHANGE;
 
@@ -64,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     public static final String BASE_URL = "http://placeholder.com/";
 
-    private LatLngPC closestSpot;
+    private ParkingSpot closestSpot;
+    private List<ParkingSpot> parkingSpotsNearby;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
+                // Get info about the selected place.
                 if (place != null) {
                     com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
                     double searchedLat = searchedLocation.latitude;
@@ -147,10 +137,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     /*
                     String searchedLatString = searchedLat + "";
                     String searchedLngString = searchedLng + "";
-                    Call<LatLngPC> call = parCareService.getClosestSpot(searchedLatString, searchedLngString);
-                    call.enqueue(new Callback<LatLngPC>() {
+                    Call<ParkingSpot> call = parCareService.getClosestSpot(searchedLatString, searchedLngString);
+                    call.enqueue(new Callback<ParkingSpot>() {
                         @Override
-                        public void onResponse(Call<LatLngPC> call, Response<LatLngPC> response) {
+                        public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
                             closestSpot = response.body();
                             double spotLat = Double.valueOf(closestSpot.getLatitude());
                             double spotLng = Double.valueOf(closestSpot.getLongitude());
@@ -160,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
 
                         @Override
-                        public void onFailure(Call<LatLngPC> call, Throwable t) {
+                        public void onFailure(Call<ParkingSpot> call, Throwable t) {
                             Log.e(TAG, "Unable to receive response from server", t);
                         }
                     });

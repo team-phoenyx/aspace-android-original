@@ -11,5 +11,5 @@ import retrofit2.http.Query;
 public interface PCRetrofitInterface {
     // Temp placeholders in place until server functionality is actually set up.
     @POST("URL Endpoint Here")
-    Call<LatLngPC> getClosestSpot(@Query("Variable name 1 Here") String var1, @Query("Variable name 2 Here") String var2);
+    Call<ParkingSpot> getClosestSpot(@Query("Variable name 1 Here") String var1, @Query("Variable name 2 Here") String var2);
 }
