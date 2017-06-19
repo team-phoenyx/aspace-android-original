@@ -1,6 +1,7 @@
 package me.parcare.parcare;
 
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -39,6 +42,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.mapbox.mapboxsdk.maps.MapView.REGION_DID_CHANGE;
+
 public class MainActivity extends AppCompatActivity implements PermissionsListener {
 
     private MapView mMapView;
@@ -49,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private PermissionsManager permissionsManager;
     private MarkerViewOptions destinationMarkerOptions;
     private MarkerView destinationMarker;
+    private LatLng currentDisplayTopLeft;
+    private LatLng currentDisplayTopRight;
+    private LatLng currentDisplayBottomLeft;
+    private LatLng currentDisplayBottomRight;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -74,8 +83,19 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
+                setCurrentScreenBounds();
             }
         });
+
+        mMapView.addOnMapChangedListener(new MapView.OnMapChangedListener() {
+            @Override
+            public void onMapChanged(int change) {
+                if (change == REGION_DID_CHANGE) {
+                    setCurrentScreenBounds();
+                }
+            }
+        });
+
 
 
         /*
@@ -280,6 +300,22 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             Toast.makeText(this, "You didn't grant location permissions.",
                     Toast.LENGTH_LONG).show();
             finish();
+        }
+    }
+
+    // Retrieves the LatLng objects corresponding to each corner of the screen that is being
+    // currently displayed to the user.
+    private void setCurrentScreenBounds() {
+        if (map != null) {
+            int viewportWidth = mMapView.getWidth();
+            int viewportHeight = mMapView.getHeight();
+            currentDisplayTopLeft = map.getProjection().fromScreenLocation(new PointF(0, 0));
+            currentDisplayTopRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, 0));
+            currentDisplayBottomLeft = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
+            currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(0, viewportHeight));
+
+            Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
+            Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
     }
 }
