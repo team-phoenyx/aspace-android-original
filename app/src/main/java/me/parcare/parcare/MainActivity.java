@@ -63,9 +63,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
-    private ParkingSpot closestSpot;
-    private List<ParkingSpot> parkingSpotsNearby;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,7 +143,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
                     destinationMarker = destinationMarkerOptions.getMarker();
 
+                    // Initialize the bounds of the screen
                     setCurrentScreenBounds();
+
                     String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
                     String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
                     String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Log.i(TAG + "3", lowerLon);
                     Log.i(TAG + "3", upperLat);
                     Log.i(TAG + "3", upperLon);
-                    parkingSpotsNearby = getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                    getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
                     //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
                     //drawSpots(parkingSpotsNearby);
 
@@ -181,12 +180,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                     });
                     ************************************************/
-
-                    // Debugging purposes
-//                    List<ParkingSpot> spotsList = getParkingSpotInfo(parCareService, "003");
-//                    for (ParkingSpot spot : spotsList) {
-//                        Log.i(TAG + "2", "LAT: " + spot.getLatitude() + " LNG: " + spot.getLongitude());
-//                    }
                 }
             }
 
@@ -333,15 +326,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             currentDisplayTopLeft = map.getProjection().fromScreenLocation(new PointF(0, 0));
             currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
 
-            Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
-            Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
+            //Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
+            //Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
     }
 
-    // Retrieves the info for a specific parking spot given by the spotId, returns
-    // a List of spots with the given id and their respective information.
-    private List<ParkingSpot> getParkingSpotInfo(PCRetrofitInterface parCareService, String spotId) {
-        final List<ParkingSpot> spotInfo = new ArrayList<ParkingSpot>();
+    // Retrieves the info for a specific parking spot given by the spotId
+    private void getParkingSpotInfo(PCRetrofitInterface parCareService, String spotId) {
+        //final List<ParkingSpot> spotInfo = new ArrayList<ParkingSpot>();
         Call<List<ParkingSpot>> call = parCareService.getSpotInfo(spotId);
         call.enqueue(new Callback<List<ParkingSpot>>() {
             @Override
@@ -349,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 if (response.isSuccessful()) {
                     List<ParkingSpot> spots = response.body();
                     for (ParkingSpot spot : spots) {
-                        spotInfo.add(spot);
+                    //    spotInfo.add(spot);
                     }
                     Log.i(TAG + "2", "Response Successful");
                 } else {
@@ -363,15 +355,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        return spotInfo;
+        //return spotInfo;
     }
 
     // Retrieves all of the spots in a bound area given by upper and lower latitudes/longitudes,
-    // returns a list of the spots in the area.
-    private List<ParkingSpot> getParkingSpotsNearby(PCRetrofitInterface parCareService,
+    // and draws dots at parking spot location.
+    private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
-        final List<ParkingSpot> nearbySpots = new ArrayList<ParkingSpot>();
+        //final List<ParkingSpot> nearbySpots = new ArrayList<ParkingSpot>();
         Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
         call.enqueue(new Callback<List<ParkingSpot>>() {
             @Override
@@ -380,22 +372,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     List<ParkingSpot> spots = response.body();
                     drawSpots(spots);
                     for (ParkingSpot spot : spots) {
-                        nearbySpots.add(spot);
+                        //nearbySpots.add(spot);
                         Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
                     }
                     Log.i(TAG + "2", "Response Successful");
                 } else {
+                    Toast.makeText(getApplicationContext(), "Unable to get response", Toast.LENGTH_LONG);
                     Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
                 }
             }
 
             @Override
             public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+                Toast.makeText(getApplication().getBaseContext(), "Failed to connect: " + t.toString(), Toast.LENGTH_LONG).show();
                 Log.i(TAG + "2", "Failed to connect: " + t.toString());
             }
         });
 
-        return nearbySpots;
+        //return nearbySpots;
     }
 
     private void drawSpots(List<ParkingSpot> parkingSpots) {
@@ -407,10 +401,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             if (status.equals("T")) {
                 map.addMarker(new MarkerViewOptions()
                     .position(spotLatLng)
+                    .title("Spot #" + spot.getId_num())
+                    .snippet("Status: Unavailable" + "\nType: " + spot.getId_type() + "\n" + spot.getLatitude() + ", " + spot.getLongitude())
                     .icon(openParkingSpotIcon));
             } else {
                 map.addMarker(new MarkerViewOptions()
                     .position(spotLatLng)
+                    .title("Spot #" + spot.getId_num())
+                    .snippet("Status: Unavailable" + "\nType: " + spot.getId_type() + "\n" + spot.getLatitude() + ", " + spot.getLongitude())
                     .icon(closedParkingSpotIcon));
             }
         }
