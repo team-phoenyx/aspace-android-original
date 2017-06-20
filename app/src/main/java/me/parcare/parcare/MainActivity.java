@@ -32,11 +32,14 @@ import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.mapboxsdk.maps.MapView.REGION_DID_CHANGE;
 
@@ -74,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
 
-        parkingSpotsNearby = getFakeParkingSpotData();
+//        parkingSpotsNearby = getFakeParkingSpotData();
 
         mMapView = (MapView) findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
@@ -100,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -164,19 +168,25 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                     });
                     */
-                    Call<List<ParkingSpot>> call = parCareService.getSpotInfo("003");
+                    String spot_id = "003";
+                    Call<List<ParkingSpot>> call = parCareService.getSpotInfo("application/x-www-form-urlencoded", "003");
                     call.enqueue(new Callback<List<ParkingSpot>>() {
                         @Override
                         public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
                             //closestSpot = response.body();
-                            String responseAsString = response.raw().toString();
 
-                            Log.i(TAG + "2", responseAsString);
+                            Log.i(TAG + "2", "RESPONSE ! ! ! !");
+                            if (!response.isSuccessful()) {
+                                Log.i(TAG + "2", "RESPONSE FAIL" + response.raw().toString());
+                            } else {
+                                Log.i(TAG + "2", "RESPONSE SUCCESS ! ! ! !");
+                            }
+                            //Log.i(TAG + "2", responseAsString);
                         }
 
                         @Override
                         public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
-
+                            Log.i(TAG + "2", t.toString());
                         }
                     });
                 }
@@ -333,11 +343,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     // FAKE DATA
-    private List<ParkingSpot> getFakeParkingSpotData() {
-        List<ParkingSpot> fakeSpots = new ArrayList<ParkingSpot>();
-        fakeSpots.add(new ParkingSpot(47.6553351, -122.3035199));
-        fakeSpots.add(new ParkingSpot(47.6566424, -122.3063321));
-        fakeSpots.add(new ParkingSpot(47.6562283, -122.3073819));
-        return fakeSpots;
-    }
+//    private List<ParkingSpot> getFakeParkingSpotData() {
+//        List<ParkingSpot> fakeSpots = new ArrayList<ParkingSpot>();
+//        fakeSpots.add(new ParkingSpot(47.6553351, -122.3035199));
+//        fakeSpots.add(new ParkingSpot(47.6566424, -122.3063321));
+//        fakeSpots.add(new ParkingSpot(47.6562283, -122.3073819));
+//        return fakeSpots;
+//    }
 }
