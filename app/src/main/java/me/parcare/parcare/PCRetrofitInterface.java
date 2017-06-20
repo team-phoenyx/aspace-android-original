@@ -16,6 +16,12 @@ import retrofit2.http.Query;
  */
 
 public interface PCRetrofitInterface {
+    @FormUrlEncoded
     @POST("spots/single/")
-    Call<List<ParkingSpot>> getSpotInfo(@Header("Content-Type") String content, @Body String spot_id);
+    Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spot_id);
+
+    @FormUrlEncoded
+    @POST("spots/onscreen/")
+    Call<List<ParkingSpot>> getNearbySpots(@Field("lower_lat") String lower_lat, @Field("lower_lon") String lower_lon,
+                                           @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
 }
