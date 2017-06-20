@@ -1,6 +1,9 @@
 package me.parcare.parcare;
 
+import java.util.List;
+
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
@@ -9,7 +12,6 @@ import retrofit2.http.Query;
  */
 
 public interface PCRetrofitInterface {
-    // Temp placeholders in place until server functionality is actually set up.
-    @POST("URL Endpoint Here")
-    Call<ParkingSpot> getClosestSpot(@Query("Variable name 1 Here") String var1, @Query("Variable name 2 Here") String var2);
+    @POST("spots/single/")
+    Call<List<ParkingSpot>> getSpotInfo(@Body String spot_id);
 }

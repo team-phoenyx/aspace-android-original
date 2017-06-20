@@ -29,7 +29,14 @@ import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.mapbox.mapboxsdk.maps.MapView.REGION_DID_CHANGE;
 
@@ -51,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
 
-    public static final String BASE_URL = "http://placeholder.com/";
+    public static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
     private ParkingSpot closestSpot;
     private List<ParkingSpot> parkingSpotsNearby;
@@ -66,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
+
+        parkingSpotsNearby = getFakeParkingSpotData();
 
         mMapView = (MapView) findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
@@ -88,14 +97,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
 
 
-        /*
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         final PCRetrofitInterface parCareService = retrofit.create(PCRetrofitInterface.class);
-        */
+
 
         // Initialize autocomplete search bar onto view
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
@@ -155,7 +164,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                     });
                     */
+                    Call<List<ParkingSpot>> call = parCareService.getSpotInfo("003");
+                    call.enqueue(new Callback<List<ParkingSpot>>() {
+                        @Override
+                        public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+                            //closestSpot = response.body();
+                            String responseAsString = response.raw().toString();
 
+                            Log.i(TAG + "2", responseAsString);
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+
+                        }
+                    });
                 }
             }
 
@@ -307,5 +330,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
             Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
+    }
+
+    // FAKE DATA
+    private List<ParkingSpot> getFakeParkingSpotData() {
+        List<ParkingSpot> fakeSpots = new ArrayList<ParkingSpot>();
+        fakeSpots.add(new ParkingSpot(47.6553351, -122.3035199));
+        fakeSpots.add(new ParkingSpot(47.6566424, -122.3063321));
+        fakeSpots.add(new ParkingSpot(47.6562283, -122.3073819));
+        return fakeSpots;
     }
 }
