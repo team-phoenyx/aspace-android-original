@@ -16,6 +16,8 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -32,8 +34,6 @@ import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MarkerView destinationMarker;
     private LatLng currentDisplayTopLeft;
     private LatLng currentDisplayBottomRight;
+    private Icon openParkingSpotIcon;
+    private Icon closedParkingSpotIcon;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -75,7 +77,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
 
-//        parkingSpotsNearby = getFakeParkingSpotData();
+        IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
+        openParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_available_48px);
+        closedParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_unavailable_48px);
 
         mMapView = (MapView) findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
@@ -140,8 +144,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     } else {
                         destinationMarker.setPosition(searchedLatLng);
                     }
-
                     destinationMarker = destinationMarkerOptions.getMarker();
+
+                    setCurrentScreenBounds();
+                    String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                    String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                    String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+                    String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+
+                    Log.i(TAG + "3", lowerLat);
+                    Log.i(TAG + "3", lowerLon);
+                    Log.i(TAG + "3", upperLat);
+                    Log.i(TAG + "3", upperLon);
+                    parkingSpotsNearby = getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                    //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
+                    //drawSpots(parkingSpotsNearby);
 
                     /* *********************************************
                     String searchedLatString = searchedLat + "";
@@ -314,15 +331,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             int viewportWidth = mMapView.getWidth();
             int viewportHeight = mMapView.getHeight();
             currentDisplayTopLeft = map.getProjection().fromScreenLocation(new PointF(0, 0));
-            //currentDisplayTopRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, 0));
             currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
-            //currentDisplayBottomLeft = map.getProjection().fromScreenLocation(new PointF(0, viewportHeight));
 
             Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
             Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
     }
 
+    // Retrieves the info for a specific parking spot given by the spotId, returns
+    // a List of spots with the given id and their respective information.
     private List<ParkingSpot> getParkingSpotInfo(PCRetrofitInterface parCareService, String spotId) {
         final List<ParkingSpot> spotInfo = new ArrayList<ParkingSpot>();
         Call<List<ParkingSpot>> call = parCareService.getSpotInfo(spotId);
@@ -349,6 +366,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         return spotInfo;
     }
 
+    // Retrieves all of the spots in a bound area given by upper and lower latitudes/longitudes,
+    // returns a list of the spots in the area.
     private List<ParkingSpot> getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
@@ -359,8 +378,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
                 if (response.isSuccessful()) {
                     List<ParkingSpot> spots = response.body();
+                    drawSpots(spots);
                     for (ParkingSpot spot : spots) {
                         nearbySpots.add(spot);
+                        Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
                     }
                     Log.i(TAG + "2", "Response Successful");
                 } else {
@@ -375,6 +396,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
 
         return nearbySpots;
+    }
+
+    private void drawSpots(List<ParkingSpot> parkingSpots) {
+        map.clear();
+        for (ParkingSpot spot : parkingSpots) {
+            Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
+            String status = spot.getStatus();
+            LatLng spotLatLng = new LatLng(spot.getLatitude(), spot.getLongitude());
+            if (status.equals("T")) {
+                map.addMarker(new MarkerViewOptions()
+                    .position(spotLatLng)
+                    .icon(openParkingSpotIcon));
+            } else {
+                map.addMarker(new MarkerViewOptions()
+                    .position(spotLatLng)
+                    .icon(closedParkingSpotIcon));
+            }
+        }
     }
 
     // FAKE DATA
