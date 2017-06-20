@@ -54,8 +54,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MarkerViewOptions destinationMarkerOptions;
     private MarkerView destinationMarker;
     private LatLng currentDisplayTopLeft;
-    private LatLng currentDisplayTopRight;
-    private LatLng currentDisplayBottomLeft;
     private LatLng currentDisplayBottomRight;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -97,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
-
-
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -147,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                     destinationMarker = destinationMarkerOptions.getMarker();
 
-                    /*
+                    /* *********************************************
                     String searchedLatString = searchedLat + "";
                     String searchedLngString = searchedLng + "";
                     Call<ParkingSpot> call = parCareService.getClosestSpot(searchedLatString, searchedLngString);
@@ -167,28 +163,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             Log.e(TAG, "Unable to receive response from server", t);
                         }
                     });
-                    */
-                    String spot_id = "003";
-                    Call<List<ParkingSpot>> call = parCareService.getSpotInfo("application/x-www-form-urlencoded", "003");
-                    call.enqueue(new Callback<List<ParkingSpot>>() {
-                        @Override
-                        public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
-                            //closestSpot = response.body();
+                    ************************************************/
 
-                            Log.i(TAG + "2", "RESPONSE ! ! ! !");
-                            if (!response.isSuccessful()) {
-                                Log.i(TAG + "2", "RESPONSE FAIL" + response.raw().toString());
-                            } else {
-                                Log.i(TAG + "2", "RESPONSE SUCCESS ! ! ! !");
-                            }
-                            //Log.i(TAG + "2", responseAsString);
-                        }
-
-                        @Override
-                        public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
-                            Log.i(TAG + "2", t.toString());
-                        }
-                    });
+                    // Debugging purposes
+//                    List<ParkingSpot> spotsList = getParkingSpotInfo(parCareService, "003");
+//                    for (ParkingSpot spot : spotsList) {
+//                        Log.i(TAG + "2", "LAT: " + spot.getLatitude() + " LNG: " + spot.getLongitude());
+//                    }
                 }
             }
 
@@ -333,13 +314,67 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             int viewportWidth = mMapView.getWidth();
             int viewportHeight = mMapView.getHeight();
             currentDisplayTopLeft = map.getProjection().fromScreenLocation(new PointF(0, 0));
-            currentDisplayTopRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, 0));
-            currentDisplayBottomLeft = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
-            currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(0, viewportHeight));
+            //currentDisplayTopRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, 0));
+            currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
+            //currentDisplayBottomLeft = map.getProjection().fromScreenLocation(new PointF(0, viewportHeight));
 
             Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
             Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
+    }
+
+    private List<ParkingSpot> getParkingSpotInfo(PCRetrofitInterface parCareService, String spotId) {
+        final List<ParkingSpot> spotInfo = new ArrayList<ParkingSpot>();
+        Call<List<ParkingSpot>> call = parCareService.getSpotInfo(spotId);
+        call.enqueue(new Callback<List<ParkingSpot>>() {
+            @Override
+            public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+                if (response.isSuccessful()) {
+                    List<ParkingSpot> spots = response.body();
+                    for (ParkingSpot spot : spots) {
+                        spotInfo.add(spot);
+                    }
+                    Log.i(TAG + "2", "Response Successful");
+                } else {
+                    Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+                Log.i(TAG + "2", "Failed to connect: " + t.toString());
+            }
+        });
+
+        return spotInfo;
+    }
+
+    private List<ParkingSpot> getParkingSpotsNearby(PCRetrofitInterface parCareService,
+                                                    String lowerLat, String lowerLon,
+                                                    String upperLat, String upperLon) {
+        final List<ParkingSpot> nearbySpots = new ArrayList<ParkingSpot>();
+        Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
+        call.enqueue(new Callback<List<ParkingSpot>>() {
+            @Override
+            public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+                if (response.isSuccessful()) {
+                    List<ParkingSpot> spots = response.body();
+                    for (ParkingSpot spot : spots) {
+                        nearbySpots.add(spot);
+                    }
+                    Log.i(TAG + "2", "Response Successful");
+                } else {
+                    Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+                Log.i(TAG + "2", "Failed to connect: " + t.toString());
+            }
+        });
+
+        return nearbySpots;
     }
 
     // FAKE DATA
