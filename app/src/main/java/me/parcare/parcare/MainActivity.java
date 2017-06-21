@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LocationEngineListener locationEngineListener;
     private PermissionsManager permissionsManager;
     private MarkerViewOptions destinationMarkerOptions;
+    private MarkerViewOptions closestSpotMarkerOptions;
     private MarkerView destinationMarker;
     private LatLng currentDisplayTopLeft;
     private LatLng currentDisplayBottomRight;
@@ -159,27 +160,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
                     //drawSpots(parkingSpotsNearby);
 
-                    /* *********************************************
+
                     String searchedLatString = searchedLat + "";
                     String searchedLngString = searchedLng + "";
-                    Call<ParkingSpot> call = parCareService.getClosestSpot(searchedLatString, searchedLngString);
-                    call.enqueue(new Callback<ParkingSpot>() {
-                        @Override
-                        public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
-                            closestSpot = response.body();
-                            double spotLat = Double.valueOf(closestSpot.getLatitude());
-                            double spotLng = Double.valueOf(closestSpot.getLongitude());
-                            map.addMarker(new MarkerOptions()
-                                    .position(new LatLng(spotLat, spotLng))
-                                    .title("Closest Parking Spot Here"));
-                        }
-
-                        @Override
-                        public void onFailure(Call<ParkingSpot> call, Throwable t) {
-                            Log.e(TAG, "Unable to receive response from server", t);
-                        }
-                    });
-                    ************************************************/
+                    getClosestSpot(parCareService, searchedLatString, searchedLngString);
                 }
             }
 
@@ -363,7 +347,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
-        //final List<ParkingSpot> nearbySpots = new ArrayList<ParkingSpot>();
         Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
         call.enqueue(new Callback<List<ParkingSpot>>() {
             @Override
@@ -372,10 +355,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     List<ParkingSpot> spots = response.body();
                     drawSpots(spots);
                     for (ParkingSpot spot : spots) {
-                        //nearbySpots.add(spot);
                         Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
                     }
-                    Log.i(TAG + "2", "Response Successful");
+                    Log.i(TAG + "2", "Response Successful: Nearby spots received");
                 } else {
                     Toast.makeText(getApplicationContext(), "Unable to get response", Toast.LENGTH_LONG);
                     Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
@@ -388,12 +370,40 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Log.i(TAG + "2", "Failed to connect: " + t.toString());
             }
         });
-
-        //return nearbySpots;
     }
 
+    // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
+    private void getClosestSpot(PCRetrofitInterface parCareService, String lat, String lon) {
+        Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
+        call.enqueue(new Callback<ParkingSpot>() {
+            @Override
+            public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
+                ParkingSpot closestSpot = response.body();
+                LatLng closestSpotLatLng = new LatLng(closestSpot.getLatitude(), closestSpot.getLongitude());
+                closestSpotMarkerOptions = new MarkerViewOptions()
+                        .position(closestSpotLatLng);
+                map.addMarker(closestSpotMarkerOptions);
+            }
+
+            @Override
+            public void onFailure(Call<ParkingSpot> call, Throwable t) {
+
+            }
+        });
+    }
+
+    // Draws the parking spots in the given list on the map with colored dots and pop up snippets
+    // that display various info of a spot.
     private void drawSpots(List<ParkingSpot> parkingSpots) {
         map.clear();
+        // redraw destination marker
+        if (destinationMarkerOptions != null) {
+            map.addMarker(destinationMarkerOptions);
+        }
+        // redraw closest spot marker
+        if (closestSpotMarkerOptions != null) {
+            map.addMarker(closestSpotMarkerOptions);
+        }
         for (ParkingSpot spot : parkingSpots) {
             Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
             String status = spot.getStatus();
