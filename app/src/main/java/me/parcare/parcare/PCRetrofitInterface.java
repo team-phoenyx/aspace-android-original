@@ -24,4 +24,8 @@ public interface PCRetrofitInterface {
     @POST("spots/onscreen/")
     Call<List<ParkingSpot>> getNearbySpots(@Field("lower_lat") String lower_lat, @Field("lower_lon") String lower_lon,
                                            @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
+
+    @FormUrlEncoded
+    @POST("spots/closest/")
+    Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
 }

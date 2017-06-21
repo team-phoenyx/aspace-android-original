@@ -402,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 map.addMarker(new MarkerViewOptions()
                     .position(spotLatLng)
                     .title("Spot #" + spot.getId_num())
-                    .snippet("Status: Unavailable" + "\nType: " + spot.getId_type() + "\n" + spot.getLatitude() + ", " + spot.getLongitude())
+                    .snippet("Status: Available" + "\nType: " + spot.getId_type() + "\n" + spot.getLatitude() + ", " + spot.getLongitude())
                     .icon(openParkingSpotIcon));
             } else {
                 map.addMarker(new MarkerViewOptions()
