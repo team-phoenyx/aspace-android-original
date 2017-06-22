@@ -30,6 +30,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
+import com.mapbox.services.commons.models.Position;
 
 import java.util.List;
 import java.util.Timer;
@@ -125,10 +126,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         Log.i(TAG + "3", upperLat);
                         Log.i(TAG + "3", upperLon);
                         getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                        //*****Implement later, this is designed to fix edge case of closest parking spot switching to unavailable*****
+//                        if (destinationMarker != null) {
+//                            LatLng destinationLatLng = destinationMarker.getPosition();
+//                            String destinationLatString = String.valueOf(destinationLatLng.getLatitude());
+//                            String destinationLonString = String.valueOf(destinationLatLng.getLongitude());
+//                            getClosestParkingSpot(parCareService, destinationLatString, destinationLonString);
+//                        }
+                        //******
                     }
                 };
                 timer.schedule(updateSpotTimerTask, 0, SPOT_UPDATE_RATE);
-                // ******************** SKETCHY TIMER TASK HERE ******************** \\
+                // ******************** SKETCHY TIMER TASK HERE ******************** //
                 Log.i(TAG + "Call", "ON MAP READY");
                 mMapView.addOnMapChangedListener(new MapView.OnMapChangedListener() {
                     @Override
@@ -215,9 +224,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
-
-
-
     }
 
     @Override
@@ -416,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             @Override
             public void onFailure(Call<ParkingSpot> call, Throwable t) {
-
+                Log.i(TAG + "2", "Failed to connect: " + t.toString());
             }
         });
     }
@@ -438,6 +444,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             //Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
             String status = spot.getStatus();
             LatLng spotLatLng = new LatLng(spot.getLatitude(), spot.getLongitude());
+            // might be able to keep track of a list of the markers on screen and iterate through the list to
+            // pick the ones we want to remove instead of wiping the overlay entirely
             if (status.equals(SPOT_AVAILABLE)) {
                 map.addMarker(new MarkerViewOptions()
                         .position(spotLatLng)
