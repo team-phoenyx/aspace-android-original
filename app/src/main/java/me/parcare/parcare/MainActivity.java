@@ -31,8 +31,9 @@ import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,15 +60,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Icon openParkingSpotIcon;
     private Icon closedParkingSpotIcon;
     private Icon closestParkingSpotIcon;
+    private Timer timer;
+    private TimerTask updateSpotTimerTask;
+    private int changeCounter = 0;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
-
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
+    private static final int SPOT_UPDATE_RATE = 1500; // milliseconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (timer != null) {
+            timer.cancel();
+        }
+
+        timer = new Timer();
 
         Mapbox.getInstance(this, getString(R.string.access_token));
 
@@ -97,23 +107,47 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
                 setCurrentScreenBounds();
+
+                // ******************** SKETCHY TIMER TASK HERE ******************** \\
+                updateSpotTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        setCurrentScreenBounds();
+                        Log.i(TAG + "Call", "ON MAP CHANGE");
+
+                        String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                        String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                        String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+                        String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+
+                        Log.i(TAG + "3", lowerLat);
+                        Log.i(TAG + "3", lowerLon);
+                        Log.i(TAG + "3", upperLat);
+                        Log.i(TAG + "3", upperLon);
+                        getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                    }
+                };
+                timer.schedule(updateSpotTimerTask, 0, SPOT_UPDATE_RATE);
+                // ******************** SKETCHY TIMER TASK HERE ******************** \\
                 Log.i(TAG + "Call", "ON MAP READY");
                 mMapView.addOnMapChangedListener(new MapView.OnMapChangedListener() {
                     @Override
                     public void onMapChanged(int change) {
                         if (change == REGION_DID_CHANGE) {
-                            setCurrentScreenBounds();
-                            Log.i(TAG + "Call", "ON MAP CHANGE");
-                            String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-                            String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-                            String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-                            String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
 
+//                            setCurrentScreenBounds();
+//                            Log.i(TAG + "Call", "ON MAP CHANGE");
+//
+//                            String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+//                            String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+//                            String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+//                            String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+//
 //                            Log.i(TAG + "3", lowerLat);
 //                            Log.i(TAG + "3", lowerLon);
 //                            Log.i(TAG + "3", upperLat);
 //                            Log.i(TAG + "3", upperLon);
-                            getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+//                            getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
                         }
                     }
                 });
@@ -158,10 +192,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                     String searchedLatString = searchedLat + "";
                     String searchedLngString = searchedLng + "";
-                    getClosestSpot(parCareService, searchedLatString, searchedLngString);
+                    getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
                     //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
                     //drawSpots(parkingSpotsNearby);
-
                 }
             }
 
@@ -182,6 +215,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
+
+
+
     }
 
     @Override
@@ -367,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
-    private void getClosestSpot(PCRetrofitInterface parCareService, String lat, String lon) {
+    private void getClosestParkingSpot(PCRetrofitInterface parCareService, String lat, String lon) {
         Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
         call.enqueue(new Callback<ParkingSpot>() {
             @Override
