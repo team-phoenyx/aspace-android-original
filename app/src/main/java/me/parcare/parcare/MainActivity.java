@@ -62,13 +62,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Icon closestParkingSpotIcon;
     private Timer timer;
     private TimerTask updateSpotTimerTask;
-    private int changeCounter = 0;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private static final int SPOT_UPDATE_RATE = 1500; // milliseconds
-
+    private static final String SPOT_AVAILABLE = "F";
+    private static final String SPOT_UNAVAILABLE = "T";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -398,8 +398,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Log.i(TAG + "2", "Failed to connect: " + t.toString());
             }
         });
-
-
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
@@ -440,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             //Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
             String status = spot.getStatus();
             LatLng spotLatLng = new LatLng(spot.getLatitude(), spot.getLongitude());
-            if (status.equals("T")) {
+            if (status.equals(SPOT_AVAILABLE)) {
                 map.addMarker(new MarkerViewOptions()
                         .position(spotLatLng)
                         .icon(openParkingSpotIcon))
