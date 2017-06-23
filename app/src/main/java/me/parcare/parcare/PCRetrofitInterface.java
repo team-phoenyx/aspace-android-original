@@ -2,13 +2,14 @@ package me.parcare.parcare;
 
 import java.util.List;
 
+import me.parcare.parcare.models.GeocodingResponse;
+import me.parcare.parcare.models.ParkingSpot;
 import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
-import retrofit2.http.Header;
-import retrofit2.http.Headers;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -28,4 +29,7 @@ public interface PCRetrofitInterface {
     @FormUrlEncoded
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
+
+    @GET("geocoding/v5/mapbox.places/{query}.json")
+    Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("access_token") String accessToken);
 }

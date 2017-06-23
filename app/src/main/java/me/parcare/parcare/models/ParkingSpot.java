@@ -1,10 +1,9 @@
-package me.parcare.parcare;
+package me.parcare.parcare.models;
 
 /**
  * Created by Zula on 6/18/17.
  */
 import com.google.gson.annotations.SerializedName;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 
 public class ParkingSpot {
     @SerializedName("id_type")
