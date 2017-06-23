@@ -67,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Icon closestParkingSpotIcon;
     private Timer timer;
     private TimerTask updateSpotTimerTask;
+    private List<SearchSuggestion> newSuggestions;
+    private List<Feature> rawSuggestions;
+    private PCRetrofitInterface parCareService, mapboxService;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -101,11 +104,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        final PCRetrofitInterface parCareService = retrofit.create(PCRetrofitInterface.class);
+        parCareService = retrofit.create(PCRetrofitInterface.class);
 
         retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
 
-        final PCRetrofitInterface mapboxService = retrofit.create(PCRetrofitInterface.class);
+        mapboxService = retrofit.create(PCRetrofitInterface.class);
 
         IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
         openParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_available_48px);
@@ -189,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                             if (geocodingResponse == null) return;
 
-                            List<Feature> rawSuggestions = geocodingResponse.getFeatures();
-                            List<SearchSuggestion> newSuggestions = new ArrayList<>();
+                            rawSuggestions = geocodingResponse.getFeatures();
+                            newSuggestions = new ArrayList<>();
 
                             for (Feature feature : rawSuggestions) {
                                 newSuggestions.add(new Suggestion(feature.getText()));
@@ -201,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-
+                            //TODO Handle failure with snackbar
                         }
                     });
                 }
@@ -210,47 +213,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
+        searchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
+            @Override
+            public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
+                onSearch(newSuggestions.indexOf(searchSuggestion)); //moves the map camera
+                searchView.clearSearchFocus(); //collapses suggestions and search bar
+                searchView.setSearchText(searchSuggestion.getBody()); //sets the search text to the selected suggestion
+            }
 
-
-        //TODO detect keyboard events and update suggestions using searchView.swapSuggestions();
-
-        //OLD ONPLACESELECTED CODE
-        /*
-        if (place != null) {
-                    com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
-                    double searchedLat = searchedLocation.latitude;
-                    double searchedLng = searchedLocation.longitude;
-                    LatLng searchedLatLng = new LatLng(searchedLat, searchedLng);
-                    // Snaps camera to the location of whatever was searched
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, DEFAULT_SNAP_ZOOM));
-                    Log.i(TAG, "Place: " + place.getName());
-
-                    // Place a new marker at searched position if first search, or reposition
-                    // previously searched destination marker to new search.
-                    if (destinationMarkerOptions == null) {
-                        destinationMarkerOptions = new MarkerViewOptions()
-                                .position(searchedLatLng)
-                                .title(place.getName().toString());
-                    } else {
-                        destinationMarkerOptions = destinationMarkerOptions
-                                .position(searchedLatLng)
-                                .title(place.getName().toString());
-                    }
-
-                    if (destinationMarker == null) {
-                        map.addMarker(destinationMarkerOptions);
-                    } else {
-                        destinationMarker.setPosition(searchedLatLng);
-                    }
-                    destinationMarker = destinationMarkerOptions.getMarker();
-
-                    String searchedLatString = searchedLat + "";
-                    String searchedLngString = searchedLng + "";
-                    getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
-                    //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
-                    //drawSpots(parkingSpotsNearby);
-                }
-         */
+            @Override
+            public void onSearchAction(String currentQuery) {
+                onSearch(0); //automatically search the first suggestion, move the map camera
+                searchView.clearSearchFocus(); //collapses suggestions and search bar
+                searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
+            }
+        });
 
         floatingActionButton = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -261,6 +238,41 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
+    }
+
+    private void onSearch(int searchedIndex) {
+        Feature selectedFeature = rawSuggestions.get(searchedIndex);
+
+        double lng = selectedFeature.getCenter().get(0);
+        double lat = selectedFeature.getCenter().get(1);
+        LatLng searchedLatLng = new LatLng(lat, lng);
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, DEFAULT_SNAP_ZOOM));
+        Log.i(TAG, "Place: " + selectedFeature.getPlaceName());
+
+        if (destinationMarkerOptions == null) {
+            destinationMarkerOptions = new MarkerViewOptions()
+                    .position(searchedLatLng)
+                    .title(selectedFeature.getPlaceName());
+        } else {
+            destinationMarkerOptions = destinationMarkerOptions
+                    .position(searchedLatLng)
+                    .title(selectedFeature.getPlaceName());
+        }
+
+        if (destinationMarker == null) {
+            map.addMarker(destinationMarkerOptions);
+        } else {
+            destinationMarker.setPosition(searchedLatLng);
+        }
+        destinationMarker = destinationMarkerOptions.getMarker();
+
+        String searchedLatString = lat + "";
+        String searchedLngString = lng + "";
+
+        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
+        //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
+        //drawSpots(parkingSpotsNearby);
     }
 
     @Override
