@@ -216,7 +216,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
             @Override
             public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
-                onSearch(newSuggestions.indexOf(searchSuggestion)); //moves the map camera
+                int rawSuggestionIndex = rawSuggestions.size() - 1 - newSuggestions.indexOf(searchSuggestion);
+                onSearch(rawSuggestionIndex); //moves the map camera
                 searchView.clearSearchFocus(); //collapses suggestions and search bar
                 searchView.setSearchText(searchSuggestion.getBody()); //sets the search text to the selected suggestion
             }
@@ -243,11 +244,49 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void onSearch(int searchedIndex) {
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
+        int zoomScale = 16;
+
+        switch (rawSuggestions.get(searchedIndex).getPlaceType().get(0)) {
+            case "country":
+                zoomScale = 2;
+                break;
+            case "region":
+                zoomScale = 4;
+                break;
+            case "postcode":
+                zoomScale = 12;
+                break;
+            case "district":
+                zoomScale = 12;
+                break;
+            case "place":
+                zoomScale = 9;
+                break;
+            case "locality":
+                zoomScale = 8;
+                break;
+            case "neighborhood":
+                zoomScale = 14;
+                break;
+            case "address":
+                zoomScale = 15;
+                break;
+
+            case "poi":
+                zoomScale = 14;
+                break;
+
+            case "poi.landmark":
+                zoomScale = 14;
+                break;
+
+        }
+
         double lng = selectedFeature.getCenter().get(0);
         double lat = selectedFeature.getCenter().get(1);
         LatLng searchedLatLng = new LatLng(lat, lng);
 
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, DEFAULT_SNAP_ZOOM));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, zoomScale));
         Log.i(TAG, "Place: " + selectedFeature.getPlaceName());
 
         if (destinationMarkerOptions == null) {
