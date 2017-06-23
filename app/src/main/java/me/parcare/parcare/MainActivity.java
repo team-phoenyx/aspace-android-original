@@ -1,22 +1,19 @@
 package me.parcare.parcare;
 
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.arlib.floatingsearchview.FloatingSearchView;
+import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -32,12 +29,16 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
-import com.mapbox.services.commons.models.Position;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import me.parcare.parcare.models.Feature;
+import me.parcare.parcare.models.GeocodingResponse;
+import me.parcare.parcare.models.ParkingSpot;
+import me.parcare.parcare.models.Suggestion;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     private MapView mMapView;
     private MapboxMap map;
+    private FloatingSearchView searchView;
     private FloatingActionButton floatingActionButton;
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
+    public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int SPOT_UPDATE_RATE = 1500; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
     private static final String SPOT_UNAVAILABLE = "T";
@@ -99,6 +102,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 .build();
 
         final PCRetrofitInterface parCareService = retrofit.create(PCRetrofitInterface.class);
+
+        retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+
+        final PCRetrofitInterface mapboxService = retrofit.create(PCRetrofitInterface.class);
 
         IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
         openParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_available_48px);
@@ -167,15 +174,49 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        // Initialize autocomplete search bar onto view
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-        autocompleteFragment.getView().setBackgroundColor(Color.WHITE);
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        searchView = (FloatingSearchView) findViewById(R.id.search_view);
+        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
-            public void onPlaceSelected(Place place) {
-                // Get info about the selected place.
-                if (place != null) {
+            public void onSearchTextChanged(String oldQuery, String newQuery) {
+
+                if (newQuery.equals("")) {
+                    searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
+                } else {
+                    mapboxService.getGeocodingSuggestions(newQuery, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            List<Feature> rawSuggestions = geocodingResponse.getFeatures();
+                            List<SearchSuggestion> newSuggestions = new ArrayList<>();
+
+                            for (Feature feature : rawSuggestions) {
+                                newSuggestions.add(new Suggestion(feature.getText()));
+                            }
+                            
+                            searchView.swapSuggestions(newSuggestions);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+
+                        }
+                    });
+                }
+
+
+            }
+        });
+
+
+
+        //TODO detect keyboard events and update suggestions using searchView.swapSuggestions();
+
+        //OLD ONPLACESELECTED CODE
+        /*
+        if (place != null) {
                     com.google.android.gms.maps.model.LatLng searchedLocation = place.getLatLng();
                     double searchedLat = searchedLocation.latitude;
                     double searchedLng = searchedLocation.longitude;
@@ -209,15 +250,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
                     //drawSpots(parkingSpotsNearby);
                 }
-            }
-
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: " + status);
-            }
-        });
+         */
 
         floatingActionButton = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
