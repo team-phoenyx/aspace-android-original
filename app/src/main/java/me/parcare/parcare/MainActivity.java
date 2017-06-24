@@ -510,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
 
-    //TODO IS THIS EVEN CALLED?
+    // Required by PermissionsListener interface. Not actually being called anywhere right now.
     @Override
     public void onPermissionResult(boolean granted) {
         if (granted) {
@@ -564,28 +564,30 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
-        Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
-        call.enqueue(new Callback<List<ParkingSpot>>() {
-            @Override
-            public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+        if (isInForeground) {
+            Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
+            call.enqueue(new Callback<List<ParkingSpot>>() {
+                @Override
+                public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
 
-                if (response.isSuccessful()) {
-                    List<ParkingSpot> spots = response.body();
-                    drawSpots(spots);
-//                    for (ParkingSpot spot : spots) {
-//                        Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
-//                    }
-                    Log.i(TAG + "2", "Response Successful");
-                } else {
-                    Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
+                    if (response.isSuccessful()) {
+                        List<ParkingSpot> spots = response.body();
+                        drawSpots(spots);
+                        //                    for (ParkingSpot spot : spots) {
+                        //                        Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
+                        //                    }
+                        Log.i(TAG + "2", "Response Successful");
+                    } else {
+                        Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
-                Log.i(TAG + "2", "Failed to connect: " + t.toString());
-            }
-        });
+                @Override
+                public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+                    Log.i(TAG + "2", "Failed to connect: " + t.toString());
+                }
+            });
+        }
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
