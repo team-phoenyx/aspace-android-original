@@ -275,6 +275,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
+        searchView.setOnMenuItemClickListener(new FloatingSearchView.OnMenuItemClickListener() {
+            @Override
+            public void onActionMenuItemSelected(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.settings:
+                        ProfileDialogFragment profileDialogFragment = new ProfileDialogFragment();
+                        profileDialogFragment.show(getFragmentManager(), "profiledialog");
+                        break;
+                }
+            }
+        });
+
         gpsFAB = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
         gpsFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -740,17 +752,5 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Log.i(TAG + "2", t.toString());
             }
         });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.settings:
-                //TODO settings popup
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
