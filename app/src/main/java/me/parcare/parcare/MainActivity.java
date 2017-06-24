@@ -33,6 +33,8 @@ import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.services.android.navigation.v5.MapboxNavigation;
+import com.mapbox.services.android.navigation.v5.listeners.OffRouteListener;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
+    private MapboxNavigation navigation;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -101,11 +104,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         Mapbox.getInstance(this, getString(R.string.access_token));
 
+        navigation = new MapboxNavigation(this, getString(R.string.access_token));
+
         setContentView(R.layout.activity_main);
 
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
-
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -402,6 +406,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         if (locationEngineListener != null) {
             locationEngine.removeLocationEngineListener(locationEngineListener);
         }
+        // make sure to remove all navigation listeners being used
     }
 
     private void toggleGps(boolean enableGps, boolean moveCamera) {
@@ -614,15 +619,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void drawSpots(List<ParkingSpot> parkingSpots) {
         map.clear();
 
-        // redraw destination spot marker
-        if (destinationMarkerOptions != null) {
-            map.addMarker(destinationMarkerOptions);
-        }
-        // redraw closest spot marker
-        if (closestSpotMarkerOptions != null) {
-            map.addMarker(closestSpotMarkerOptions);
-        }
-
         // draw spots
         for (ParkingSpot spot : parkingSpots) {
             //Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
@@ -641,6 +637,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .icon(closedParkingSpotIcon))
                         .setSnippet("Status: Unavailable" + "\nLocation: " + spot.getLatitude() + ", " + spot.getLongitude());
             }
+        }
+
+        // redraw destination spot marker
+        if (destinationMarkerOptions != null) {
+            map.addMarker(destinationMarkerOptions);
+        }
+        // redraw closest spot marker
+        if (closestSpotMarkerOptions != null) {
+            map.addMarker(closestSpotMarkerOptions);
         }
     }
 
