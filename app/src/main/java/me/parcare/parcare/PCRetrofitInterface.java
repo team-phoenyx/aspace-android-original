@@ -31,5 +31,5 @@ public interface PCRetrofitInterface {
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
 
     @GET("geocoding/v5/mapbox.places/{query}.json")
-    Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("access_token") String accessToken);
+    Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
 }

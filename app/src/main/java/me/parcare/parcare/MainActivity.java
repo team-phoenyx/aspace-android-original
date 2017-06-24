@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private FloatingSearchView searchView;
     private FloatingActionButton floatingActionButton;
     private LocationEngine locationEngine;
+    private Location currentLocation;
     private LocationEngineListener locationEngineListener;
     private PermissionsManager permissionsManager;
     private MarkerViewOptions closestSpotMarkerOptions;
@@ -178,6 +179,23 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
 
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
+
+        searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
+            @Override
+            public void onFocus() {
+                try {
+                    currentLocation = locationEngine.getLastLocation();
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFocusCleared() {
+
+            }
+        });
+
         searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
@@ -185,7 +203,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 if (newQuery.equals("")) {
                     searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
-                    mapboxService.getGeocodingSuggestions(newQuery, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
                         @Override
                         public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
                             GeocodingResponse geocodingResponse = response.body();
@@ -323,6 +342,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onResume() {
         super.onResume();
+        try {
+            currentLocation = locationEngine.getLastLocation();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
         mMapView.onResume();
     }
 
