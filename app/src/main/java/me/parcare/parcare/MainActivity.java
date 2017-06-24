@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,11 +23,17 @@ import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
+import com.mapbox.directions.DirectionsCriteria;
+import com.mapbox.directions.MapboxDirections;
+import com.mapbox.directions.service.models.DirectionsResponse;
+import com.mapbox.directions.service.models.DirectionsRoute;
+import com.mapbox.directions.service.models.Waypoint;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -39,6 +46,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -75,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
-    private MapboxNavigation navigation;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -87,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String SPOT_UNAVAILABLE = "T";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
 
-    //
     private boolean isInForeground;
 
     @Override
@@ -103,8 +109,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         timer = new Timer();
 
         Mapbox.getInstance(this, getString(R.string.access_token));
-
-        navigation = new MapboxNavigation(this, getString(R.string.access_token));
 
         setContentView(R.layout.activity_main);
 
@@ -356,8 +360,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         String searchedLngString = lng + "";
 
         getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
-        //parkingSpotsNearby = getParkingSpotsNearby(parCareService, "47.604327", "-122.2987024", "47.604327", "-122.2983136");
-        //drawSpots(parkingSpotsNearby);
+
+//        if (closestSpotMarkerOptions != null) {
+//            MarkerView closestSpotMarker = closestSpotMarkerOptions.getMarker();
+//            if (closestSpotMarker != null) {
+//                drawRouteToSpot(searchedLatLng, closestSpotMarker.getPosition());
+//            }
+//        }
+
+        //* Gives me a null pointer for the marker here for some reason?
+        //drawRouteToSpot(searchedLatLng, closestSpotMarkerOptions.getMarker().getPosition());
     }
 
     @Override
@@ -578,9 +590,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     if (response.isSuccessful()) {
                         List<ParkingSpot> spots = response.body();
                         drawSpots(spots);
-                        //                    for (ParkingSpot spot : spots) {
-                        //                        Log.i(TAG + "3", spot.getLatitude() + "/"+ spot.getLongitude());
-                        //                    }
                         Log.i(TAG + "2", "Response Successful");
                     } else {
                         Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
@@ -598,6 +607,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
     private void getClosestParkingSpot(PCRetrofitInterface parCareService, String lat, String lon) {
         Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
+        final String latF = lat;
+        final String lonF = lon;
         call.enqueue(new Callback<ParkingSpot>() {
             @Override
             public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
@@ -607,6 +618,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .position(closestSpotLatLng)
                         .icon(closestParkingSpotIcon);
                 map.addMarker(closestSpotMarkerOptions);
+
+                // Draws polyline route to the closest spot. Ideally remove this call and move it to inside
+                // onSearch instead, but right now doing so gives a null pointer for the first search and needs
+                // 2 searches to work.
+                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng);
             }
 
             @Override
@@ -618,6 +634,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     private void drawSpots(List<ParkingSpot> parkingSpots) {
         map.clear();
+
+        // redraw destination spot marker
+        if (destinationMarkerOptions != null) {
+            map.addMarker(destinationMarkerOptions);
+        }
+        // redraw closest spot marker
+        if (closestSpotMarkerOptions != null) {
+            map.addMarker(closestSpotMarkerOptions);
+        }
 
         // draw spots
         for (ParkingSpot spot : parkingSpots) {
@@ -638,15 +663,48 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .setSnippet("Status: Unavailable" + "\nLocation: " + spot.getLatitude() + ", " + spot.getLongitude());
             }
         }
+    }
 
-        // redraw destination spot marker
-        if (destinationMarkerOptions != null) {
-            map.addMarker(destinationMarkerOptions);
-        }
-        // redraw closest spot marker
-        if (closestSpotMarkerOptions != null) {
-            map.addMarker(closestSpotMarkerOptions);
-        }
+    // Draws polyline route from the origin to the spot specified by the given destination
+    private void drawRouteToSpot(LatLng origin, LatLng destination) {
+        Waypoint originWaypoint = new Waypoint(origin.getLongitude(), origin.getLatitude());
+
+        Waypoint destinationWaypoint = new Waypoint(destination.getLongitude(), destination.getLatitude());
+
+        MapboxDirections client = new MapboxDirections.Builder()
+                .setAccessToken(getString(R.string.access_token))
+                .setOrigin(originWaypoint)
+                .setDestination(destinationWaypoint)
+                .setProfile(DirectionsCriteria.PROFILE_DRIVING)
+                .build();
+
+        client.enqueue(new retrofit.Callback<DirectionsResponse>() {
+            @Override
+            public void onResponse(retrofit.Response<DirectionsResponse> response, retrofit.Retrofit retrofit) {
+                if (response.isSuccess()) {
+                    DirectionsRoute route = response.body().getRoutes().get(0);
+                    //int distance = route.getDistance(); // meters
+                    List<Waypoint> waypoints = route.getGeometry().getWaypoints();
+                    LatLng[] points = new LatLng[waypoints.size()];
+                    for (int i = 0; i < waypoints.size(); i++) {
+                        points[i] = new LatLng(
+                                waypoints.get(i).getLatitude(),
+                                waypoints.get(i).getLongitude());
+                    }
+                    map.addPolyline(new PolylineOptions()
+                            .add(points)
+                            .color(Color.parseColor("#3887be"))
+                            .width(5));
+                } else {
+                    Log.i(TAG +"2", response.raw().toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.i(TAG + "2", t.toString());
+            }
+        });
     }
 
     @Override
