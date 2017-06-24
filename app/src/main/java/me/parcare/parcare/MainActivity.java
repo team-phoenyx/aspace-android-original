@@ -1,12 +1,19 @@
 package me.parcare.parcare;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -53,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton floatingActionButton;
+    private FloatingActionButton gpsFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -71,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
+    private boolean locationServiceAvailable;
 
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -126,6 +134,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
+
+                toggleGps(true);
+
                 setCurrentScreenBounds();
 
                 // ******************** SKETCHY TIMER TASK HERE ******************** \\
@@ -191,6 +202,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onFocus() {
                 try {
                     currentLocation = locationEngine.getLastLocation();
+
+                    if (currentLocation == null) {
+                        searchView.clearFocus();
+                        toggleGps(true);
+                    }
                 } catch (SecurityException e) {
                     e.printStackTrace();
                 }
@@ -255,8 +271,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        floatingActionButton = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+        gpsFAB = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
+        gpsFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (map != null) {
@@ -264,8 +280,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
+
+
+
     }
 
+    //When user selects a search suggestion
     private void onSearch(int searchedIndex) {
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
@@ -394,11 +414,33 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     private void toggleGps(boolean enableGps) {
         if (enableGps) {
-            // Check if user has granted location permission
-            permissionsManager = new PermissionsManager(this);
-            if (!PermissionsManager.areLocationPermissionsGranted(this)) {
-                permissionsManager.requestLocationPermissions(this);
+
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                AlertDialog.Builder enableGPSBuilder = new AlertDialog.Builder(this).setTitle("Enable GPS").setMessage("Please enable GPS for app functionality").setCancelable(false).setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                enableGPSBuilder.create().show();
+            }
+
+            //Check if access to fine location is granted
+            if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                locationServiceAvailable = false;
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_LOCATION_PERMISSION);
             } else {
+                locationServiceAvailable = true;
                 enableLocation(true);
             }
         } else {
@@ -408,14 +450,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     private void enableLocation(boolean enabled) {
         if (enabled) {
+
             // If we have the last location of the user, we can move the camera to that position.
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
-                return;
-            }
             Location lastLocation = locationEngine.getLastLocation();
             if (lastLocation != null) {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), DEFAULT_SNAP_ZOOM));
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 14));
             }
 
             locationEngineListener = new LocationEngineListener() {
@@ -437,9 +476,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             };
             locationEngine.addLocationEngineListener(locationEngineListener);
-            floatingActionButton.setImageResource(R.drawable.ic_location_disabled_24dp);
+            gpsFAB.setImageResource(R.drawable.ic_location_disabled_24dp);
         } else {
-            floatingActionButton.setImageResource(R.drawable.ic_my_location_24dp);
+            gpsFAB.setImageResource(R.drawable.ic_my_location_24dp);
         }
         // Enable or disable the location layer on the map
         map.setMyLocationEnabled(enabled);
@@ -450,7 +489,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         switch (requestCode) {
             case REQUEST_LOCATION_PERMISSION:
-                enableLocation(true);
+                if (grantResults.length > 0 &&  grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission granted
+                    locationServiceAvailable = true;
+                    enableLocation(true);
+                } else {
+                    //permission not granted
+                    locationServiceAvailable = false;
+                }
+
+
                 break;
             default:
                 permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
