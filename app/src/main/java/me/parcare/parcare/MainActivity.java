@@ -41,6 +41,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.android.navigation.v5.MapboxNavigation;
+import com.mapbox.services.android.navigation.v5.NavigationProfiles;
 import com.mapbox.services.android.navigation.v5.listeners.OffRouteListener;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
@@ -93,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String SPOT_AVAILABLE = "F";
     private static final String SPOT_UNAVAILABLE = "T";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
+    private static final int ROUTE_TYPE_WALKING = 1;
+    private static final int ROUTE_TYPE_DRIVING = 0;
 
     private boolean isInForeground;
 
@@ -364,12 +367,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 //        if (closestSpotMarkerOptions != null) {
 //            MarkerView closestSpotMarker = closestSpotMarkerOptions.getMarker();
 //            if (closestSpotMarker != null) {
-//                drawRouteToSpot(searchedLatLng, closestSpotMarker.getPosition());
+//                drawDrivingRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotMarker.getPosition());
 //            }
 //        }
 
         //* Gives me a null pointer for the marker here for some reason?
-        //drawRouteToSpot(searchedLatLng, closestSpotMarkerOptions.getMarker().getPosition());
+        //drawDrivingRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotMarkerOptions.getMarker().getPosition());
     }
 
     @Override
@@ -619,10 +622,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .icon(closestParkingSpotIcon);
                 map.addMarker(closestSpotMarkerOptions);
 
-                // Draws polyline route to the closest spot. Ideally remove this call and move it to inside
+                // Draws polyline route from current location to the closest spot. Ideally remove this call and move it to inside
                 // onSearch instead, but right now doing so gives a null pointer for the first search and needs
                 // 2 searches to work.
-                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng);
+
+                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotLatLng, ROUTE_TYPE_DRIVING);
+                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng, ROUTE_TYPE_WALKING);
             }
 
             @Override
@@ -665,18 +670,38 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         }
     }
 
-    // Draws polyline route from the origin to the spot specified by the given destination
-    private void drawRouteToSpot(LatLng origin, LatLng destination) {
+    // Draws polyline route from the origin to the spot specified by the given destination. Route determined
+    // by the given routeType.
+    private void drawRouteToSpot(LatLng origin, LatLng destination, int routeType) {
+        // Note that waypoint takes in longitude first instead of latitude
         Waypoint originWaypoint = new Waypoint(origin.getLongitude(), origin.getLatitude());
 
         Waypoint destinationWaypoint = new Waypoint(destination.getLongitude(), destination.getLatitude());
 
-        MapboxDirections client = new MapboxDirections.Builder()
-                .setAccessToken(getString(R.string.access_token))
-                .setOrigin(originWaypoint)
-                .setDestination(destinationWaypoint)
-                .setProfile(DirectionsCriteria.PROFILE_DRIVING)
-                .build();
+        MapboxDirections client = null;
+
+
+        switch (routeType) {
+            case ROUTE_TYPE_WALKING:
+                client = new MapboxDirections.Builder()
+                        .setAccessToken(getString(R.string.access_token))
+                        .setOrigin(originWaypoint)
+                        .setDestination(destinationWaypoint)
+                        .setProfile(DirectionsCriteria.PROFILE_WALKING)
+                        .build();
+                break;
+            case ROUTE_TYPE_DRIVING:
+                client = new MapboxDirections.Builder()
+                        .setAccessToken(getString(R.string.access_token))
+                        .setOrigin(originWaypoint)
+                        .setDestination(destinationWaypoint)
+                        .setProfile(DirectionsCriteria.PROFILE_DRIVING)
+                        .build();
+                break;
+
+        }
+
+        final int routeTypeF = routeType;
 
         client.enqueue(new retrofit.Callback<DirectionsResponse>() {
             @Override
@@ -691,10 +716,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                 waypoints.get(i).getLatitude(),
                                 waypoints.get(i).getLongitude());
                     }
-                    map.addPolyline(new PolylineOptions()
-                            .add(points)
-                            .color(Color.parseColor("#3887be"))
-                            .width(5));
+                    switch (routeTypeF) {
+                        case ROUTE_TYPE_WALKING:
+                            map.addPolyline(new PolylineOptions()
+                                    .add(points)
+                                    .color(Color.parseColor("#d84315"))
+                                    .width(5));
+                            break;
+                        case ROUTE_TYPE_DRIVING:
+                            map.addPolyline(new PolylineOptions()
+                                    .add(points)
+                                    .color(Color.parseColor("#3887be"))
+                                    .width(5));
+
+                    }
+//                    map.addPolyline(new PolylineOptions()
+//                            .add(points)
+//                            .color(Color.parseColor("#3887be"))
+//                            .width(5));
                 } else {
                     Log.i(TAG +"2", response.raw().toString());
                 }
