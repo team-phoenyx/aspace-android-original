@@ -190,33 +190,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override
             public void onFocus() {
+                toggleGps(true, false);
+
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) searchView.clearFocus();
+
                 try {
-
-                    //Check if location services are turned on and have access to fine location
-                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                        searchView.clearFocus();
-                        toggleGps(true, false);
-                    } else {
-                        currentLocation = locationEngine.getLastLocation();
-                    }
-
-                    //If user denied to enable location services, kill this method
-                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) return;
-
-                    //At this point, location services are guarenteed to be on
-
-                    //Check if locationEngine is initialized internally
-                    if(!map.isMyLocationEnabled()){
-                        //If locationEngine is off, turn it on
-                        toggleGps(true, false);
-                        currentLocation = locationEngine.getLastLocation();
-                    } else if (currentLocation == null) {
-                        //This check shouldn't be needed at all, but just in case
-                        searchView.clearFocus();
-                        toggleGps(true, false);
-                        currentLocation = locationEngine.getLastLocation();
-                    }
+                    currentLocation = locationEngine.getLastLocation();
                 } catch (SecurityException e) {
                     e.printStackTrace();
                 }
@@ -506,6 +486,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     enableLocation(true, true);
                 } else {
                     //permission not granted
+                    searchView.clearFocus();
                 }
 
 
@@ -526,6 +507,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         if (granted) {
             enableLocation(true, true);
         } else {
+            searchView.clearFocus();
             Toast.makeText(this, "You didn't grant location permissions.",
                     Toast.LENGTH_LONG).show();
             finish();
