@@ -81,9 +81,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String SPOT_UNAVAILABLE = "T";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
 
+    private boolean isInForeground;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        isInForeground = true;
 
         if (timer != null) {
             timer.cancel();
@@ -128,19 +132,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 updateSpotTimerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        setCurrentScreenBounds();
-                        Log.i(TAG + "Call", "ON MAP CHANGE");
+                        if (isInForeground) {
+                            setCurrentScreenBounds();
+                            Log.i(TAG + "Call", "ON MAP CHANGE");
 
-                        String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-                        String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-                        String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-                        String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+                            String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                            String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
+                            String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
+                            String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
 
-                        Log.i(TAG + "3", lowerLat);
-                        Log.i(TAG + "3", lowerLon);
-                        Log.i(TAG + "3", upperLat);
-                        Log.i(TAG + "3", upperLon);
-                        getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                            Log.i(TAG + "3", lowerLat);
+                            Log.i(TAG + "3", lowerLon);
+                            Log.i(TAG + "3", upperLat);
+                            Log.i(TAG + "3", upperLon);
+                            getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                        }
                         //*****Implement later, this is designed to fix edge case of closest parking spot switching to unavailable*****
 //                        if (destinationMarker != null) {
 //                            LatLng destinationLatLng = destinationMarker.getPosition();
@@ -217,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             for (Feature feature : rawSuggestions) {
                                 newSuggestions.add(new Suggestion(feature.getText()));
                             }
-                            
+
                             searchView.swapSuggestions(newSuggestions);
                         }
 
@@ -342,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onResume() {
         super.onResume();
+        isInForeground = true;
         try {
             currentLocation = locationEngine.getLastLocation();
         } catch (SecurityException e) {
@@ -353,12 +360,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     public void onPause() {
         super.onPause();
+        isInForeground = false;
         mMapView.onPause();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        isInForeground = false;
         mMapView.onStop();
     }
 
