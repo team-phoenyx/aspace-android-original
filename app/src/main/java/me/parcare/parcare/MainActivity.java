@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             newSuggestions = new ArrayList<>();
 
                             for (Feature feature : rawSuggestions) {
-                                newSuggestions.add(new Suggestion(feature.getText()));
+                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
                             }
 
                             searchView.swapSuggestions(newSuggestions);
