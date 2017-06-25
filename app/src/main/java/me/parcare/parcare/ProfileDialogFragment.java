@@ -4,17 +4,22 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -24,6 +29,16 @@ public class ProfileDialogFragment extends DialogFragment {
 
     SharedPreferences sharedPreferences;
     boolean editImage = false;
+    ImageView profilePictureImageView;
+    EditText nameEditText, homeAddressEditText, workAddressEditText;
+    TextView enterNameTextView;
+    FloatingActionButton editFAB;
+
+    private static final String SP_USER_NAME_TAG = "user_name";
+    private static final String SP_USER_HOME_ADDRESS_TAG = "user_home_address";
+    private static final String SP_USER_WORK_ADDRESS_TAG = "user_work_address";
+    private static final int PICK_IMAGE_REQUEST_CALLBACK = 1;
+
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -34,25 +49,28 @@ public class ProfileDialogFragment extends DialogFragment {
 
         builder.setView(dialogView).setCancelable(false);
 
-        ImageView profilePictureImageView = (ImageView) dialogView.findViewById(R.id.profile_pic_imageview);
-        final EditText nameEditText = (EditText) dialogView.findViewById(R.id.name_edittext);
-        final EditText homeAddressEditText = (EditText) dialogView.findViewById(R.id.home_address_edittext);
-        final EditText workAddressEditText = (EditText) dialogView.findViewById(R.id.work_address_edittext);
-        final TextView enterNameTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
-        final FloatingActionButton editFAB = (FloatingActionButton) dialogView.findViewById(R.id.edit_fab);
+        sharedPreferences = getActivity().getSharedPreferences("me.parcare.parcare", Context.MODE_PRIVATE);
 
-        nameEditText.setText(sharedPreferences.getString("user_name", "Your Name"));
-        nameEditText.setText(sharedPreferences.getString("home_address", ""));
-        nameEditText.setText(sharedPreferences.getString("work_address", ""));
-        //TODO GET request to get profile image URL, retrieve image from image server
+        profilePictureImageView = (ImageView) dialogView.findViewById(R.id.profile_pic_imageview);
+        nameEditText = (EditText) dialogView.findViewById(R.id.name_edittext);
+        homeAddressEditText = (EditText) dialogView.findViewById(R.id.home_address_edittext);
+        workAddressEditText = (EditText) dialogView.findViewById(R.id.work_address_edittext);
+        enterNameTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
+        editFAB = (FloatingActionButton) dialogView.findViewById(R.id.edit_fab);
+
+        nameEditText.setText(sharedPreferences.getString(SP_USER_NAME_TAG, "Your Name"));
+        homeAddressEditText.setText(sharedPreferences.getString(SP_USER_HOME_ADDRESS_TAG, ""));
+        workAddressEditText.setText(sharedPreferences.getString(SP_USER_WORK_ADDRESS_TAG, ""));
+        //TODO Retrieve image from internal storage
 
         profilePictureImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (editImage) {
-                    //TODO open up activity to choose an image
-                } else {
-                    //TODO open up image full res full screen
+                    Intent chooseImageIntent = new Intent();
+                    chooseImageIntent.setType("image/*");
+                    chooseImageIntent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(chooseImageIntent, "Select a picture"), PICK_IMAGE_REQUEST_CALLBACK);
                 }
             }
         });
@@ -77,17 +95,14 @@ public class ProfileDialogFragment extends DialogFragment {
                 if (nameEditText.getText().toString().equals("")) {
                     enterNameTextView.setVisibility(View.VISIBLE);
                 } else {
-                    sharedPreferences = getActivity().getSharedPreferences("me.parcare.parcare", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("user_name", nameEditText.getText().toString());
-                    editor.putString("user_home_address", homeAddressEditText.getText().toString());
-                    editor.putString("user_work_address", workAddressEditText.getText().toString());
-                    editor.apply();
+                    editor.putString(SP_USER_NAME_TAG, nameEditText.getText().toString());
+                    editor.putString(SP_USER_HOME_ADDRESS_TAG, homeAddressEditText.getText().toString());
+                    editor.putString(SP_USER_WORK_ADDRESS_TAG, workAddressEditText.getText().toString());
+                    editor.commit();
 
                     //TODO POST request to server, update profile and image
                 }
-
-
             }
         });
 
@@ -98,5 +113,58 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
         return builder.create();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case PICK_IMAGE_REQUEST_CALLBACK :
+                Uri imageURI = data.getData();
+
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageURI);
+                    profilePictureImageView.setImageBitmap(bitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        final AlertDialog d = (AlertDialog)getDialog();
+        if(d != null)
+        {
+            Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    nameEditText.setEnabled(false);
+                    homeAddressEditText.setEnabled(false);
+                    workAddressEditText.setEnabled(false);
+
+                    if (nameEditText.getText().toString().equals("")) {
+                        enterNameTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("user_name", nameEditText.getText().toString());
+                        editor.putString("user_home_address", homeAddressEditText.getText().toString());
+                        editor.putString("user_work_address", workAddressEditText.getText().toString());
+                        editor.apply();
+
+                        //TODO POST request to server, update profile and image
+
+                        d.dismiss();
+                    }
+                }
+            });
+        }
     }
 }
