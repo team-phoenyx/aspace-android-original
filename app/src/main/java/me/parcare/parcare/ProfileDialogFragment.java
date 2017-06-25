@@ -28,7 +28,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
+
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
+import static me.parcare.parcare.MainActivity.BASE_URL;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -48,6 +56,8 @@ public class ProfileDialogFragment extends DialogFragment {
     private static final String USER_PROFILE_PICTURE_DIRECTORY_TAG = "profile_picture_directory_path";
     private static final int PICK_IMAGE_REQUEST_CALLBACK = 1;
 
+    private PCRetrofitInterface parCareService;
+
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -55,6 +65,14 @@ public class ProfileDialogFragment extends DialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.profile_layout, null);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        parCareService = retrofit.create(PCRetrofitInterface.class);
 
         builder.setView(dialogView).setCancelable(false);
 
@@ -170,6 +188,14 @@ public class ProfileDialogFragment extends DialogFragment {
 
                         d.dismiss();
                         //TODO POST request to server, update profile and image
+                        String profileName = nameEditText.getText().toString();
+                        String workAddress = workAddressEditText.getText().toString();
+                        String homeAddress = homeAddressEditText.getText().toString();
+                        String homeCoords = "-122.3185817,47.7697368"; // placeholder
+                        String workCoords = "-122.3057139,47.6553351"; // placeholder, Univ of Wash
+                        String userId = "001"; // placeholder
+                        updateProfile(parCareService, profileName, workAddress, homeAddress, homeCoords,
+                                workCoords, userId);
                     }
                 }
             });
@@ -210,4 +236,21 @@ public class ProfileDialogFragment extends DialogFragment {
         }
     }
 
+    // Updates the user's profile based on the given info
+    private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress,
+                               String homeAddress, String homeCoords, String workCoords, String userId) {
+        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeCoords, workCoords, userId);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                String resp = response.body();
+                Log.i("PROFILE", "Response Received: " + resp);
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.i("PROFILE", "Profile update response failure: " + t.toString());
+            }
+        });
+    }
 }
