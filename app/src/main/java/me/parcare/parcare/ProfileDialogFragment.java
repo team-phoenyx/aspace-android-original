@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -120,11 +121,13 @@ public class ProfileDialogFragment extends DialogFragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
-            case PICK_IMAGE_REQUEST_CALLBACK :
+            case PICK_IMAGE_REQUEST_CALLBACK:
                 Uri imageURI = data.getData();
 
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageURI);
+                    Log.d("IMAGEPICKER", String.valueOf(bitmap));
+
                     profilePictureImageView.setImageBitmap(bitmap);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -140,7 +143,7 @@ public class ProfileDialogFragment extends DialogFragment {
         final AlertDialog d = (AlertDialog)getDialog();
         if(d != null)
         {
-            Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
+            Button positiveButton = d.getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(new View.OnClickListener()
             {
                 @Override
