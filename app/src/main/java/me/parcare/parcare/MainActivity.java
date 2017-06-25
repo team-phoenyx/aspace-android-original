@@ -31,8 +31,11 @@ import com.mapbox.directions.service.models.Waypoint;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
+import com.mapbox.mapboxsdk.annotations.MarkerViewManager;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
+    private boolean isUpdatingSpots;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -93,13 +97,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int ROUTE_TYPE_WALKING = 1;
     private static final int ROUTE_TYPE_DRIVING = 0;
 
-    private boolean isInForeground;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        isInForeground = true;
+        isUpdatingSpots = true;
 
         if (timer != null) {
             timer.cancel();
@@ -142,11 +144,44 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                 setCurrentScreenBounds();
 
+                MarkerViewManager markerViewManager = map.getMarkerViewManager();
+                markerViewManager.setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
+                        isUpdatingSpots = false;
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        Log.i("CLICK", "Dialog  Pop");
+                        final Marker markerF = marker;
+                        builder.setTitle("Directions to Spot")
+                                .setMessage("Would you like to see the route to this spot?")
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        List<Polyline> polylines = map.getPolylines();
+                                        for (Polyline polyline : polylines) {
+                                            map.removePolyline(polyline);
+                                        }
+                                        drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
+                                        drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                    }
+                                })
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        isUpdatingSpots = true;
+                                    }
+                                })
+                                .show();
+
+                        return true;
+                    }
+                });
+
                 // ******************** SKETCHY TIMER TASK HERE ******************** \\
                 updateSpotTimerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        if (isInForeground) {
+                        if (isUpdatingSpots) {
                             setCurrentScreenBounds();
                             Log.i(TAG + "Call", "ON MAP CHANGE");
 
@@ -179,20 +214,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public void onMapChanged(int change) {
                         if (change == REGION_DID_CHANGE) {
-
-//                            setCurrentScreenBounds();
-//                            Log.i(TAG + "Call", "ON MAP CHANGE");
-//
-//                            String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-//                            String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
-//                            String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-//                            String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-//
-//                            Log.i(TAG + "3", lowerLat);
-//                            Log.i(TAG + "3", lowerLon);
-//                            Log.i(TAG + "3", upperLat);
-//                            Log.i(TAG + "3", upperLon);
-//                            getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                            // placeholder
                         }
                     }
                 });
@@ -393,14 +415,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     protected void onResume() {
         super.onResume();
         searchView.clearFocus();
-        isInForeground = true;
+        isUpdatingSpots = true;
         mMapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        isInForeground = false;
+        isUpdatingSpots = false;
         mMapView.onPause();
     }
 
@@ -592,7 +614,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
-        if (isInForeground) {
+        if (isUpdatingSpots) {
             Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
             call.enqueue(new Callback<List<ParkingSpot>>() {
                 @Override
@@ -634,8 +656,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 // onSearch instead, but right now doing so gives a null pointer for the first search and needs
                 // 2 searches to work.
 
-                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotLatLng, ROUTE_TYPE_DRIVING);
-                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng, ROUTE_TYPE_WALKING);
+//                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotLatLng, ROUTE_TYPE_DRIVING);
+//                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng, ROUTE_TYPE_WALKING);
             }
 
             @Override
@@ -729,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             map.addPolyline(new PolylineOptions()
                                     .add(points)
                                     .color(Color.parseColor("#d84315"))
-                                    .width(5));
+                                    .width(2));
                             break;
                         case ROUTE_TYPE_DRIVING:
                             map.addPolyline(new PolylineOptions()
@@ -738,10 +760,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .width(5));
 
                     }
-//                    map.addPolyline(new PolylineOptions()
-//                            .add(points)
-//                            .color(Color.parseColor("#3887be"))
-//                            .width(5));
                 } else {
                     Log.i(TAG +"2", response.raw().toString());
                 }
