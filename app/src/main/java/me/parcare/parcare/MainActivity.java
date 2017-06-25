@@ -757,6 +757,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             map.addPolyline(new PolylineOptions()
                                     .add(points)
                                     .color(Color.parseColor("#3887be"))
+                                    .alpha((float) 0.5)
                                     .width(5));
 
                     }
