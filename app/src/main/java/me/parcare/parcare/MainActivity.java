@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onActionMenuItemSelected(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.settings:
+                    case R.id.profile:
                         ProfileDialogFragment profileDialogFragment = new ProfileDialogFragment();
                         profileDialogFragment.show(getFragmentManager(), "profiledialog");
                         break;
