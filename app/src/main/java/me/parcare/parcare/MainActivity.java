@@ -325,6 +325,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     //When user selects a search suggestion
     private void onSearch(int searchedIndex) {
+
+        isUpdatingSpots = true;
+
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
         int zoomScale = 16;
