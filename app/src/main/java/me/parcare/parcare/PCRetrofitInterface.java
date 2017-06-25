@@ -30,6 +30,12 @@ public interface PCRetrofitInterface {
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
 
+    @FormUrlEncoded
+    @POST("users/profile/update/")
+    Call<String> updateProfile(@Field("name") String name, @Field("work_address") String work_address,
+                               @Field("home_address") String home_address, @Field("home_loc_id") String home_loc_id,
+                               @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id);
+
     @GET("geocoding/v5/mapbox.places/{query}.json")
     Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
 }
