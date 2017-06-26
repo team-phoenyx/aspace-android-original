@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-                            //TODO Handle failure with snackbar
+                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
                         }
                     });
                 }

@@ -119,7 +119,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
         String directoryPath = sharedPreferences.getString(USER_PROFILE_PICTURE_DIRECTORY_TAG, "no_picture");
         if (directoryPath.equals("no_picture")) {
-            //TODO Set imageview to preset profile image
+            profilePictureImageView.setImageResource(R.drawable.sample_profile_pic);
         } else {
             profilePictureImageView.setImageBitmap(openImage(directoryPath));
         }
@@ -165,8 +165,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-                            //TODO Handle failure with snackbar
-                            Log.e("AUTOCOMPLETE_FETCH", "Fetch failed");
+                            Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
                         }
                     });
                 }
@@ -216,8 +215,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-                            //TODO Handle failure with snackbar
-                            Log.e("AUTOCOMPLETE_FETCH", "Fetch failed");
+                            Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
                         }
                     });
                 }
@@ -348,11 +346,11 @@ public class ProfileDialogFragment extends DialogFragment {
                             editor.commit();
 
                             d.dismiss();
-                            //TODO POST request to server, update profile and image
+
                             String profileName = nameEditText.getText().toString();
                             String workAddress = workAddressEditText.getText().toString();
                             String homeAddress = homeAddressEditText.getText().toString();
-                            String userId = "30"; // placeholder
+                            String userId = "30"; //TODO placeholder
                             updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
                                     workLocationID, userId);
 
