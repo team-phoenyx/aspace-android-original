@@ -189,7 +189,7 @@ public class ProfileDialogFragment extends DialogFragment {
                     autocompleteSuggestions.clear();
 
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
-                    homeAddressEditText.setAdapter(autocompleteAdapter);
+                    workAddressEditText.setAdapter(autocompleteAdapter);
                 } else {
                     String proximityString = Double.toString(lng) + "," + Double.toString(lat);
                     mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
@@ -206,7 +206,7 @@ public class ProfileDialogFragment extends DialogFragment {
                             }
 
                             autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
-                            homeAddressEditText.setAdapter(autocompleteAdapter);
+                            workAddressEditText.setAdapter(autocompleteAdapter);
                         }
 
                         @Override
