@@ -63,12 +63,14 @@ public class ProfileDialogFragment extends DialogFragment {
     PCRetrofitInterface mapboxService;
     List<Feature> rawSuggestions;
 
-    private String homeLocationID, workLocationID;
+    private String homeLocationID = "", workLocationID = "";
     private double lat, lng;
 
     private static final String SP_USER_NAME_TAG = "user_name";
     private static final String SP_USER_HOME_ADDRESS_TAG = "user_home_address";
     private static final String SP_USER_WORK_ADDRESS_TAG = "user_work_address";
+    private static final String SP_USER_HOME_LOC_ID_TAG = "user_home_loc_id";
+    private static final String SP_USER_WORK_LOC_ID_TAG = "user_work_loc+id";
     private static final String USER_PROFILE_PICTURE_FILENAME_TAG = "user_profile_picture.png";
     private static final String USER_PROFILE_PICTURE_DIRECTORY_TAG = "profile_picture_directory_path";
     private static final int PICK_IMAGE_REQUEST_CALLBACK = 1;
@@ -112,6 +114,8 @@ public class ProfileDialogFragment extends DialogFragment {
         nameEditText.setText(sharedPreferences.getString(SP_USER_NAME_TAG, "Your Name"));
         homeAddressEditText.setText(sharedPreferences.getString(SP_USER_HOME_ADDRESS_TAG, ""));
         workAddressEditText.setText(sharedPreferences.getString(SP_USER_WORK_ADDRESS_TAG, ""));
+        homeLocationID = sharedPreferences.getString(SP_USER_HOME_LOC_ID_TAG, "");
+        workLocationID = sharedPreferences.getString(SP_USER_WORK_LOC_ID_TAG, "");
 
         String directoryPath = sharedPreferences.getString(USER_PROFILE_PICTURE_DIRECTORY_TAG, "no_picture");
         if (directoryPath.equals("no_picture")) {
@@ -162,6 +166,7 @@ public class ProfileDialogFragment extends DialogFragment {
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
                             //TODO Handle failure with snackbar
+                            Log.e("AUTOCOMPLETE_FETCH", "Fetch failed");
                         }
                     });
                 }
@@ -212,6 +217,7 @@ public class ProfileDialogFragment extends DialogFragment {
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
                             //TODO Handle failure with snackbar
+                            Log.e("AUTOCOMPLETE_FETCH", "Fetch failed");
                         }
                     });
                 }
@@ -227,7 +233,7 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Feature result = rawSuggestions.get(position);
-                homeAddressEditText.setText(result.getText());
+                homeAddressEditText.setText(result.getPlaceName());
                 homeLocationID = result.getId();
             }
         });
@@ -236,7 +242,7 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Feature result = rawSuggestions.get(position);
-                workAddressEditText.setText(result.getText());
+                workAddressEditText.setText(result.getPlaceName());
                 workLocationID = result.getId();
             }
         });
@@ -335,6 +341,9 @@ public class ProfileDialogFragment extends DialogFragment {
                             editor.putString(SP_USER_NAME_TAG, nameEditText.getText().toString());
                             editor.putString(SP_USER_HOME_ADDRESS_TAG, homeAddressEditText.getText().toString());
                             editor.putString(SP_USER_WORK_ADDRESS_TAG, workAddressEditText.getText().toString());
+                            editor.putString(SP_USER_HOME_LOC_ID_TAG, homeLocationID);
+                            editor.putString(SP_USER_WORK_LOC_ID_TAG, workLocationID);
+
                             editor.putString(USER_PROFILE_PICTURE_DIRECTORY_TAG, directory);
                             editor.commit();
 
@@ -388,9 +397,8 @@ public class ProfileDialogFragment extends DialogFragment {
     }
 
     // Updates the user's profile based on the given info
-    private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress,
-                               String homeAddress, String homeCoords, String workCoords, String userId) {
-        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeCoords, workCoords, userId);
+    private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress, String homeAddress, String homeLocID, String workLocID, String userId) {
+        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeLocID, workLocID, userId);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
