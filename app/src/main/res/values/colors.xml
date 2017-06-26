@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#ff5722</color>
-    <color name="colorPrimaryDark">#D84315</color>
+    <color name="colorPrimaryDark">#d84315</color>
     <color name="colorAccent">#ff9800</color>
     <color name="edittext_background_light">#c8bcbcbc</color>
     <color name="white_translucent">#80ffffff</color>
+    <color name="foreground_material_light">#ffffff</color>
+    <color name="primary_text_default_material_light">#deffffff</color>
+    <color name="login_theme_text_color">#deffffff</color>
 </resources>

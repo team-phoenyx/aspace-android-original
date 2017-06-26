@@ -87,7 +87,7 @@ public class ProfileDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.profile_layout, null);
+        View dialogView = inflater.inflate(R.layout.profile_dialog, null);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)

@@ -14,10 +14,12 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBcV3M2w2FqSm8IkIFd3QdqBxByKfsTjQo"/>
-        <activity android:name=".SplashActivity"
-            android:label="ParCare"
+            android:value="AIzaSyBcV3M2w2FqSm8IkIFd3QdqBxByKfsTjQo" />
+
+        <activity
+            android:name=".SplashActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="ParCare"
             android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -26,9 +28,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
         <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".LoginActivity"
+            android:theme="@style/LoginTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
