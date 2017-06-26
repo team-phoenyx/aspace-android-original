@@ -100,9 +100,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public static boolean isInteger(String s) {
-        int integer = -1;
+        long integer = -1;
         try {
-            integer = Integer.parseInt(s);
+            integer = Long.parseLong(s);
         } catch(NumberFormatException e) {
             return false;
         } catch(NullPointerException e) {
