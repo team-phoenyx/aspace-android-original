@@ -45,6 +45,7 @@ import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.services.android.navigation.v5.MapboxNavigation;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
@@ -86,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
+    private FloatingActionButton navigationFAB;
+    private MapboxNavigation navigation;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -121,6 +124,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
+        navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+        navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
+        navigationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -169,16 +180,19 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                         }
                                         drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
                                         drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                        gpsFAB.setVisibility(View.GONE);
+                                        navigationFAB.setVisibility(View.VISIBLE);
                                     }
                                 })
                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         isUpdatingSpots = true;
+                                        navigationFAB.setVisibility(View.GONE);
+                                        gpsFAB.setVisibility(View.VISIBLE);
                                     }
                                 })
                                 .show();
-
                         return true;
                     }
                 });
@@ -340,15 +354,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
-
-
-
     }
 
     //When user selects a search suggestion
     private void onSearch(int searchedIndex) {
 
         isUpdatingSpots = true;
+
+        navigationFAB.setVisibility(View.GONE);
+        gpsFAB.setVisibility(View.VISIBLE);
 
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
@@ -477,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             locationEngine.removeLocationEngineListener(locationEngineListener);
         }
         // make sure to remove all navigation listeners being used
+        navigation.endNavigation();
     }
 
     private void toggleGps(boolean enableGps, boolean moveCamera) {
@@ -572,8 +587,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     //permission not granted
                     searchView.clearFocus();
                 }
-
-
                 break;
         }
     }
@@ -753,7 +766,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .setProfile(DirectionsCriteria.PROFILE_DRIVING)
                         .build();
                 break;
-
         }
 
         final int routeTypeF = routeType;
@@ -784,7 +796,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .color(Color.parseColor("#3887be"))
                                     .alpha((float) 0.5)
                                     .width(5));
-
+                            break;
                     }
                 } else {
                     Log.i(TAG +"2", response.raw().toString());
