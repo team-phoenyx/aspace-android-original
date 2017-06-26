@@ -23,6 +23,8 @@ import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
+import com.instabug.library.Instabug;
+import com.instabug.library.invocation.InstabugInvocationEvent;
 import com.mapbox.directions.DirectionsCriteria;
 import com.mapbox.directions.MapboxDirections;
 import com.mapbox.directions.service.models.DirectionsResponse;
@@ -112,6 +114,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         Mapbox.getInstance(this, getString(R.string.access_token));
 
         setContentView(R.layout.activity_main);
+
+        new Instabug.Builder(getApplication(), "6b6c0881b17446216f69f587e1b48021")
+                .setInvocationEvent(InstabugInvocationEvent.SHAKE)
+                .build();
 
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
@@ -302,7 +308,23 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onActionMenuItemSelected(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.profile:
+                        toggleGps(true, false);
+
+                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) return;
+
+                        try {
+                            currentLocation = locationEngine.getLastLocation();
+                        } catch (SecurityException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+
+                        Bundle extras = new Bundle();
+                        extras.putDouble("lat", currentLocation.getLatitude());
+                        extras.putDouble("lng", currentLocation.getLongitude());
                         ProfileDialogFragment profileDialogFragment = new ProfileDialogFragment();
+                        profileDialogFragment.setArguments(extras);
                         profileDialogFragment.show(getFragmentManager(), "profiledialog");
                         break;
                 }

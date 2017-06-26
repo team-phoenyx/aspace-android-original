@@ -14,9 +14,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,7 +32,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import me.parcare.parcare.models.Feature;
+import me.parcare.parcare.models.GeocodingResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,6 +46,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 import static me.parcare.parcare.MainActivity.BASE_URL;
+import static me.parcare.parcare.MainActivity.MAPBOX_BASE_URL;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -46,8 +56,15 @@ public class ProfileDialogFragment extends DialogFragment {
 
     SharedPreferences sharedPreferences;
     ImageView profilePictureImageView;
-    EditText nameEditText, homeAddressEditText, workAddressEditText;
-    TextView enterNameTextView;
+    EditText nameEditText;
+    AutoCompleteTextView homeAddressEditText, workAddressEditText;
+    TextView errorTextView;
+    ArrayAdapter<String> autocompleteAdapter;
+    PCRetrofitInterface mapboxService;
+    List<Feature> rawSuggestions;
+
+    private String homeLocationID, workLocationID;
+    private double lat, lng;
 
     private static final String SP_USER_NAME_TAG = "user_name";
     private static final String SP_USER_HOME_ADDRESS_TAG = "user_home_address";
@@ -61,6 +78,10 @@ public class ProfileDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Bundle extras = getArguments();
+        lat = extras.getDouble("lat");
+        lng = extras.getDouble("lng");
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -74,15 +95,19 @@ public class ProfileDialogFragment extends DialogFragment {
 
         parCareService = retrofit.create(PCRetrofitInterface.class);
 
+        retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+
+        mapboxService = retrofit.create(PCRetrofitInterface.class);
+
         builder.setView(dialogView).setCancelable(false);
 
         sharedPreferences = getActivity().getSharedPreferences("me.parcare.parcare", Context.MODE_PRIVATE);
 
         profilePictureImageView = (ImageView) dialogView.findViewById(R.id.profile_pic_imageview);
         nameEditText = (EditText) dialogView.findViewById(R.id.name_edittext);
-        homeAddressEditText = (EditText) dialogView.findViewById(R.id.home_address_edittext);
-        workAddressEditText = (EditText) dialogView.findViewById(R.id.work_address_edittext);
-        enterNameTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
+        homeAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.home_address_edittext);
+        workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
+        errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
         nameEditText.setText(sharedPreferences.getString(SP_USER_NAME_TAG, "Your Name"));
         homeAddressEditText.setText(sharedPreferences.getString(SP_USER_HOME_ADDRESS_TAG, ""));
@@ -95,6 +120,126 @@ public class ProfileDialogFragment extends DialogFragment {
             profilePictureImageView.setImageBitmap(openImage(directoryPath));
         }
 
+        homeAddressEditText.setLines(1);
+        workAddressEditText.setLines(1);
+
+        homeAddressEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                homeLocationID = "";
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //refresh the adapter with new string s
+
+                final List<String> autocompleteSuggestions = new ArrayList<String>();
+
+                if (s.equals("")) {
+                    autocompleteSuggestions.clear();
+
+                    autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                    homeAddressEditText.setAdapter(autocompleteAdapter);
+                } else {
+                    String proximityString = Double.toString(lng) + "," + Double.toString(lat);
+                    mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            rawSuggestions = geocodingResponse.getFeatures();
+
+                            for (Feature feature : rawSuggestions) {
+                                autocompleteSuggestions.add(feature.getPlaceName());
+                            }
+
+                            autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                            homeAddressEditText.setAdapter(autocompleteAdapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                            //TODO Handle failure with snackbar
+                        }
+                    });
+                }
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        workAddressEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                workLocationID = "";
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                final List<String> autocompleteSuggestions = new ArrayList<String>();
+
+                if (s.equals("")) {
+                    autocompleteSuggestions.clear();
+
+                    autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                    homeAddressEditText.setAdapter(autocompleteAdapter);
+                } else {
+                    String proximityString = Double.toString(lng) + "," + Double.toString(lat);
+                    mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            rawSuggestions = geocodingResponse.getFeatures();
+
+                            for (Feature feature : rawSuggestions) {
+                                autocompleteSuggestions.add(feature.getPlaceName());
+                            }
+
+                            autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                            homeAddressEditText.setAdapter(autocompleteAdapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                            //TODO Handle failure with snackbar
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        homeAddressEditText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Feature result = rawSuggestions.get(position);
+                homeAddressEditText.setText(result.getText());
+                homeLocationID = result.getId();
+            }
+        });
+
+        workAddressEditText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Feature result = rawSuggestions.get(position);
+                workAddressEditText.setText(result.getText());
+                workLocationID = result.getId();
+            }
+        });
 
         profilePictureImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -175,27 +320,33 @@ public class ProfileDialogFragment extends DialogFragment {
                 public void onClick(View v)
                 {
                     if (nameEditText.getText().toString().equals("")) {
-                        enterNameTextView.setVisibility(View.VISIBLE);
+                        errorTextView.setVisibility(View.VISIBLE);
+                        errorTextView.setText("Please enter your name");
+                    } else if (homeLocationID.equals("") && !homeAddressEditText.getText().toString().equals("")) {
+                        errorTextView.setVisibility(View.VISIBLE);
+                        errorTextView.setText("Select a home address, or leave empty");
+                    } else if (workLocationID.equals("") && !workAddressEditText.getText().toString().equals("")) {
+                        errorTextView.setVisibility(View.VISIBLE);
+                        errorTextView.setText("Select a work address, or leave empty");
                     } else {
-                        String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
+                            String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
 
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString(SP_USER_NAME_TAG, nameEditText.getText().toString());
-                        editor.putString(SP_USER_HOME_ADDRESS_TAG, homeAddressEditText.getText().toString());
-                        editor.putString(SP_USER_WORK_ADDRESS_TAG, workAddressEditText.getText().toString());
-                        editor.putString(USER_PROFILE_PICTURE_DIRECTORY_TAG, directory);
-                        editor.commit();
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString(SP_USER_NAME_TAG, nameEditText.getText().toString());
+                            editor.putString(SP_USER_HOME_ADDRESS_TAG, homeAddressEditText.getText().toString());
+                            editor.putString(SP_USER_WORK_ADDRESS_TAG, workAddressEditText.getText().toString());
+                            editor.putString(USER_PROFILE_PICTURE_DIRECTORY_TAG, directory);
+                            editor.commit();
 
-                        d.dismiss();
-                        //TODO POST request to server, update profile and image
-                        String profileName = nameEditText.getText().toString();
-                        String workAddress = workAddressEditText.getText().toString();
-                        String homeAddress = homeAddressEditText.getText().toString();
-                        String homeCoords = "-122.3185817,47.7697368"; // placeholder
-                        String workCoords = "-122.3057139,47.6553351"; // placeholder, Univ of Wash
-                        String userId = "001"; // placeholder
-                        updateProfile(parCareService, profileName, workAddress, homeAddress, homeCoords,
-                                workCoords, userId);
+                            d.dismiss();
+                            //TODO POST request to server, update profile and image
+                            String profileName = nameEditText.getText().toString();
+                            String workAddress = workAddressEditText.getText().toString();
+                            String homeAddress = homeAddressEditText.getText().toString();
+                            String userId = "30"; // placeholder
+                            updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
+                                    workLocationID, userId);
+
                     }
                 }
             });
