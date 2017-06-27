@@ -15,6 +15,9 @@ import android.widget.ProgressBar;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.realm.Realm;
+import me.parcare.parcare.realmmodels.UserCredentials;
+
 public class LoginActivity extends AppCompatActivity {
 
     @Override
@@ -91,9 +94,20 @@ public class LoginActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             loginProgressCircle.setVisibility(View.VISIBLE);
 
-                            /*TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
-                                if login unsuccessful, exit dialog and show a snackbar
-                             */
+                            //TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
+                            // if login unsuccessful, exit dialog and show a snackbar
+
+                            //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
+                            
+
+                            Realm realm = Realm.getDefaultInstance();
+
+                            //TODO realm instance should be encrypted; if no key, generate one and store it; otherwise, retrieve the key
+                            realm.beginTransaction();
+
+                            UserCredentials credentials = realm.createObject(UserCredentials.class);
+                            //Set the id, phone, and accesstoken
+                            realm.commitTransaction();
 
                             //Below code should be in an if statement, for testing only right now
                             Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);

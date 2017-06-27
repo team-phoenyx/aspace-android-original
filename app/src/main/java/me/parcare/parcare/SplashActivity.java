@@ -48,6 +48,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         if (isConnected) {
+            //TODO use realm to check for credentails
             SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
 
             String userID = sharedPreferences.getString(getString(R.string.sp_user_id_tag), "");
@@ -59,6 +60,7 @@ public class SplashActivity extends AppCompatActivity {
                 startActivity(loginIntent);
                 finish();
             } else {
+                //Todo check if profile has name; go to nameactivity if no
                 Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
                 startIntent.putExtra(getString(R.string.sp_user_id_tag), userID);
                 startIntent.putExtra(getString(R.string.sp_user_access_token_tag), userAccessToken);
