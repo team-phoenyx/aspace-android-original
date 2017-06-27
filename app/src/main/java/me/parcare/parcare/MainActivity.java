@@ -49,6 +49,7 @@ import com.mapbox.services.android.navigation.v5.MapboxNavigation;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
+import com.mapbox.services.commons.models.Position;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private boolean allowAlert;
     private FloatingActionButton navigationFAB;
     private MapboxNavigation navigation;
-
+    private LatLng clickedSpotLatLng;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -131,6 +132,23 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
+                Position destination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
+                navigation.getRoute(origin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
+                        if (response.isSuccessful()) {
+                            Log.i(TAG + "nav", "Response success: " + response.raw().toString());
+                        } else {
+                            Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
+                        Log.i(TAG + "nav", "Response failed: ", t);
+                    }
+                });
 
             }
         });
@@ -167,11 +185,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 markerViewManager.setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
+                        clickedSpotLatLng = marker.getPosition();
                         isUpdatingSpots = false;
                         if (allowAlert) {
                             allowAlert = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            Log.i("CLICK", "Dialog  Pop");
                             final Marker markerF = marker;
                             builder.setTitle("Directions to Spot")
                                     .setMessage("Would you like to see the route to this spot?")
@@ -226,11 +244,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
                             String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
                             String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-
+                            /*
                             Log.i(TAG + "3", lowerLat);
                             Log.i(TAG + "3", lowerLon);
                             Log.i(TAG + "3", upperLat);
                             Log.i(TAG + "3", upperLon);
+                            */
                             getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
 
                             //*****Implement later, this is designed to fix edge case of closest parking spot switching to unavailable*****
@@ -640,8 +659,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             currentDisplayTopLeft = map.getProjection().fromScreenLocation(new PointF(0, 0));
             currentDisplayBottomRight = map.getProjection().fromScreenLocation(new PointF(viewportWidth, viewportHeight));
 
-            Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
-            Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
+            //Log.i(TAG, "Top Left Lat//Lng: " + currentDisplayTopLeft.getLatitude() + "//" + currentDisplayTopLeft.getLongitude());
+            //Log.i(TAG, "Bottom Right Lat//Lng: " + currentDisplayBottomRight.getLatitude() + "//" + currentDisplayBottomRight.getLongitude());
         }
     }
 
@@ -805,17 +824,19 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
                     switch (routeTypeF) {
                         case ROUTE_TYPE_WALKING:
-                            map.addPolyline(new PolylineOptions()
+                            PolylineOptions polylineOptionsWalk = new PolylineOptions()
                                     .add(points)
                                     .color(Color.parseColor("#d84315"))
-                                    .width(2));
+                                    .width(2);
+                            map.addPolyline(polylineOptionsWalk);
                             break;
                         case ROUTE_TYPE_DRIVING:
-                            map.addPolyline(new PolylineOptions()
+                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
                                     .add(points)
                                     .color(Color.parseColor("#3887be"))
                                     .alpha((float) 0.5)
-                                    .width(5));
+                                    .width(5);
+                            map.addPolyline(polylineOptionsDrive);
                             break;
                     }
                 } else {
