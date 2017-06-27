@@ -350,7 +350,7 @@ public class ProfileDialogFragment extends DialogFragment {
                             String profileName = nameEditText.getText().toString();
                             String workAddress = workAddressEditText.getText().toString();
                             String homeAddress = homeAddressEditText.getText().toString();
-                            String userId = "30"; //TODO placeholder
+                            String userId = "30"; //TODO placeholder, passed from mainactivity using Bundle, or sharedPrefs
                             updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
                                     workLocationID, userId);
 

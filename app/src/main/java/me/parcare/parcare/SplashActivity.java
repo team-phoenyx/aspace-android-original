@@ -1,13 +1,9 @@
 package me.parcare.parcare;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.BaseTransientBottomBar;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -24,6 +20,12 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //FOR DEBUGGING PURPOSES ONLY, TO GET TO MAINACTIVITY
+        Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(mainActivityIntent);
+        finish();
+
+        /*
         isConnected = false;
 
         Thread thread = new Thread(new Runnable() {
@@ -73,6 +75,7 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }).show();
         }
+        */
 
 
     }

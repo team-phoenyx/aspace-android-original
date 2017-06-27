@@ -311,9 +311,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             @Override
             public void onSearchAction(String currentQuery) {
-                onSearch(0); //automatically search the first suggestion, move the map camera
-                searchView.clearSearchFocus(); //collapses suggestions and search bar
-                searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
+                //Check if there is any query at all
+                if (currentQuery != null && !currentQuery.isEmpty() && !currentQuery.equals("") && currentQuery.length() > 0 && rawSuggestions.size() > 0) {
+                    onSearch(0); //automatically search the first suggestion, move the map camera
+                    searchView.clearSearchFocus(); //collapses suggestions and search bar
+                    searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
+                }
             }
         });
 

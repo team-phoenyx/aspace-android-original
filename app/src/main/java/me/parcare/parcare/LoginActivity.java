@@ -35,7 +35,6 @@ public class LoginActivity extends AppCompatActivity {
                 String rawPhoneInput = phoneNumberEditText.getText().toString();
                 String rawCCInput = CCEditText.getText().toString();
 
-                //TODO URGENT this check fails every time
                 if (!isInteger(rawCCInput) || !isInteger(rawPhoneInput) || rawCCInput.length() < 1 || rawPhoneInput.length() < 5) {
                     Snackbar.make(findViewById(android.R.id.content), "Invalid inputs", Snackbar.LENGTH_LONG).show();
                 } else {
