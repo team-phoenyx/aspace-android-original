@@ -1,6 +1,7 @@
 package me.parcare.parcare;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -90,9 +91,13 @@ public class LoginActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             loginProgressCircle.setVisibility(View.VISIBLE);
 
-                            /*TODO use another thread to call the API; if login successful, start createprofileactivity or mainactivity (if returning user);
+                            /*TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
                                 if login unsuccessful, exit dialog and show a snackbar
                              */
+
+                            //Below code should be in an if statement, for testing only right now
+                            Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
+                            startActivity(addNameIntent);
                         }
                     });
 

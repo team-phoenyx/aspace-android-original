@@ -1,0 +1,77 @@
+package me.parcare.parcare;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
+
+public class NameActivity extends AppCompatActivity {
+
+    public static final String BASE_URL = "http://192.241.224.224:3000/api/";
+    private static final String SP_USER_NAME_TAG = "user_name";
+    String name;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_name);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        final PCRetrofitInterface parcareService = retrofit.create(PCRetrofitInterface.class);
+
+        final EditText nameEditText = (EditText) findViewById(R.id.name_edittext);
+        final TextView instructionsLabel = (TextView) findViewById(R.id.enter_name_label);
+        Button nextButton = (Button) findViewById(R.id.name_next_button);
+        final ProgressBar updateNameProgressCircle = (ProgressBar) findViewById(R.id.update_name_progresscircle);
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                name = nameEditText.getText().toString();
+
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(instructionsLabel.getWindowToken(), 0);
+
+                if (name == null || name.isEmpty() || name.equals("")) {
+                    Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    updateNameProgressCircle.setVisibility(View.VISIBLE);
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            parcareService.updateProfile(name, "", "", "", "", "");
+
+                            editor.putString(SP_USER_NAME_TAG, name);
+
+                            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(mainIntent);
+                            finish();
+                        }
+                    }).start();
+                }
+            }
+        });
+
+    }
+}
