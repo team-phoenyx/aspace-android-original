@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.parcare.parcare.models.Feature;
-import me.parcare.parcare.models.GeocodingResponse;
+import me.parcare.parcare.retrofitmodels.Feature;
+import me.parcare.parcare.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

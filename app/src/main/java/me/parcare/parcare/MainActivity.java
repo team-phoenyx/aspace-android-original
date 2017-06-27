@@ -55,10 +55,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import me.parcare.parcare.models.Feature;
-import me.parcare.parcare.models.GeocodingResponse;
-import me.parcare.parcare.models.ParkingSpot;
-import me.parcare.parcare.models.Suggestion;
+import me.parcare.parcare.retrofitmodels.Feature;
+import me.parcare.parcare.retrofitmodels.GeocodingResponse;
+import me.parcare.parcare.retrofitmodels.ParkingSpot;
+import me.parcare.parcare.retrofitmodels.Suggestion;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
