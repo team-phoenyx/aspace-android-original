@@ -1,5 +1,5 @@
 
-package me.parcare.parcare.models;
+package me.parcare.parcare.retrofitmodels;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

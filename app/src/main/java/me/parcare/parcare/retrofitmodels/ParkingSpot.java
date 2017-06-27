@@ -1,4 +1,4 @@
-package me.parcare.parcare.models;
+package me.parcare.parcare.retrofitmodels;
 
 /**
  * Created by Zula on 6/18/17.
