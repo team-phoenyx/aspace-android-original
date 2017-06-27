@@ -279,9 +279,13 @@ public class ProfileDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (data == null) return;
+
         switch (requestCode) {
             case PICK_IMAGE_REQUEST_CALLBACK:
                 Uri imageURI = data.getData();
+
+                if (imageURI == null) break;
 
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageURI);
