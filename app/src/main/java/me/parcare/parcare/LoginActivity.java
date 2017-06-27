@@ -2,20 +2,26 @@ package me.parcare.parcare;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.securepreferences.SecurePreferences;
+
+import java.security.SecureRandom;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import me.parcare.parcare.realmmodels.UserCredentials;
 
 public class LoginActivity extends AppCompatActivity {
@@ -98,18 +104,44 @@ public class LoginActivity extends AppCompatActivity {
                             // if login unsuccessful, exit dialog and show a snackbar
 
                             //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
-                            
+                            SharedPreferences securePreferences = new SecurePreferences(LoginActivity.this);
+                            String realmEncryptionKey = securePreferences.getString(getString(R.string.realm_encryption_key_tag), "");
 
-                            Realm realm = Realm.getDefaultInstance();
+                            byte[] key = new byte[64];
 
-                            //TODO realm instance should be encrypted; if no key, generate one and store it; otherwise, retrieve the key
+                            if (realmEncryptionKey.equals("")) {
+                                //Realm encryption hasn't been set up yet, must generate and store a key
+                                new SecureRandom().nextBytes(key);
+
+                                //base64 encode string and store
+                                String keyString = Base64.encodeToString(key, Base64.DEFAULT);
+
+                                SharedPreferences.Editor editor = securePreferences.edit();
+                                editor.putString(getString(R.string.realm_encryption_key_tag), keyString);
+                                editor.apply();
+                            } else {
+                                //base64 decode string
+                                key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                            }
+
+                            Realm.init(LoginActivity.this);
+
+                            RealmConfiguration config = new RealmConfiguration.Builder()
+                                    .encryptionKey(key)
+                                    .build();
+
+                            Realm realm = Realm.getInstance(config);
+
                             realm.beginTransaction();
 
                             UserCredentials credentials = realm.createObject(UserCredentials.class);
-                            //Set the id, phone, and accesstoken
+                            //TODO Set the id, phone, and accesstoken (these are placeholders)
+                            credentials.setUserID("30");
+                            credentials.setUserAccessToken("test_access_token");
+                            credentials.setUserPhoneNumber("1234567890");
+
                             realm.commitTransaction();
 
-                            //Below code should be in an if statement, for testing only right now
                             Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
                             startActivity(addNameIntent);
                         }

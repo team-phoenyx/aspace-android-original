@@ -9,5 +9,7 @@
 
     <string name="parcare_base_url">http://192.241.224.224</string>
 
+    <string name="realm_encryption_key_tag">realm_encryption_key</string>
+
 
 </resources>

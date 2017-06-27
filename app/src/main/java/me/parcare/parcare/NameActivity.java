@@ -64,6 +64,8 @@ public class NameActivity extends AppCompatActivity {
 
                             editor.putString(SP_USER_NAME_TAG, name);
 
+                            editor.apply();
+
                             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                             startActivity(mainIntent);
                             finish();
