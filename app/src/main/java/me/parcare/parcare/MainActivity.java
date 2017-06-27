@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                         Log.i("CLICK", "Dialog  Pop");
                         final Marker markerF = marker;
+
                         builder.setTitle("Directions to Spot")
                                 .setMessage("Would you like to see the route to this spot?")
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -182,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                         drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
                                         gpsFAB.setVisibility(View.GONE);
                                         navigationFAB.setVisibility(View.VISIBLE);
+                                        dialog.dismiss();
                                     }
                                 })
                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -190,9 +192,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                         isUpdatingSpots = true;
                                         navigationFAB.setVisibility(View.GONE);
                                         gpsFAB.setVisibility(View.VISIBLE);
+                                        dialog.dismiss();
                                     }
                                 })
-                                .show();
+                                .create().show();
                         return true;
                     }
                 });
