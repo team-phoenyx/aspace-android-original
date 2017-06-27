@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<Feature> rawSuggestions;
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
+    private boolean allowAlert;
     private FloatingActionButton navigationFAB;
     private MapboxNavigation navigation;
 
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         super.onCreate(savedInstanceState);
 
         isUpdatingSpots = true;
+        allowAlert = true;
 
         if (timer != null) {
             timer.cancel();
@@ -166,33 +168,38 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
                         isUpdatingSpots = false;
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        Log.i("CLICK", "Dialog  Pop");
-                        final Marker markerF = marker;
-                        builder.setTitle("Directions to Spot")
-                                .setMessage("Would you like to see the route to this spot?")
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        List<Polyline> polylines = map.getPolylines();
-                                        for (Polyline polyline : polylines) {
-                                            map.removePolyline(polyline);
+                        if (allowAlert) {
+                            allowAlert = false;
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            Log.i("CLICK", "Dialog  Pop");
+                            final Marker markerF = marker;
+                            builder.setTitle("Directions to Spot")
+                                    .setMessage("Would you like to see the route to this spot?")
+                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            List<Polyline> polylines = map.getPolylines();
+                                            for (Polyline polyline : polylines) {
+                                                map.removePolyline(polyline);
+                                            }
+                                            drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
+                                            drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                            gpsFAB.setVisibility(View.GONE);
+                                            navigationFAB.setVisibility(View.VISIBLE);
+                                            allowAlert = true;
                                         }
-                                        drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
-                                        drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
-                                        gpsFAB.setVisibility(View.GONE);
-                                        navigationFAB.setVisibility(View.VISIBLE);
-                                    }
-                                })
-                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        isUpdatingSpots = true;
-                                        navigationFAB.setVisibility(View.GONE);
-                                        gpsFAB.setVisibility(View.VISIBLE);
-                                    }
-                                })
-                                .show();
+                                    })
+                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            isUpdatingSpots = true;
+                                            navigationFAB.setVisibility(View.GONE);
+                                            gpsFAB.setVisibility(View.VISIBLE);
+                                            allowAlert = true;
+                                        }
+                                    })
+                                    .show();
+                        }
                         return true;
                     }
                 });
