@@ -6,10 +6,19 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.view.View;
+
+import com.securepreferences.SecurePreferences;
 
 import java.net.URL;
 import java.net.URLConnection;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
+import me.parcare.parcare.realmmodels.UserCredentials;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -48,6 +57,40 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         if (isConnected) {
+            SharedPreferences securePreferences = new SecurePreferences(SplashActivity.this);
+            String realmEncryptionKey = securePreferences.getString(getString(R.string.realm_encryption_key_tag), "");
+
+            if (!realmEncryptionKey.equals("")) {
+                byte[] key = new byte[64];
+
+                key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+
+                Realm.init(this);
+
+                RealmConfiguration config = new RealmConfiguration.Builder()
+                        .encryptionKey(key)
+                        .build();
+
+                Realm realm = Realm.getInstance(config);
+
+                RealmResults<UserCredentials> credentialsRealmResults = realm.where(UserCredentials.class).findAll();
+
+                if (credentialsRealmResults.size() == 0) {
+                    startLoginActivity();
+                }
+
+                UserCredentials credentials = credentialsRealmResults.get(0);
+
+                //TODO work on here, check if credentials is all populated
+
+
+            } else {
+                startLoginActivity();
+            }
+
+
+
+
             //TODO use realm to check for credentails
             SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
 
@@ -81,6 +124,12 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }).show();
         }
+    }
+
+    private void startLoginActivity() {
+        Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(loginIntent);
+        finish();
     }
 
     public boolean isConnectedToServer(String url, int timeout) {
