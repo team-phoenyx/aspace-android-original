@@ -198,6 +198,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             allowAlert = true;
                                         }
                                     })
+                                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                        @Override
+                                        public void onCancel(DialogInterface dialog) {
+                                            List<Polyline> polylines = map.getPolylines();
+                                            if (polylines.isEmpty()) {
+                                                isUpdatingSpots = true;
+                                            }
+                                            allowAlert = true;
+                                        }
+                                    })
                                     .show();
                         }
                         return true;
