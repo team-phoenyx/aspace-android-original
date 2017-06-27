@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             allowAlert = true;
                                         }
                                     })
-                                    .show();
+                                    .create().show();
                         }
                         return true;
                     }
