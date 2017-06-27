@@ -1,11 +1,11 @@
 package me.parcare.parcare;
 
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,8 +41,9 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     //TODO request to server; if request is successful, continue code below
 
-                    nextButton.setText("Resend");
+                    nextButton.setText("Wait to resend");
                     nextButton.setEnabled(false);
+                    nextButton.setTextColor(Color.GRAY);
 
                     new Timer().schedule(new TimerTask() {
                         @Override
@@ -50,7 +51,9 @@ public class LoginActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    nextButton.setEnabled(true); //TODO test if throws exception still
+                                    nextButton.setEnabled(true);
+                                    nextButton.setText("Resend");
+                                    nextButton.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
                                 }
                             });
 
