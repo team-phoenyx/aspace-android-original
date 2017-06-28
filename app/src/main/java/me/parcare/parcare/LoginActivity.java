@@ -26,18 +26,20 @@ import me.parcare.parcare.realmmodels.UserCredentials;
 
 public class LoginActivity extends AppCompatActivity {
 
+    String realmEncryptionKey;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        realmEncryptionKey = getIntent().getExtras().getString(getString(R.string.realm_encryption_key_tag), "");
 
         getSupportActionBar().setTitle("Get Started");
 
         final EditText phoneNumberEditText = (EditText) findViewById(R.id.phone_number_edittext);
         final EditText CCEditText = (EditText) findViewById(R.id.country_code_edittext);
         final Button nextButton = (Button) findViewById(R.id.next_button);
-
-        phoneNumberEditText.setText(getSharedPreferences("me.parcare.parcare", MODE_PRIVATE).getString(getString(R.string.sp_user_phone_number_tag), ""));
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
                     AlertDialog.Builder verifyDialogBuilder = new AlertDialog.Builder(LoginActivity.this);
                     View verifyDialogView = getLayoutInflater().inflate(R.layout.verify_dialog, null);
 
-                    EditText pinEditText = (EditText) verifyDialogView.findViewById(R.id.pin_edittext);
+                    final EditText pinEditText = (EditText) verifyDialogView.findViewById(R.id.pin_edittext);
                     final ProgressBar loginProgressCircle = (ProgressBar) verifyDialogView.findViewById(R.id.login_process_circle);
 
                     loginProgressCircle.setIndeterminate(true);
@@ -100,12 +102,18 @@ public class LoginActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             loginProgressCircle.setVisibility(View.VISIBLE);
 
+                            String userPhoneNumber = phoneNumberEditText.getText().toString();
+                            String inputPIN = pinEditText.getText().toString();
+
                             //TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
                             // if login unsuccessful, exit dialog and show a snackbar
 
                             //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
-                            SharedPreferences securePreferences = new SecurePreferences(LoginActivity.this);
-                            String realmEncryptionKey = securePreferences.getString(getString(R.string.realm_encryption_key_tag), "");
+
+                            //TODO Set the id, phone, and accesstoken (these are placeholders)
+                            String userID = "30";
+                            String userAccessToken = "test_access_token";
+
 
                             byte[] key = new byte[64];
 
@@ -116,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
                                 //base64 encode string and store
                                 String keyString = Base64.encodeToString(key, Base64.DEFAULT);
 
-                                SharedPreferences.Editor editor = securePreferences.edit();
+                                SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
                                 editor.putString(getString(R.string.realm_encryption_key_tag), keyString);
                                 editor.apply();
                             } else {
@@ -135,14 +143,17 @@ public class LoginActivity extends AppCompatActivity {
                             realm.beginTransaction();
 
                             UserCredentials credentials = realm.createObject(UserCredentials.class);
-                            //TODO Set the id, phone, and accesstoken (these are placeholders)
-                            credentials.setUserID("30");
-                            credentials.setUserAccessToken("test_access_token");
-                            credentials.setUserPhoneNumber("1234567890");
+
+                            credentials.setUserID(userID);
+                            credentials.setUserAccessToken(userAccessToken);
+                            credentials.setUserPhoneNumber(userPhoneNumber);
 
                             realm.commitTransaction();
 
                             Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
+                            addNameIntent.putExtra(getString(R.string.user_id_tag), userID);
+                            addNameIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                            addNameIntent.putExtra(getString(R.string.user_phone_number), userPhoneNumber);
                             startActivity(addNameIntent);
                         }
                     });

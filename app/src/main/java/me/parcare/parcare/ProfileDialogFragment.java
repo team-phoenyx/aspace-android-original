@@ -77,12 +77,15 @@ public class ProfileDialogFragment extends DialogFragment {
 
     private PCRetrofitInterface parCareService;
 
+    private String userID, userAccessToken;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle extras = getArguments();
         lat = extras.getDouble("lat");
         lng = extras.getDouble("lng");
+        userID = extras.getString(getString(R.string.user_id_tag));
+        userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
@@ -354,7 +357,7 @@ public class ProfileDialogFragment extends DialogFragment {
                             String profileName = nameEditText.getText().toString();
                             String workAddress = workAddressEditText.getText().toString();
                             String homeAddress = homeAddressEditText.getText().toString();
-                            String userId = "30"; //TODO placeholder, passed from mainactivity using Bundle, or sharedPrefs
+                            String userId = userID;
                             updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
                                     workLocationID, userId);
 

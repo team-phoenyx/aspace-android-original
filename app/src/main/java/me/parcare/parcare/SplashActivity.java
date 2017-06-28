@@ -16,7 +16,6 @@ import java.net.URLConnection;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import me.parcare.parcare.realmmodels.UserCredentials;
 
@@ -77,42 +76,27 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (credentialsRealmResults.size() == 0) {
                     startLoginActivity();
+                } else {
+                    UserCredentials credentials = credentialsRealmResults.get(0);
+                    String userID = credentials.getUserID();
+                    String userAccessToken = credentials.getUserAccessToken();
+                    String userPhoneNumber = credentials.getUserPhoneNumber();
+
+                    if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
+                        startLoginActivity();
+                    } else {
+                        //TODO Pull profile from API, and check if there is name; go to NameActivity if no
+                        Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        startIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                        startIntent.putExtra(getString(R.string.user_id_tag), userID);
+                        startIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                        startActivity(startIntent);
+                        finish();
+                    }
                 }
-
-                UserCredentials credentials = credentialsRealmResults.get(0);
-
-                //TODO work on here, check if credentials is all populated
-
-
             } else {
                 startLoginActivity();
             }
-
-
-
-
-            //TODO use realm to check for credentails
-            SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
-
-            String userID = sharedPreferences.getString(getString(R.string.sp_user_id_tag), "");
-            String userAccessToken = sharedPreferences.getString(getString(R.string.sp_user_access_token_tag), "");
-            String userPhoneNumber = sharedPreferences.getString(getString(R.string.sp_user_phone_number_tag), "");
-
-            if (userID.isEmpty() || userAccessToken.isEmpty() || userPhoneNumber.isEmpty()) {
-                Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(loginIntent);
-                finish();
-            } else {
-                //Todo check if profile has name; go to nameactivity if no
-                Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
-                startIntent.putExtra(getString(R.string.sp_user_id_tag), userID);
-                startIntent.putExtra(getString(R.string.sp_user_access_token_tag), userAccessToken);
-                startIntent.putExtra(getString(R.string.sp_user_phone_number_tag), userPhoneNumber);
-                startActivity(startIntent);
-                finish();
-            }
-
-
         } else {
             Snackbar.make(findViewById(android.R.id.content), "Can't connect to server", Snackbar.LENGTH_INDEFINITE).setAction("Retry", new View.OnClickListener() {
                 @Override
@@ -128,6 +112,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void startLoginActivity() {
         Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+        loginIntent.putExtra(getString(R.string.realm_encryption_key_tag), "");
         startActivity(loginIntent);
         finish();
     }

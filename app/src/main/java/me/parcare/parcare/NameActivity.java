@@ -21,11 +21,16 @@ public class NameActivity extends AppCompatActivity {
 
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private static final String SP_USER_NAME_TAG = "user_name";
-    String name;
+    String name, userID, userAccessToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle extras = getIntent().getExtras();
+        userID = extras.getString(getString(R.string.user_id_tag));
+        userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+
         setContentView(R.layout.activity_name);
 
         SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
@@ -67,6 +72,8 @@ public class NameActivity extends AppCompatActivity {
                             editor.apply();
 
                             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                            mainIntent.putExtra(getString(R.string.user_id_tag), userID);
+                            mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
                             startActivity(mainIntent);
                             finish();
                         }
