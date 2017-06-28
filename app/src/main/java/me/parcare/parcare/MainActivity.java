@@ -40,6 +40,7 @@ import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.maps.MapView;
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private FloatingActionButton navigationFAB;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
+    private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -134,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
         navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+
         navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
         navigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,6 +147,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
                         if (response.isSuccessful()) {
+                            com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
+                            MainActivity.this.route = route;
+                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                            navigation.startNavigation(route);
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
                             Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
