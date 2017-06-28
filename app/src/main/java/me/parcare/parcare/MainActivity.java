@@ -47,6 +47,11 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.android.navigation.v5.MapboxNavigation;
+import com.mapbox.services.android.navigation.v5.RouteProgress;
+import com.mapbox.services.android.navigation.v5.listeners.AlertLevelChangeListener;
+import com.mapbox.services.android.navigation.v5.listeners.NavigationEventListener;
+import com.mapbox.services.android.navigation.v5.listeners.OffRouteListener;
+import com.mapbox.services.android.navigation.v5.listeners.ProgressChangeListener;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
@@ -69,6 +74,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.mapboxsdk.maps.MapView.REGION_DID_CHANGE;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.ARRIVE_ALERT_LEVEL;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.DEPART_ALERT_LEVEL;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.HIGH_ALERT_LEVEL;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.LOW_ALERT_LEVEL;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.MEDIUM_ALERT_LEVEL;
+import static com.mapbox.services.android.navigation.v5.NavigationConstants.NONE_ALERT_LEVEL;
 
 public class MainActivity extends AppCompatActivity implements PermissionsListener {
 
@@ -94,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
+    private Position navDestination;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -136,14 +148,62 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
         navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+        navigation.addNavigationEventListener(new NavigationEventListener() {
+            @Override
+            public void onRunning(boolean running) {
+
+            }
+        });
+
+        navigation.addAlertLevelChangeListener(new AlertLevelChangeListener() {
+            @Override
+            public void onAlertLevelChange(int alertLevel, RouteProgress routeProgress) {
+                // we can do stuff here using the routePRogress object.
+                switch (alertLevel) {
+                    case HIGH_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "HIGH", Toast.LENGTH_LONG).show();
+                        break;
+                    case MEDIUM_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "MEDIUM", Toast.LENGTH_LONG).show();
+                        break;
+                    case LOW_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "LOW", Toast.LENGTH_LONG).show();
+                        break;
+                    case ARRIVE_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "ARRIVE", Toast.LENGTH_LONG).show();
+                        break;
+                    case NONE_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "NONE", Toast.LENGTH_LONG).show();
+                        break;
+                    case DEPART_ALERT_LEVEL:
+                        Toast.makeText(MainActivity.this, "DEPART", Toast.LENGTH_LONG).show();
+                        break;
+                }
+            }
+        });
+
+        navigation.addProgressChangeListener(new ProgressChangeListener() {
+            @Override
+            public void onProgressChange(Location location, RouteProgress routeProgress) {
+                // we can do stuff here to update UI using routeProgress object
+            }
+        });
+
+        navigation.addOffRouteListener(new OffRouteListener() {
+            @Override
+            public void userOffRoute(Location location) {
+                Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
+                // update route, erase current route, draw new route here
+            }
+        });
 
         navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
         navigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
-                Position destination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
-                navigation.getRoute(origin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
+                navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
                         if (response.isSuccessful()) {
