@@ -53,7 +53,7 @@
             android:layout_margin="16dp"
             android:visibility="invisible"
             app:backgroundTint="@color/colorAccent"
-            app:srcCompat="@drawable/ic_navigation_black_24dp"
+            app:srcCompat="@drawable/ic_navigation_white_24dp"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
     </com.mapbox.mapboxsdk.maps.MapView>
