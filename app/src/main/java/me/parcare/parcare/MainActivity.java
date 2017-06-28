@@ -52,10 +52,11 @@ import com.mapbox.services.android.navigation.v5.listeners.AlertLevelChangeListe
 import com.mapbox.services.android.navigation.v5.listeners.NavigationEventListener;
 import com.mapbox.services.android.navigation.v5.listeners.OffRouteListener;
 import com.mapbox.services.android.navigation.v5.listeners.ProgressChangeListener;
+import com.mapbox.services.android.navigation.v5.models.RouteStepProgress;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
-import com.mapbox.services.api.directions.v5.models.RouteLeg;
+import com.mapbox.services.api.directions.v5.models.LegStep;
 import com.mapbox.services.commons.models.Position;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton gpsFAB;
+    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -102,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
     private boolean allowAlert;
-    private FloatingActionButton navigationFAB;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
@@ -186,9 +186,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
-                List<RouteLeg> legs = routeProgress.getRoute().getLegs();
-                for (RouteLeg leg : legs) {
-                    Log.i(TAG + "nav", "LEG: " + leg.getSummary());
+                List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
+                RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
+                LegStep currentStep = routeStepProgress.step();
+                Log.i(TAG + "Directions", "Current Step: " + currentStep.getName()
+                        + ", Current Maneuver: " + currentStep.getManeuver().getInstruction()
+                        + ", Distance In: " + routeStepProgress.getDistanceTraveled()
+                        + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
+                        + ", Duration: " + currentStep.getDuration());
+                for (LegStep step : steps) {
+                    Log.i(TAG + "Directions", "LEG: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance());
                 }
             }
         });
@@ -215,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             MainActivity.this.route = route;
                             map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                             navigation.startNavigation(route);
+                            navigationFAB.setVisibility(View.GONE);
+                            cancelNavigationFAB.setVisibility(View.VISIBLE);
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
                             Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
@@ -226,7 +235,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         Log.i(TAG + "nav", "Response failed: ", t);
                     }
                 });
+            }
+        });
 
+        cancelNavigationFAB = (FloatingActionButton) findViewById(R.id.cancel_navigation_fab);
+        cancelNavigationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigation.endNavigation();
+                gpsFAB.setVisibility(View.VISIBLE);
+                cancelNavigationFAB.setVisibility(View.GONE);
             }
         });
 

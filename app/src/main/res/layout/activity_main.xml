@@ -51,9 +51,21 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:layout_margin="16dp"
-            android:visibility="invisible"
+            android:visibility="gone"
             app:backgroundTint="@color/colorAccent"
             app:srcCompat="@drawable/ic_navigation_white_24dp"
+            mapbox:elevation="4dp"
+            tools:ignore="VectorDrawableCompat" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cancel_navigation_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:visibility="gone"
+            app:backgroundTint="@color/colorAccent"
+            app:srcCompat="@drawable/ic_navigation_close"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
     </com.mapbox.mapboxsdk.maps.MapView>
