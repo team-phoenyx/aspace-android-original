@@ -55,6 +55,7 @@ import com.mapbox.services.android.navigation.v5.listeners.ProgressChangeListene
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
+import com.mapbox.services.api.directions.v5.models.RouteLeg;
 import com.mapbox.services.commons.models.Position;
 
 import java.util.ArrayList;
@@ -127,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         Bundle extras = getIntent().getExtras();
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
-
         isUpdatingSpots = true;
         allowAlert = true;
 
@@ -186,6 +186,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
+                List<RouteLeg> legs = routeProgress.getRoute().getLegs();
+                for (RouteLeg leg : legs) {
+                    Log.i(TAG + "nav", "LEG: " + leg.getSummary());
+                }
             }
         });
 
@@ -568,8 +572,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     protected void onResume() {
         super.onResume();
         searchView.clearFocus();
-        isUpdatingSpots = true;
-        mMapView.onResume();
+        if (map != null) {
+            List<Polyline> polylines = map.getPolylines();
+            if (polylines.isEmpty()) {
+                isUpdatingSpots = true;
+            }
+            mMapView.onResume();
+        }
     }
 
     @Override
