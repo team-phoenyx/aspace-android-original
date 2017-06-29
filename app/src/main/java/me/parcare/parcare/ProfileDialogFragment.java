@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +36,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+import me.parcare.parcare.realmmodels.UserCredentials;
 import me.parcare.parcare.retrofitmodels.Feature;
 import me.parcare.parcare.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
@@ -77,7 +82,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
     private PCRetrofitInterface parCareService;
 
-    private String userID, userAccessToken;
+    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -86,6 +91,8 @@ public class ProfileDialogFragment extends DialogFragment {
         lng = extras.getDouble("lng");
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+        userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
@@ -272,6 +279,42 @@ public class ProfileDialogFragment extends DialogFragment {
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNeutralButton("Log Out", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Clear all UserCredential objects from Realm
+                Realm.init(getActivity());
+
+                byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+
+                RealmConfiguration config = new RealmConfiguration.Builder()
+                        .encryptionKey(key)
+                        .build();
+
+                Realm realm = Realm.getInstance(config);
+
+                //realm.beginTransaction();
+
+                final RealmResults<UserCredentials> results = realm.where(UserCredentials.class).findAll();
+
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        results.deleteAllFromRealm();
+                    }
+                });
+
+                //realm.commitTransaction();
+
+                //Start loginactivity
+                Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+                loginIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                startActivity(loginIntent);
+                getActivity().finish();
                 dialog.dismiss();
             }
         });

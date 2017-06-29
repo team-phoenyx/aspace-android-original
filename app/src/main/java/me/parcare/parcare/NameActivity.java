@@ -21,7 +21,7 @@ public class NameActivity extends AppCompatActivity {
 
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private static final String SP_USER_NAME_TAG = "user_name";
-    String name, userID, userAccessToken;
+    String name, userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +30,8 @@ public class NameActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+        userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
 
         setContentView(R.layout.activity_name);
 
@@ -80,6 +82,8 @@ public class NameActivity extends AppCompatActivity {
                             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                             mainIntent.putExtra(getString(R.string.user_id_tag), userID);
                             mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                            mainIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                            mainIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                             startActivity(mainIntent);
                             finish();
                         }

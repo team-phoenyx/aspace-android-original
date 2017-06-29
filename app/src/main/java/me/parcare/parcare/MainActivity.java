@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int ROUTE_TYPE_WALKING = 1;
     private static final int ROUTE_TYPE_DRIVING = 0;
 
-    private String userID, userAccessToken;
+    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         Bundle extras = getIntent().getExtras();
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+        userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
         isUpdatingSpots = true;
         allowAlert = true;
 
@@ -512,6 +514,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         extras.putDouble("lng", currentLocation.getLongitude());
                         extras.putString(getString(R.string.user_id_tag), userID);
                         extras.putString(getString(R.string.user_access_token_tag), userAccessToken);
+                        extras.putString(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                        extras.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                         ProfileDialogFragment profileDialogFragment = new ProfileDialogFragment();
                         profileDialogFragment.setArguments(extras);
                         profileDialogFragment.show(getFragmentManager(), "profiledialog");

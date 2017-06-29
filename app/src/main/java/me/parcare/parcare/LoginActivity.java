@@ -158,10 +158,10 @@ public class LoginActivity extends AppCompatActivity {
                                                         new SecureRandom().nextBytes(key);
 
                                                         //base64 encode string and store
-                                                        String keyString = Base64.encodeToString(key, Base64.DEFAULT);
+                                                        realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
 
                                                         SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
-                                                        editor.putString(getString(R.string.realm_encryption_key_tag), keyString);
+                                                        editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                                                         editor.apply();
                                                     } else {
                                                         //base64 decode string
@@ -189,7 +189,9 @@ public class LoginActivity extends AppCompatActivity {
                                                     Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
                                                     addNameIntent.putExtra(getString(R.string.user_id_tag), userID);
                                                     addNameIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                                    addNameIntent.putExtra(getString(R.string.user_phone_number), userPhoneNumber);
+                                                    addNameIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                                    addNameIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+
                                                     startActivity(addNameIntent);
                                                 }
                                             }).start();
