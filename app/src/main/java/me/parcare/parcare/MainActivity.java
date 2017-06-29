@@ -47,6 +47,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.android.navigation.v5.MapboxNavigation;
+import com.mapbox.services.android.navigation.v5.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.RouteProgress;
 import com.mapbox.services.android.navigation.v5.listeners.AlertLevelChangeListener;
 import com.mapbox.services.android.navigation.v5.listeners.NavigationEventListener;
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     private Position navDestination;
+    private Polyline drivingRoutePolyline;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -158,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navigation.addAlertLevelChangeListener(new AlertLevelChangeListener() {
             @Override
             public void onAlertLevelChange(int alertLevel, RouteProgress routeProgress) {
-                // we can do stuff here using the routePRogress object.
+                // we can do stuff here using the routeProgress object.
                 switch (alertLevel) {
                     case HIGH_ALERT_LEVEL:
                         Toast.makeText(MainActivity.this, "HIGH", Toast.LENGTH_LONG).show();
@@ -189,24 +191,62 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep currentStep = routeStepProgress.step();
+                // Current step log info
                 Log.i(TAG + "Directions", "Current Step: " + currentStep.getName()
                         + ", Current Maneuver: " + currentStep.getManeuver().getInstruction()
                         + ", Distance In: " + routeStepProgress.getDistanceTraveled()
                         + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
                         + ", Duration: " + currentStep.getDuration());
+                Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
+                /* Complete directions log
                 for (LegStep step : steps) {
-                    Log.i(TAG + "Directions", "LEG: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance());
+                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance());
                 }
+                */
             }
         });
 
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
+                final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                double destinationLat = destinationMarker.getPosition().getLatitude();
+                double destinationLng = destinationMarker.getPosition().getLongitude();
+                final LatLng destinationLatLng = new LatLng (destinationLat, destinationLng);
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
-                // update route, erase current route, draw new route here
+                Position destination = Position.fromCoordinates(destinationLng, destinationLat);
+                navigation.getRoute(newOrigin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "YOU ARE OFF-ROUTE! REROUTING NOW", Toast.LENGTH_LONG).show();
+                            com.mapbox.services.api.directions.v5.models.DirectionsRoute newRoute = response.body().getRoutes().get(0);
+                            // update new route to navigation
+                            navigation.updateRoute(newRoute);
+                            // remove old driving route
+                            if (map != null && !map.getPolylines().isEmpty()) {
+                                map.removePolyline(drivingRoutePolyline);
+                            }
+                            // draw new driving route
+                            drawRouteToSpot(newOriginLatLng, destinationLatLng, ROUTE_TYPE_DRIVING);
+                            Log.i(TAG + "Directions", "Route Update Successful");
+                        } else {
+                            Log.i(TAG + "Directions", "Route Update Unsuccessful");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
+                        Log.i(TAG + "Directions", "Reroute FAILED", t);
+                    }
+                });
             }
         });
+
+        MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
+        // sets off route distance threshhold to 10 meters for testing.
+        // (default threshhold is 50 meters).
+        mapboxNavigationOptions.setMaximumDistanceOffRoute(25);
 
         navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
         navigationFAB.setOnClickListener(new View.OnClickListener() {
@@ -398,7 +438,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
-
                 if (newQuery.equals("")) {
                     searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
@@ -830,13 +869,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .position(closestSpotLatLng)
                         .icon(closestParkingSpotIcon);
                 map.addMarker(closestSpotMarkerOptions);
-
-                // Draws polyline route from current location to the closest spot. Ideally remove this call and move it to inside
-                // onSearch instead, but right now doing so gives a null pointer for the first search and needs
-                // 2 searches to work.
-
-//                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotLatLng, ROUTE_TYPE_DRIVING);
-//                drawRouteToSpot(new LatLng(Double.valueOf(latF), Double.valueOf(lonF)), closestSpotLatLng, ROUTE_TYPE_WALKING);
             }
 
             @Override
@@ -939,6 +971,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .alpha((float) 0.5)
                                     .width(5);
                             map.addPolyline(polylineOptionsDrive);
+                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
                             break;
                     }
                 } else {
