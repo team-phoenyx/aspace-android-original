@@ -135,59 +135,66 @@ public class LoginActivity extends AppCompatActivity {
                                         public void onClick(View v) {
                                             loginProgressCircle.setVisibility(View.VISIBLE);
 
-                                            String userPhoneNumber = phoneNumberEditText.getText().toString();
-                                            String inputPIN = pinEditText.getText().toString();
+                                            new Thread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    String userPhoneNumber = phoneNumberEditText.getText().toString();
+                                                    String inputPIN = pinEditText.getText().toString();
 
-                                            //TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
-                                            // if login unsuccessful, exit dialog and show a snackbar
+                                                    //TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
+                                                    // if login unsuccessful, exit dialog and show a snackbar, and hide progresscircle
 
-                                            //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
+                                                    //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
 
-                                            //TODO Set the id, phone, and accesstoken (these are placeholders)
-                                            String userID = "30";
-                                            String userAccessToken = "test_access_token";
+                                                    //TODO Set the id, phone, and accesstoken (these are placeholders)
+                                                    String userID = "30";
+                                                    String userAccessToken = "test_access_token";
 
 
-                                            byte[] key = new byte[64];
+                                                    byte[] key = new byte[64];
 
-                                            if (realmEncryptionKey.equals("")) {
-                                                //Realm encryption hasn't been set up yet, must generate and store a key
-                                                new SecureRandom().nextBytes(key);
+                                                    if (realmEncryptionKey.equals("")) {
+                                                        //Realm encryption hasn't been set up yet, must generate and store a key
+                                                        new SecureRandom().nextBytes(key);
 
-                                                //base64 encode string and store
-                                                String keyString = Base64.encodeToString(key, Base64.DEFAULT);
+                                                        //base64 encode string and store
+                                                        String keyString = Base64.encodeToString(key, Base64.DEFAULT);
 
-                                                SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
-                                                editor.putString(getString(R.string.realm_encryption_key_tag), keyString);
-                                                editor.apply();
-                                            } else {
-                                                //base64 decode string
-                                                key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
-                                            }
+                                                        SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
+                                                        editor.putString(getString(R.string.realm_encryption_key_tag), keyString);
+                                                        editor.apply();
+                                                    } else {
+                                                        //base64 decode string
+                                                        key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                                                    }
 
-                                            Realm.init(LoginActivity.this);
+                                                    Realm.init(LoginActivity.this);
 
-                                            RealmConfiguration config = new RealmConfiguration.Builder()
-                                                    .encryptionKey(key)
-                                                    .build();
+                                                    RealmConfiguration config = new RealmConfiguration.Builder()
+                                                            .encryptionKey(key)
+                                                            .build();
 
-                                            Realm realm = Realm.getInstance(config);
+                                                    Realm realm = Realm.getInstance(config);
 
-                                            realm.beginTransaction();
+                                                    realm.beginTransaction();
 
-                                            UserCredentials credentials = realm.createObject(UserCredentials.class);
+                                                    UserCredentials credentials = realm.createObject(UserCredentials.class);
 
-                                            credentials.setUserID(userID);
-                                            credentials.setUserAccessToken(userAccessToken);
-                                            credentials.setUserPhoneNumber(userPhoneNumber);
+                                                    credentials.setUserID(userID);
+                                                    credentials.setUserAccessToken(userAccessToken);
+                                                    credentials.setUserPhoneNumber(userPhoneNumber);
 
-                                            realm.commitTransaction();
+                                                    realm.commitTransaction();
 
-                                            Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
-                                            addNameIntent.putExtra(getString(R.string.user_id_tag), userID);
-                                            addNameIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                            addNameIntent.putExtra(getString(R.string.user_phone_number), userPhoneNumber);
-                                            startActivity(addNameIntent);
+                                                    Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
+                                                    addNameIntent.putExtra(getString(R.string.user_id_tag), userID);
+                                                    addNameIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                                    addNameIntent.putExtra(getString(R.string.user_phone_number), userPhoneNumber);
+                                                    startActivity(addNameIntent);
+                                                }
+                                            }).start();
+
+
                                         }
                                     });
                                 }

@@ -52,19 +52,25 @@ public class NameActivity extends AppCompatActivity {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                name = nameEditText.getText().toString();
+
+                updateNameProgressCircle.setVisibility(View.VISIBLE);
 
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(instructionsLabel.getWindowToken(), 0);
 
-                if (name == null || name.isEmpty() || name.equals("")) {
-                    Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
-                } else {
-                    updateNameProgressCircle.setVisibility(View.VISIBLE);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        name = nameEditText.getText().toString();
 
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
+                        if (name.isEmpty() || name.equals("")) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
                             parcareService.updateProfile(name, "", "", "", "", "");
 
                             editor.putString(SP_USER_NAME_TAG, name);
@@ -77,8 +83,10 @@ public class NameActivity extends AppCompatActivity {
                             startActivity(mainIntent);
                             finish();
                         }
-                    }).start();
-                }
+                    }
+                }).start();
+
+
             }
         });
 
