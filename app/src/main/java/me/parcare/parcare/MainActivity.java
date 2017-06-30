@@ -893,7 +893,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             for (ParkingSpot previousCheckSpot : previousParkingSpots) {
                 if (checkSpot.getSpotId() == previousCheckSpot.getSpotId()) {
                     spotExists = true;
-                    if (checkSpot.getLat() != previousCheckSpot.getLat() || checkSpot.getLon() != previousCheckSpot.getLon() || !checkSpot.getStatus().equals(previousCheckSpot.getStatus())) {
+                    if (checkSpot.getLat() != previousCheckSpot.getLat() ||
+                            checkSpot.getLon() != previousCheckSpot.getLon() ||
+                            !checkSpot.getStatus().equals(previousCheckSpot.getStatus())) {
                         deltas.add(checkSpot);
                     } else {
                         nonDeltas.add(previousCheckSpot);
