@@ -929,6 +929,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             deltaParkingSpots = parkingSpots;
         }
 
+        /*
         // redraw destination spot marker
         if (destinationMarkerOptions != null) {
             map.addMarker(destinationMarkerOptions);
@@ -937,6 +938,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         if (closestSpotMarkerOptions != null) {
             map.addMarker(closestSpotMarkerOptions);
         }
+        */
 
         //Draw changed spots
         for (int i = 0; i < deltaParkingSpots.size(); i++) {
