@@ -5,24 +5,28 @@ package me.parcare.parcare.retrofitmodels;
  */
 import com.google.gson.annotations.SerializedName;
 import com.mapbox.mapboxsdk.annotations.Marker;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class ParkingSpot {
-    @SerializedName("id_type")
-    String id_type;
-    @SerializedName("id_num")
-    String id_num;
+
+    @SerializedName("block_id")
+    @Expose
+    private String blockId;
+    @SerializedName("spot_id")
+    @Expose
+    private int spotId;
     @SerializedName("lat")
-    double lat;
+    @Expose
+    private Double lat;
     @SerializedName("lon")
-    double lon;
+    @Expose
+    private Double lon;
     @SerializedName("status")
-    String status;
+    @Expose
+    private String status;
 
     transient Marker marker;
-
-    public double getLatitude() {
-        return this.lat;
-    }
 
     public Marker getMarker() {
         return marker;
@@ -32,48 +36,44 @@ public class ParkingSpot {
         this.marker = marker;
     }
 
-    public void setLatitude(double lat) {
+    public String getBlockId() {
+        return blockId;
+    }
+
+    public void setBlockId(String blockId) {
+        this.blockId = blockId;
+    }
+
+    public int getSpotId() {
+        return spotId;
+    }
+
+    public void setSpotId(int spotId) {
+        this.spotId = spotId;
+    }
+
+    public Double getLat() {
+        return lat;
+    }
+
+    public void setLat(Double lat) {
         this.lat = lat;
     }
 
-    public double getLongitude() {
-        return this.lon;
+    public Double getLon() {
+        return lon;
     }
 
-    public void setLongitude(double lon) {
+    public void setLon(Double lon) {
         this.lon = lon;
     }
-    public String getId_type() {
-        return this.id_type;
-    }
 
-    public void setId_type(String id_type) {
-        this.id_type = id_type;
-    }
-
-    public void setId_num(String id_num) {
-        this.id_num = id_num;
-    }
-
-    public String getId_num() {
-        return this.getId_num();
+    public String getStatus() {
+        return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
     }
 
-
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    /*public boolean getAvailability() {
-        return this.isAvailable;
-    }*/
-
-    /*public LatLng getLatLng() {
-        return this.spotLatLng;
-     }*/
 }
