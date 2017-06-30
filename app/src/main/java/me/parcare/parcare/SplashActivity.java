@@ -11,8 +11,8 @@ import android.view.View;
 
 import com.securepreferences.SecurePreferences;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -40,74 +40,72 @@ public class SplashActivity extends AppCompatActivity {
 
         isConnected = false;
 
-        Thread thread = new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 isConnected = isConnectedToServer(getString(R.string.parcare_base_url), 5000);
-            }
-        });
 
-        thread.start();
+                if (isConnected) {
+                    SharedPreferences securePreferences = new SecurePreferences(SplashActivity.this);
+                    String realmEncryptionKey = securePreferences.getString(getString(R.string.realm_encryption_key_tag), "");
 
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+                    if (!realmEncryptionKey.equals("")) {
+                        byte[] key = new byte[64];
 
-        if (isConnected) {
-            SharedPreferences securePreferences = new SecurePreferences(SplashActivity.this);
-            String realmEncryptionKey = securePreferences.getString(getString(R.string.realm_encryption_key_tag), "");
+                        key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
 
-            if (!realmEncryptionKey.equals("")) {
-                byte[] key = new byte[64];
+                        Realm.init(SplashActivity.this);
 
-                key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                        RealmConfiguration config = new RealmConfiguration.Builder()
+                                .encryptionKey(key)
+                                .build();
 
-                Realm.init(this);
+                        Realm realm = Realm.getInstance(config);
 
-                RealmConfiguration config = new RealmConfiguration.Builder()
-                        .encryptionKey(key)
-                        .build();
+                        RealmResults<UserCredentials> credentialsRealmResults = realm.where(UserCredentials.class).findAll();
 
-                Realm realm = Realm.getInstance(config);
+                        if (credentialsRealmResults.size() == 0) {
+                            startLoginActivity();
+                        } else {
+                            UserCredentials credentials = credentialsRealmResults.get(0);
+                            String userID = credentials.getUserID();
+                            String userAccessToken = credentials.getUserAccessToken();
+                            String userPhoneNumber = credentials.getUserPhoneNumber();
 
-                RealmResults<UserCredentials> credentialsRealmResults = realm.where(UserCredentials.class).findAll();
-
-                if (credentialsRealmResults.size() == 0) {
-                    startLoginActivity();
-                } else {
-                    UserCredentials credentials = credentialsRealmResults.get(0);
-                    String userID = credentials.getUserID();
-                    String userAccessToken = credentials.getUserAccessToken();
-                    String userPhoneNumber = credentials.getUserPhoneNumber();
-
-                    if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
-                        startLoginActivity();
+                            if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
+                                startLoginActivity();
+                            } else {
+                                //TODO Pull profile from API, and check if there is name; go to NameActivity if no
+                                Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                startIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                startIntent.putExtra(getString(R.string.user_id_tag), userID);
+                                startIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                startActivity(startIntent);
+                                finish();
+                            }
+                        }
                     } else {
-                        //TODO Pull profile from API, and check if there is name; go to NameActivity if no
-                        Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        startIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                        startIntent.putExtra(getString(R.string.user_id_tag), userID);
-                        startIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                        startActivity(startIntent);
-                        finish();
+                        startLoginActivity();
                     }
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Snackbar.make(findViewById(android.R.id.content), "Can't connect to server", Snackbar.LENGTH_INDEFINITE).setAction("Retry", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    //Restarts activity for retry
+                                    Intent intent = getIntent();
+                                    finish();
+                                    startActivity(intent);
+                                }
+                            }).show();
+                        }
+                    });
                 }
-            } else {
-                startLoginActivity();
+
             }
-        } else {
-            Snackbar.make(findViewById(android.R.id.content), "Can't connect to server", Snackbar.LENGTH_INDEFINITE).setAction("Retry", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //Restarts activity for retry
-                    Intent intent = getIntent();
-                    finish();
-                    startActivity(intent);
-                }
-            }).show();
-        }
+        }).start();
     }
 
     private void startLoginActivity() {
@@ -120,11 +118,12 @@ public class SplashActivity extends AppCompatActivity {
     public boolean isConnectedToServer(String url, int timeout) {
         try{
             URL myUrl = new URL(url);
-            URLConnection connection = myUrl.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
             connection.setConnectTimeout(timeout);
             connection.connect();
-            return true;
+            return connection.getResponseCode() == 200;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

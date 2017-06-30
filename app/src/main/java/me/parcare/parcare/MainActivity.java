@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private TimerTask updateSpotTimerTask;
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
+    private List<ParkingSpot> previousParkingSpots;
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
     private boolean allowAlert;
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String TAG = "MainActivity";
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
-    private static final int SPOT_UPDATE_RATE = 1500; // milliseconds
+    private static final int SPOT_UPDATE_RATE = 4000; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
     private static final String SPOT_UNAVAILABLE = "T";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
@@ -400,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                     }
                 };
-                timer.schedule(updateSpotTimerTask, 0, SPOT_UPDATE_RATE);
+                timer.scheduleAtFixedRate(updateSpotTimerTask, 1000, SPOT_UPDATE_RATE);
                 // ******************** SKETCHY TIMER TASK HERE ******************** //
                 Log.i(TAG + "Call", "ON MAP READY");
                 mMapView.addOnMapChangedListener(new MapView.OnMapChangedListener() {
@@ -868,7 +870,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
                 ParkingSpot closestSpot = response.body();
-                LatLng closestSpotLatLng = new LatLng(closestSpot.getLatitude(), closestSpot.getLongitude());
+                LatLng closestSpotLatLng = new LatLng(closestSpot.getLat(), closestSpot.getLon());
                 closestSpotMarkerOptions = new MarkerViewOptions()
                         .position(closestSpotLatLng)
                         .icon(closestParkingSpotIcon);
@@ -882,8 +884,46 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
     }
 
+    private Pair<List<ParkingSpot>, List<ParkingSpot>> getDeltaParkingSpots(List<ParkingSpot> newParkingSpots, List<ParkingSpot> previousParkingSpots) {
+        List<ParkingSpot> deltas = new ArrayList<>();
+        List<ParkingSpot> nonDeltas = new ArrayList<>();
+        for (ParkingSpot checkSpot : newParkingSpots) {
+            boolean spotExists = false;
+
+            for (ParkingSpot previousCheckSpot : previousParkingSpots) {
+                if (checkSpot.getSpotId() == previousCheckSpot.getSpotId()) {
+                    spotExists = true;
+                    if (checkSpot.getLat() != previousCheckSpot.getLat() ||
+                            checkSpot.getLon() != previousCheckSpot.getLon() ||
+                            !checkSpot.getStatus().equals(previousCheckSpot.getStatus())) {
+                        deltas.add(checkSpot);
+                    } else {
+                        nonDeltas.add(previousCheckSpot);
+                    }
+                    break;
+                }
+            }
+
+            if (!spotExists) deltas.add(checkSpot);
+        }
+
+        Pair<List<ParkingSpot>, List<ParkingSpot>> pair = new Pair<List<ParkingSpot>, List<ParkingSpot>>(deltas, nonDeltas);
+        return pair;
+    }
+
     private void drawSpots(List<ParkingSpot> parkingSpots) {
-        map.clear();
+        List<ParkingSpot> deltaParkingSpots = new ArrayList<>();
+        List<ParkingSpot> nonDeltaParkingSpots = new ArrayList<>();
+
+        if (previousParkingSpots != null && previousParkingSpots.size() > 0) {
+            Pair<List<ParkingSpot>, List<ParkingSpot>> pair = getDeltaParkingSpots(parkingSpots, previousParkingSpots);
+
+            deltaParkingSpots = pair.first;
+            nonDeltaParkingSpots = pair.second;
+
+        } else {
+            deltaParkingSpots = parkingSpots;
+        }
 
         // redraw destination spot marker
         if (destinationMarkerOptions != null) {
@@ -894,25 +934,36 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             map.addMarker(closestSpotMarkerOptions);
         }
 
-        // draw spots
-        for (ParkingSpot spot : parkingSpots) {
+        //Draw changed spots
+        for (int i = 0; i < deltaParkingSpots.size(); i++) {
             //Log.i(TAG + "10", "Spot Lat: " + spot.getLatitude() + " Spot Lng: " + spot.getLongitude());
-            String status = spot.getStatus();
-            LatLng spotLatLng = new LatLng(spot.getLatitude(), spot.getLongitude());
-            // might be able to keep track of a list of the markers on screen and iterate through the list to
-            // pick the ones we want to remove instead of wiping the overlay entirely
-            if (status.equals(SPOT_AVAILABLE)) {
-                map.addMarker(new MarkerViewOptions()
-                        .position(spotLatLng)
-                        .icon(openParkingSpotIcon))
-                        .setSnippet("Status: Available" + "\nLocation: " + spot.getLatitude() + ", " + spot.getLongitude());
+            ParkingSpot spot = deltaParkingSpots.get(i);
+
+            //remove the previous marker, if there is one
+            if (spot.getMarker() != null) map.removeMarker(spot.getMarker());
+
+            LatLng spotLatLng = new LatLng(spot.getLat(), spot.getLon());
+            if (spot.getStatus().equals(SPOT_AVAILABLE)) {
+                //Add the marker to the map and store it to the ParkingSpot
+                Marker marker = map.addMarker(new MarkerViewOptions().position(spotLatLng).icon(openParkingSpotIcon));
+                marker.setSnippet("Status: Available" + "\nLocation: " + spot.getLat() + ", " + spot.getLon());
+                spot.setMarker(marker);
             } else {
-                map.addMarker(new MarkerViewOptions()
-                        .position(spotLatLng)
-                        .icon(closedParkingSpotIcon))
-                        .setSnippet("Status: Unavailable" + "\nLocation: " + spot.getLatitude() + ", " + spot.getLongitude());
+                Marker marker = map.addMarker(new MarkerViewOptions().position(spotLatLng).icon(closedParkingSpotIcon));
+                marker.setSnippet("Status: Unavailable" + "\nLocation: " + spot.getLat() + ", " + spot.getLon());
+                spot.setMarker(marker);
             }
+            //Replace the old ParkingSpot with the new one
+            deltaParkingSpots.remove(i);
+            deltaParkingSpots.add(i, spot);
         }
+        //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
+        if (previousParkingSpots == null) {
+            previousParkingSpots = new ArrayList<>();
+        }
+        previousParkingSpots.clear();
+        previousParkingSpots.addAll(deltaParkingSpots);
+        previousParkingSpots.addAll(nonDeltaParkingSpots);
     }
 
     // Draws polyline route from the origin to the spot specified by the given destination. Route determined
