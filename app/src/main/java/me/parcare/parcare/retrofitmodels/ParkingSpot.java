@@ -4,6 +4,7 @@ package me.parcare.parcare.retrofitmodels;
  * Created by Zula on 6/18/17.
  */
 import com.google.gson.annotations.SerializedName;
+import com.mapbox.mapboxsdk.annotations.Marker;
 
 public class ParkingSpot {
     @SerializedName("id_type")
@@ -17,8 +18,18 @@ public class ParkingSpot {
     @SerializedName("status")
     String status;
 
+    transient Marker marker;
+
     public double getLatitude() {
         return this.lat;
+    }
+
+    public Marker getMarker() {
+        return marker;
+    }
+
+    public void setMarker(Marker marker) {
+        this.marker = marker;
     }
 
     public void setLatitude(double lat) {
