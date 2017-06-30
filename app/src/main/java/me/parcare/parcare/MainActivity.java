@@ -41,6 +41,7 @@ import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.MyBearingTracking;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -287,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onClick(View v) {
                 navigation.endNavigation();
+                map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
                 gpsFAB.setVisibility(View.VISIBLE);
                 cancelNavigationFAB.setVisibility(View.GONE);
             }
@@ -319,6 +321,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 toggleGps(true, true);
 
                 setCurrentScreenBounds();
+
+                map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
 
                 MarkerViewManager markerViewManager = map.getMarkerViewManager();
                 markerViewManager.setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
