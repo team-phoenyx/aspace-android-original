@@ -265,8 +265,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         if (response.isSuccessful()) {
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
                             MainActivity.this.route = route;
-                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                             navigation.startNavigation(route);
+
+                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                            map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+
                             navigationFAB.setVisibility(View.GONE);
                             cancelNavigationFAB.setVisibility(View.VISIBLE);
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
@@ -322,7 +325,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                 setCurrentScreenBounds();
 
-                map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                if (map.getTrackingSettings().getMyBearingTrackingMode() != MyBearingTracking.COMPASS) {
+                    map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                }
 
                 MarkerViewManager markerViewManager = map.getMarkerViewManager();
                 markerViewManager.setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
@@ -594,6 +599,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         LatLng searchedLatLng = new LatLng(lat, lng);
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(searchedLatLng, zoomScale));
+        map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
         Log.i(TAG, "Place: " + selectedFeature.getPlaceName());
 
         if (destinationMarkerOptions == null) {
