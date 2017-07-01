@@ -73,7 +73,7 @@ public class NameActivity extends AppCompatActivity {
                                 }
                             });
                         } else {
-                            parcareService.updateProfile(name, "", "", "", "", "");
+                            parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
 
                             editor.putString(SP_USER_NAME_TAG, name);
 

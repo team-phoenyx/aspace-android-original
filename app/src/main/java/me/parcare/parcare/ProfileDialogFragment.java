@@ -402,7 +402,7 @@ public class ProfileDialogFragment extends DialogFragment {
                             String homeAddress = homeAddressEditText.getText().toString();
                             String userId = userID;
                             updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
-                                    workLocationID, userId);
+                                    workLocationID, userId, userPhoneNumber, userAccessToken);
 
                     }
                 }
@@ -445,8 +445,8 @@ public class ProfileDialogFragment extends DialogFragment {
     }
 
     // Updates the user's profile based on the given info
-    private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress, String homeAddress, String homeLocID, String workLocID, String userId) {
-        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeLocID, workLocID, userId);
+    private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress, String homeAddress, String homeLocID, String workLocID, String userID, String userPhoneNumber, String userAccessToken) {
+        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeLocID, workLocID, userID, userPhoneNumber, userAccessToken);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
