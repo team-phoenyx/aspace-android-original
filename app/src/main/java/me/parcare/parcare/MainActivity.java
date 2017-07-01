@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB;
+    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB, snapToLocationFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -266,12 +266,17 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
                             MainActivity.this.route = route;
                             navigation.startNavigation(route);
+                            // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
+                            Location myCurrentLocation = map.getMyLocation();
+                            LatLng myCurrentLocationLatLng = new LatLng(myCurrentLocation.getLatitude(), myCurrentLocation.getLongitude());
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(myCurrentLocationLatLng, DEFAULT_SNAP_ZOOM));
 
                             map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                             map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
 
                             navigationFAB.setVisibility(View.GONE);
                             cancelNavigationFAB.setVisibility(View.VISIBLE);
+                            snapToLocationFAB.setVisibility(View.VISIBLE);
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
                             Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
@@ -294,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
                 gpsFAB.setVisibility(View.VISIBLE);
                 cancelNavigationFAB.setVisibility(View.GONE);
+                snapToLocationFAB.setVisibility(View.GONE);
             }
         });
 
@@ -541,6 +547,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onClick(View view) {
                 if (map != null) {
                     toggleGps(!map.isMyLocationEnabled(), true);
+                }
+            }
+        });
+
+        snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
+        snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (map != null && map.isMyLocationEnabled()) {
+                    Location currentLocation = map.getMyLocation();
+                    LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
                 }
             }
         });

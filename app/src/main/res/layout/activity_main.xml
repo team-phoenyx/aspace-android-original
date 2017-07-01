@@ -68,5 +68,18 @@
             app:srcCompat="@drawable/ic_navigation_close"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/snap_to_location_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="90dp"
+            android:visibility="gone"
+            app:backgroundTint="@color/colorAccent"
+            app:srcCompat="@drawable/ic_snap_to_location_24dp"
+            mapbox:elevation="4dp"
+            tools:ignore="VectorDrawableCompat" />
     </com.mapbox.mapboxsdk.maps.MapView>
 </RelativeLayout>
