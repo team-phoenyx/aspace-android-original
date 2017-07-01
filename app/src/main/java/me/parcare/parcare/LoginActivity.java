@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.securepreferences.SecurePreferences;
 
@@ -103,6 +104,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             final EditText pinEditText = (EditText) verifyDialogView.findViewById(R.id.pin_edittext);
                             final ProgressBar loginProgressCircle = (ProgressBar) verifyDialogView.findViewById(R.id.login_progress_circle);
+                            final TextView noticeLabel = (TextView) verifyDialogView.findViewById(R.id.notice_label);
 
                             loginProgressCircle.setIndeterminate(true);
 
@@ -133,6 +135,12 @@ public class LoginActivity extends AppCompatActivity {
                                     verifyDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
+
+                                            if (pinEditText.getText().toString().isEmpty() ||pinEditText.getText().toString().equals("")) {
+                                                noticeLabel.setText("Please enter your PIN");
+                                                return;
+                                            }
+
                                             loginProgressCircle.setVisibility(View.VISIBLE);
 
                                             new Thread(new Runnable() {
