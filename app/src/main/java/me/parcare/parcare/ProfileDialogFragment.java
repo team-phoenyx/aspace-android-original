@@ -40,6 +40,7 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import me.parcare.parcare.realmmodels.UserCredentials;
+import me.parcare.parcare.realmmodels.UserProfile;
 import me.parcare.parcare.retrofitmodels.Feature;
 import me.parcare.parcare.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
@@ -59,7 +60,6 @@ import static me.parcare.parcare.MainActivity.MAPBOX_BASE_URL;
 
 public class ProfileDialogFragment extends DialogFragment {
 
-    SharedPreferences sharedPreferences;
     ImageView profilePictureImageView;
     EditText nameEditText;
     AutoCompleteTextView homeAddressEditText, workAddressEditText;
@@ -83,6 +83,7 @@ public class ProfileDialogFragment extends DialogFragment {
     private PCRetrofitInterface parCareService;
 
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
+    Realm realm;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -111,9 +112,17 @@ public class ProfileDialogFragment extends DialogFragment {
 
         mapboxService = retrofit.create(PCRetrofitInterface.class);
 
-        builder.setView(dialogView).setCancelable(false);
+        Realm.init(getActivity());
 
-        sharedPreferences = getActivity().getSharedPreferences("me.parcare.parcare", Context.MODE_PRIVATE);
+        byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .encryptionKey(key)
+                .build();
+
+        realm = Realm.getInstance(config);
+
+        builder.setView(dialogView).setCancelable(false);
 
         profilePictureImageView = (ImageView) dialogView.findViewById(R.id.profile_pic_imageview);
         nameEditText = (EditText) dialogView.findViewById(R.id.name_edittext);
@@ -121,6 +130,7 @@ public class ProfileDialogFragment extends DialogFragment {
         workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
         errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
+        //TODO USE REALM FOR THIS SECTION
         nameEditText.setText(sharedPreferences.getString(SP_USER_NAME_TAG, "Your Name"));
         homeAddressEditText.setText(sharedPreferences.getString(SP_USER_HOME_ADDRESS_TAG, ""));
         workAddressEditText.setText(sharedPreferences.getString(SP_USER_WORK_ADDRESS_TAG, ""));
@@ -133,6 +143,7 @@ public class ProfileDialogFragment extends DialogFragment {
         } else {
             profilePictureImageView.setImageBitmap(openImage(directoryPath));
         }
+        //***********************************
 
         homeAddressEditText.setLines(1);
         workAddressEditText.setLines(1);
@@ -286,29 +297,24 @@ public class ProfileDialogFragment extends DialogFragment {
         builder.setNeutralButton("Log Out", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //Clear all UserCredential objects from Realm
-                Realm.init(getActivity());
-
-                byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
-
-                RealmConfiguration config = new RealmConfiguration.Builder()
-                        .encryptionKey(key)
-                        .build();
-
-                Realm realm = Realm.getInstance(config);
-
-                //realm.beginTransaction();
-
-                final RealmResults<UserCredentials> results = realm.where(UserCredentials.class).findAll();
+                //Clear all UserCredential and UserProfile objects from Realm
+                final RealmResults<UserCredentials> credentialResults = realm.where(UserCredentials.class).findAll();
 
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
-                        results.deleteAllFromRealm();
+                        credentialResults.deleteAllFromRealm();
                     }
                 });
 
-                //realm.commitTransaction();
+                final RealmResults<UserProfile> profileResults = realm.where(UserProfile.class).findAll();
+
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        profileResults.deleteAllFromRealm();
+                    }
+                });
 
                 //Start loginactivity
                 Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
@@ -383,26 +389,27 @@ public class ProfileDialogFragment extends DialogFragment {
                         errorTextView.setVisibility(View.VISIBLE);
                         errorTextView.setText("Select a work address, or leave empty");
                     } else {
-                            String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
+                        final String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
+                        final String profileName = nameEditText.getText().toString();
+                        final String workAddress = workAddressEditText.getText().toString();
+                        final String homeAddress = homeAddressEditText.getText().toString();
+                        realm.executeTransaction(new Realm.Transaction() {
+                            @Override
+                            public void execute(Realm realm) {
 
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString(SP_USER_NAME_TAG, nameEditText.getText().toString());
-                            editor.putString(SP_USER_HOME_ADDRESS_TAG, homeAddressEditText.getText().toString());
-                            editor.putString(SP_USER_WORK_ADDRESS_TAG, workAddressEditText.getText().toString());
-                            editor.putString(SP_USER_HOME_LOC_ID_TAG, homeLocationID);
-                            editor.putString(SP_USER_WORK_LOC_ID_TAG, workLocationID);
+                                UserProfile profile = realm.where(UserProfile.class).findFirst();
+                                profile.setProfileImageDirectory(directory);
+                                profile.setName(profileName);
+                                profile.setHomeAddress(homeAddress);
+                                profile.setHomeLocationID(homeLocationID);
+                                profile.setWorkAddress(workAddress);
+                                profile.setWorkLocationID(workLocationID);
+                            }
+                        });
 
-                            editor.putString(USER_PROFILE_PICTURE_DIRECTORY_TAG, directory);
-                            editor.commit();
+                        d.dismiss();
 
-                            d.dismiss();
-
-                            String profileName = nameEditText.getText().toString();
-                            String workAddress = workAddressEditText.getText().toString();
-                            String homeAddress = homeAddressEditText.getText().toString();
-                            String userId = userID;
-                            updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID,
-                                    workLocationID, userId, userPhoneNumber, userAccessToken);
+                        updateProfile(parCareService, profileName, workAddress, homeAddress, homeLocationID, workLocationID, userID, userPhoneNumber, userAccessToken);
 
                     }
                 }

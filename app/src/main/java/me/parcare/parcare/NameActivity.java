@@ -2,10 +2,10 @@ package me.parcare.parcare;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -13,6 +13,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import me.parcare.parcare.realmmodels.UserProfile;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -20,8 +23,12 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 public class NameActivity extends AppCompatActivity {
 
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
-    private static final String SP_USER_NAME_TAG = "user_name";
     String name, userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
+    PCRetrofitInterface parcareService;
+    EditText nameEditText;
+    TextView instructionsLabel;
+    Button nextButton;
+    ProgressBar updateNameProgressCircle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,21 +42,25 @@ public class NameActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_name);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("me.parcare.parcare", MODE_PRIVATE);
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        final PCRetrofitInterface parcareService = retrofit.create(PCRetrofitInterface.class);
+        parcareService = retrofit.create(PCRetrofitInterface.class);
 
-        final EditText nameEditText = (EditText) findViewById(R.id.name_edittext);
-        final TextView instructionsLabel = (TextView) findViewById(R.id.enter_name_label);
-        Button nextButton = (Button) findViewById(R.id.name_next_button);
-        final ProgressBar updateNameProgressCircle = (ProgressBar) findViewById(R.id.update_name_progresscircle);
+        byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+        Realm.init(NameActivity.this);
+        RealmConfiguration configuration = new RealmConfiguration.Builder().encryptionKey(key).build();
+        final Realm realm = Realm.getInstance(configuration);
+
+
+
+        nameEditText = (EditText) findViewById(R.id.name_edittext);
+        instructionsLabel = (TextView) findViewById(R.id.enter_name_label);
+        nextButton = (Button) findViewById(R.id.name_next_button);
+        updateNameProgressCircle = (ProgressBar) findViewById(R.id.update_name_progresscircle);
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,9 +86,13 @@ public class NameActivity extends AppCompatActivity {
                         } else {
                             parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
 
-                            editor.putString(SP_USER_NAME_TAG, name);
+                            realm.beginTransaction();
 
-                            editor.apply();
+                            UserProfile profile = realm.createObject(UserProfile.class);
+
+                            profile.setName(name);
+
+                            realm.commitTransaction();
 
                             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                             mainIntent.putExtra(getString(R.string.user_id_tag), userID);

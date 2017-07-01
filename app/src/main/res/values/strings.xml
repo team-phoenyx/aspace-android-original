@@ -6,6 +6,7 @@
     <string name="parcare_base_url">http://192.241.224.224</string>
 
     <string name="realm_encryption_key_tag">realm_encryption_key</string>
+    <string name="user_name_tag">user_name</string>
     <string name="user_id_tag">user_id</string>
     <string name="user_access_token_tag">user_access_token</string>
     <string name="user_phone_number_tag">user_phone_number</string>

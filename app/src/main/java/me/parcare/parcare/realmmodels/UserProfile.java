@@ -13,21 +13,19 @@ public class UserProfile extends RealmObject {
     private String workAddress;
     private String homeLocationID;
     private String workLocationID;
+    private String profileImageDirectory;
 
     public UserProfile() {
 
     }
 
-    public UserProfile(String name) {
-        this.name = name;
-    }
-
-    public UserProfile(String name, String homeAddress, String workAddress, String homeLocationID, String workLocationID) {
+    public UserProfile(String name, String homeAddress, String workAddress, String homeLocationID, String workLocationID, String profileImageDirectory) {
         this.name = name;
         this.homeAddress = homeAddress;
         this.workAddress = workAddress;
         this.homeLocationID = homeLocationID;
         this.workLocationID = workLocationID;
+        this.profileImageDirectory = profileImageDirectory;
     }
 
     public String getName() {
@@ -68,5 +66,13 @@ public class UserProfile extends RealmObject {
 
     public void setWorkLocationID(String workLocationID) {
         this.workLocationID = workLocationID;
+    }
+
+    public String getProfileImageDirectory() {
+        return profileImageDirectory;
+    }
+
+    public void setProfileImageDirectory(String profileImageDirectory) {
+        this.profileImageDirectory = profileImageDirectory;
     }
 }

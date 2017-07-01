@@ -18,6 +18,7 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import me.parcare.parcare.realmmodels.UserCredentials;
+import me.parcare.parcare.realmmodels.UserProfile;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -75,12 +76,22 @@ public class SplashActivity extends AppCompatActivity {
                             if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
                                 startLoginActivity();
                             } else {
-                                //TODO Pull profile from API, and check if there is name; go to NameActivity if no
-                                Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                startIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                                startIntent.putExtra(getString(R.string.user_id_tag), userID);
-                                startIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                startActivity(startIntent);
+                                RealmResults<UserProfile> userProfileRealmResults = realm.where(UserProfile.class).findAll();
+                                String name = userProfileRealmResults.get(0).getName();
+
+                                Intent intent;
+                                if (name == null || name.equals("") || name.isEmpty()) {
+                                    intent = new Intent(getApplicationContext(), NameActivity.class);
+                                } else {
+                                    intent = new Intent(getApplicationContext(), MainActivity.class);
+                                }
+
+                                intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                intent.putExtra(getString(R.string.user_id_tag), userID);
+                                intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+
+                                startActivity(intent);
                                 finish();
                             }
                         }
