@@ -17,12 +17,9 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import me.parcare.parcare.realmmodels.UserCredentials;
-import me.parcare.parcare.realmmodels.UserProfile;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
-
-import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 public class NameActivity extends AppCompatActivity {
 
@@ -54,13 +51,6 @@ public class NameActivity extends AppCompatActivity {
 
         parcareService = retrofit.create(PCRetrofitInterface.class);
 
-        byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
-        Realm.init(NameActivity.this);
-        RealmConfiguration configuration = new RealmConfiguration.Builder().encryptionKey(key).build();
-        final Realm realm = Realm.getInstance(configuration);
-
-
-
         nameEditText = (EditText) findViewById(R.id.name_edittext);
         instructionsLabel = (TextView) findViewById(R.id.enter_name_label);
         nextButton = (Button) findViewById(R.id.name_next_button);
@@ -70,50 +60,41 @@ public class NameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                updateNameProgressCircle.setVisibility(View.VISIBLE);
+            updateNameProgressCircle.setVisibility(View.VISIBLE);
 
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(instructionsLabel.getWindowToken(), 0);
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(instructionsLabel.getWindowToken(), 0);
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        name = nameEditText.getText().toString();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    name = nameEditText.getText().toString();
 
-                        if (name.isEmpty() || name.equals("")) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
-                                    updateNameProgressCircle.setVisibility(View.INVISIBLE);
-                                }
-                            });
-                        } else {
-                            parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
+                    if (name.isEmpty() || name.equals("")) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
+                                updateNameProgressCircle.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                    } else {
+                        //TODO get response from this, success 100 or fail 6
+                        parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
 
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    realm.beginTransaction();
+                        //If success, run this code
+                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        mainIntent.putExtra(getString(R.string.user_id_tag), userID);
+                        mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                        mainIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                        mainIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                        startActivity(mainIntent);
+                        finish();
 
-                                    UserProfile profile = realm.createObject(UserProfile.class);
-
-                                    profile.setName(name);
-
-                                    realm.commitTransaction();
-                                }
-                            });
-
-                            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                            mainIntent.putExtra(getString(R.string.user_id_tag), userID);
-                            mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                            mainIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
-                            mainIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                            startActivity(mainIntent);
-                            finish();
-                        }
+                        //If fail, hide keyboard and show snackbar
                     }
-                }).start();
+                }
+            }).start();
 
 
             }
@@ -142,15 +123,6 @@ public class NameActivity extends AppCompatActivity {
             @Override
             public void execute(Realm realm) {
                 credentialResults.deleteAllFromRealm();
-            }
-        });
-
-        final RealmResults<UserProfile> profileResults = realm.where(UserProfile.class).findAll();
-
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                profileResults.deleteAllFromRealm();
             }
         });
 

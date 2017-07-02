@@ -6,10 +6,8 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -40,7 +38,6 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import me.parcare.parcare.realmmodels.UserCredentials;
-import me.parcare.parcare.realmmodels.UserProfile;
 import me.parcare.parcare.retrofitmodels.Feature;
 import me.parcare.parcare.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
@@ -130,14 +127,16 @@ public class ProfileDialogFragment extends DialogFragment {
         workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
         errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
-        UserProfile userProfile = realm.where(UserProfile.class).findFirst();
+        //TODO Implement retrofit getProfile method to retrieve profile from server
 
+        /*
         nameEditText.setText(userProfile.getName());
         homeAddressEditText.setText(userProfile.getHomeAddress());
         workAddressEditText.setText(userProfile.getWorkAddress());
         homeLocationID = userProfile.getHomeLocationID();
         workLocationID = userProfile.getWorkLocationID();
 
+        //TODO Image shouldn't be permanently saved, must be uploaded to server
         String directoryPath = userProfile.getProfileImageDirectory();
 
         if (directoryPath == null || directoryPath.equals("")) directoryPath = "no_picture";
@@ -147,6 +146,7 @@ public class ProfileDialogFragment extends DialogFragment {
         } else {
             profilePictureImageView.setImageBitmap(openImage(directoryPath));
         }
+        */
 
         homeAddressEditText.setLines(1);
         workAddressEditText.setLines(1);
@@ -310,15 +310,6 @@ public class ProfileDialogFragment extends DialogFragment {
                     }
                 });
 
-                final RealmResults<UserProfile> profileResults = realm.where(UserProfile.class).findAll();
-
-                realm.executeTransaction(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        profileResults.deleteAllFromRealm();
-                    }
-                });
-
                 //Start loginactivity
                 Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
                 loginIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
@@ -392,23 +383,10 @@ public class ProfileDialogFragment extends DialogFragment {
                         errorTextView.setVisibility(View.VISIBLE);
                         errorTextView.setText("Select a work address, or leave empty");
                     } else {
-                        final String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
+                        //final String directory = saveImage(((BitmapDrawable) profilePictureImageView.getDrawable()).getBitmap());
                         final String profileName = nameEditText.getText().toString();
                         final String workAddress = workAddressEditText.getText().toString();
                         final String homeAddress = homeAddressEditText.getText().toString();
-                        realm.executeTransaction(new Realm.Transaction() {
-                            @Override
-                            public void execute(Realm realm) {
-
-                                UserProfile profile = realm.where(UserProfile.class).findFirst();
-                                profile.setProfileImageDirectory(directory);
-                                profile.setName(profileName);
-                                profile.setHomeAddress(homeAddress);
-                                profile.setHomeLocationID(homeLocationID);
-                                profile.setWorkAddress(workAddress);
-                                profile.setWorkLocationID(workLocationID);
-                            }
-                        });
 
                         d.dismiss();
 

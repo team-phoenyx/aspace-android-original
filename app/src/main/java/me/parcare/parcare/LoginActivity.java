@@ -76,6 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                         } else {
                             //TODO request to server; if request is successful, continue code below
 
+                            //Disable the resend button
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -85,6 +86,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             });
 
+                            //Enable the resend button in 15 seconds
                             new Timer().schedule(new TimerTask() {
                                 @Override
                                 public void run() {
@@ -99,6 +101,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }, 15000);
 
+                            //Create the dialog for PIN input
                             final AlertDialog.Builder verifyDialogBuilder = new AlertDialog.Builder(LoginActivity.this);
                             View verifyDialogView = getLayoutInflater().inflate(R.layout.verify_dialog, null);
 
@@ -122,8 +125,6 @@ public class LoginActivity extends AppCompatActivity {
                                     dialog.dismiss();
                                 }
                             });
-
-
 
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -149,59 +150,68 @@ public class LoginActivity extends AppCompatActivity {
                                                     String userPhoneNumber = phoneNumberEditText.getText().toString();
                                                     String inputPIN = pinEditText.getText().toString();
 
-                                                    //TODO use another thread to call the API; if login successful, start createprofileactivity (if profile has empty name) or mainactivity (if returning user);
-                                                    // if login unsuccessful, exit dialog and show a snackbar, and hide progresscircle
+                                                    //TODO Call the API; if successful (response code 101 or 102, run code below
+                                                    if (true) {
+                                                        //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
+                                                        //TODO Set the id and accesstoken (these are placeholders)
+                                                        String userID = "30";
+                                                        String userAccessToken = "test_access_token";
 
-                                                    //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
+                                                        byte[] key = new byte[64];
 
-                                                    //TODO Set the id, phone, and accesstoken (these are placeholders)
-                                                    String userID = "30";
-                                                    String userAccessToken = "test_access_token";
+                                                        if (realmEncryptionKey.equals("")) {
+                                                            //Realm encryption hasn't been set up yet, must generate and store a key
+                                                            new SecureRandom().nextBytes(key);
 
+                                                            //base64 encode string and store
+                                                            realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
 
-                                                    byte[] key = new byte[64];
+                                                            SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
+                                                            editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                                            editor.apply();
+                                                        } else {
+                                                            //base64 decode string
+                                                            key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                                                        }
 
-                                                    if (realmEncryptionKey.equals("")) {
-                                                        //Realm encryption hasn't been set up yet, must generate and store a key
-                                                        new SecureRandom().nextBytes(key);
+                                                        //Realm initialization
+                                                        Realm.init(LoginActivity.this);
 
-                                                        //base64 encode string and store
-                                                        realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
+                                                        RealmConfiguration config = new RealmConfiguration.Builder()
+                                                                .encryptionKey(key)
+                                                                .build();
 
-                                                        SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
-                                                        editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                                                        editor.apply();
+                                                        Realm realm = Realm.getInstance(config);
+
+                                                        //Save usercredentials in encrypted realm
+                                                        realm.beginTransaction();
+
+                                                        UserCredentials credentials = realm.createObject(UserCredentials.class);
+
+                                                        credentials.setUserID(userID);
+                                                        credentials.setUserAccessToken(userAccessToken);
+                                                        credentials.setUserPhoneNumber(userPhoneNumber);
+
+                                                        realm.commitTransaction();
+
+                                                        Intent intent;
+                                                        //TODO Check success code 101 or 102
+                                                        //if 101, new user, run this code
+                                                        intent = new Intent(getApplicationContext(), NameActivity.class);
+
+                                                        //if 102, returning user, run this code
+                                                        intent = new Intent(getApplicationContext(), MainActivity.class);
+
+                                                        intent.putExtra(getString(R.string.user_id_tag), userID);
+                                                        intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                                        intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                                        intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+
+                                                        startActivity(intent);
+                                                        finish();
                                                     } else {
-                                                        //base64 decode string
-                                                        key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                                                        //TODO error responses, if error code 2, PIN incorrect, update noticeLabel; if error code 3, PIN expired, dismiss dialog and show snackbar
                                                     }
-
-                                                    Realm.init(LoginActivity.this);
-
-                                                    RealmConfiguration config = new RealmConfiguration.Builder()
-                                                            .encryptionKey(key)
-                                                            .build();
-
-                                                    Realm realm = Realm.getInstance(config);
-
-                                                    realm.beginTransaction();
-
-                                                    UserCredentials credentials = realm.createObject(UserCredentials.class);
-
-                                                    credentials.setUserID(userID);
-                                                    credentials.setUserAccessToken(userAccessToken);
-                                                    credentials.setUserPhoneNumber(userPhoneNumber);
-
-                                                    realm.commitTransaction();
-
-                                                    Intent addNameIntent = new Intent(getApplicationContext(), NameActivity.class);
-                                                    addNameIntent.putExtra(getString(R.string.user_id_tag), userID);
-                                                    addNameIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                                    addNameIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
-                                                    addNameIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-
-                                                    startActivity(addNameIntent);
-                                                    finish();
                                                 }
                                             }).start();
 
