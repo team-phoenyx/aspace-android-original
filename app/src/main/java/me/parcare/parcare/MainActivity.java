@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB, snapToLocationFAB;
+    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -275,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
 
                             navigationFAB.setVisibility(View.GONE);
+                            cancelRouteFAB.setVisibility(View.GONE);
                             cancelNavigationFAB.setVisibility(View.VISIBLE);
                             snapToLocationFAB.setVisibility(View.VISIBLE);
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
@@ -298,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navigation.endNavigation();
                 map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
                 gpsFAB.setVisibility(View.VISIBLE);
+                cancelRouteFAB.setVisibility(View.VISIBLE);
                 cancelNavigationFAB.setVisibility(View.GONE);
                 snapToLocationFAB.setVisibility(View.GONE);
             }
@@ -358,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
                                             gpsFAB.setVisibility(View.GONE);
                                             navigationFAB.setVisibility(View.VISIBLE);
+                                            cancelRouteFAB.setVisibility(View.VISIBLE);
                                             allowAlert = true;
                                         }
                                     })
@@ -564,6 +567,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
+                }
+            }
+        });
+
+        cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
+        cancelRouteFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (map != null && !map.getPolylines().isEmpty()) {
+                    List<Polyline> routes = map.getPolylines();
+                    for (Polyline route : routes) {
+                        map.removePolyline(route);
+                    }
+                    cancelRouteFAB.setVisibility(View.GONE);
+                    if (navigationFAB.getVisibility() == View.VISIBLE && gpsFAB.getVisibility() == View.GONE) {
+                        navigationFAB.setVisibility(View.GONE);
+                        gpsFAB.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         });
