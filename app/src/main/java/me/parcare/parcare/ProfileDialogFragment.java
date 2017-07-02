@@ -130,11 +130,7 @@ public class ProfileDialogFragment extends DialogFragment {
         workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
         errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
-        //TODO USE REALM FOR THIS SECTION
-
         UserProfile userProfile = realm.where(UserProfile.class).findFirst();
-
-
 
         nameEditText.setText(userProfile.getName());
         homeAddressEditText.setText(userProfile.getHomeAddress());
