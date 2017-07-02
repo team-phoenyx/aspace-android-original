@@ -86,13 +86,18 @@ public class NameActivity extends AppCompatActivity {
                         } else {
                             parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
 
-                            realm.beginTransaction();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    realm.beginTransaction();
 
-                            UserProfile profile = realm.createObject(UserProfile.class);
+                                    UserProfile profile = realm.createObject(UserProfile.class);
 
-                            profile.setName(name);
+                                    profile.setName(name);
 
-                            realm.commitTransaction();
+                                    realm.commitTransaction();
+                                }
+                            });
 
                             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                             mainIntent.putExtra(getString(R.string.user_id_tag), userID);

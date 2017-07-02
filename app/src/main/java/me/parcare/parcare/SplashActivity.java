@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 
 import com.securepreferences.SecurePreferences;
@@ -77,13 +78,19 @@ public class SplashActivity extends AppCompatActivity {
                                 startLoginActivity();
                             } else {
                                 RealmResults<UserProfile> userProfileRealmResults = realm.where(UserProfile.class).findAll();
-                                String name = userProfileRealmResults.get(0).getName();
 
                                 Intent intent;
-                                if (name == null || name.equals("") || name.isEmpty()) {
+
+                                if (userProfileRealmResults.size() == 0) {
                                     intent = new Intent(getApplicationContext(), NameActivity.class);
                                 } else {
-                                    intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    String name = userProfileRealmResults.get(0).getName();
+
+                                    if (name == null || name.equals("") || name.isEmpty()) {
+                                        intent = new Intent(getApplicationContext(), NameActivity.class);
+                                    } else {
+                                        intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    }
                                 }
 
                                 intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);

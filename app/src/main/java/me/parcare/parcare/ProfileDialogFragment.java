@@ -131,19 +131,26 @@ public class ProfileDialogFragment extends DialogFragment {
         errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
         //TODO USE REALM FOR THIS SECTION
-        nameEditText.setText(sharedPreferences.getString(SP_USER_NAME_TAG, "Your Name"));
-        homeAddressEditText.setText(sharedPreferences.getString(SP_USER_HOME_ADDRESS_TAG, ""));
-        workAddressEditText.setText(sharedPreferences.getString(SP_USER_WORK_ADDRESS_TAG, ""));
-        homeLocationID = sharedPreferences.getString(SP_USER_HOME_LOC_ID_TAG, "");
-        workLocationID = sharedPreferences.getString(SP_USER_WORK_LOC_ID_TAG, "");
 
-        String directoryPath = sharedPreferences.getString(USER_PROFILE_PICTURE_DIRECTORY_TAG, "no_picture");
+        UserProfile userProfile = realm.where(UserProfile.class).findFirst();
+
+
+
+        nameEditText.setText(userProfile.getName());
+        homeAddressEditText.setText(userProfile.getHomeAddress());
+        workAddressEditText.setText(userProfile.getWorkAddress());
+        homeLocationID = userProfile.getHomeLocationID();
+        workLocationID = userProfile.getWorkLocationID();
+
+        String directoryPath = userProfile.getProfileImageDirectory();
+
+        if (directoryPath == null || directoryPath.equals("")) directoryPath = "no_picture";
+
         if (directoryPath.equals("no_picture")) {
             profilePictureImageView.setImageResource(R.drawable.sample_profile_pic);
         } else {
             profilePictureImageView.setImageBitmap(openImage(directoryPath));
         }
-        //***********************************
 
         homeAddressEditText.setLines(1);
         workAddressEditText.setLines(1);
