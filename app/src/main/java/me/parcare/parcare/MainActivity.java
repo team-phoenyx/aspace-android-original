@@ -438,8 +438,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onFocus() {
                 toggleGps(true, false);
 
+                /*
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) searchView.clearFocus();
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    searchView.clearSearchFocus();
+                }
+                */
+
 
                 try {
                     currentLocation = locationEngine.getLastLocation();
@@ -722,6 +727,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (searchView.isSearchBarFocused()) {
+                            searchView.clearSearchFocus();
+                        }
                         dialog.dismiss();
                     }
                 });
