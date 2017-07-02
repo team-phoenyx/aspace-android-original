@@ -201,6 +201,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     addNameIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
 
                                                     startActivity(addNameIntent);
+                                                    finish();
                                                 }
                                             }).start();
 

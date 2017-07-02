@@ -15,10 +15,14 @@ import android.widget.TextView;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+import me.parcare.parcare.realmmodels.UserCredentials;
 import me.parcare.parcare.realmmodels.UserProfile;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
+
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 public class NameActivity extends AppCompatActivity {
 
@@ -81,6 +85,7 @@ public class NameActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
+                                    updateNameProgressCircle.setVisibility(View.INVISIBLE);
                                 }
                             });
                         } else {
@@ -114,5 +119,45 @@ public class NameActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Realm.init(this);
+
+        byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .encryptionKey(key)
+                .build();
+
+        Realm realm = Realm.getInstance(config);
+
+        //Clear all UserCredential and UserProfile objects from Realm
+        final RealmResults<UserCredentials> credentialResults = realm.where(UserCredentials.class).findAll();
+
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                credentialResults.deleteAllFromRealm();
+            }
+        });
+
+        final RealmResults<UserProfile> profileResults = realm.where(UserProfile.class).findAll();
+
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                profileResults.deleteAllFromRealm();
+            }
+        });
+
+        //Start loginactivity
+        Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+        loginIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+        startActivity(loginIntent);
+        finish();
     }
 }
