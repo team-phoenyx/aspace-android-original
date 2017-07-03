@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton gpsFAB, navigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
+    private FloatingActionButton navigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -298,7 +298,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onClick(View v) {
                 navigation.endNavigation();
                 map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
-                gpsFAB.setVisibility(View.VISIBLE);
                 cancelRouteFAB.setVisibility(View.VISIBLE);
                 cancelNavigationFAB.setVisibility(View.GONE);
                 snapToLocationFAB.setVisibility(View.GONE);
@@ -358,7 +357,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             }
                                             drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
                                             drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
-                                            gpsFAB.setVisibility(View.GONE);
                                             navigationFAB.setVisibility(View.VISIBLE);
                                             cancelRouteFAB.setVisibility(View.VISIBLE);
                                             allowAlert = true;
@@ -369,7 +367,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                         public void onClick(DialogInterface dialog, int which) {
                                             isUpdatingSpots = true;
                                             navigationFAB.setVisibility(View.GONE);
-                                            gpsFAB.setVisibility(View.VISIBLE);
                                             allowAlert = true;
                                         }
                                     })
@@ -549,16 +546,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        gpsFAB = (FloatingActionButton) findViewById(R.id.location_toggle_fab);
-        gpsFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (map != null) {
-                    toggleGps(!map.isMyLocationEnabled(), true);
-                }
-            }
-        });
-
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
         snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -581,9 +568,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         map.removePolyline(route);
                     }
                     cancelRouteFAB.setVisibility(View.GONE);
-                    if (navigationFAB.getVisibility() == View.VISIBLE && gpsFAB.getVisibility() == View.GONE) {
+                    if (navigationFAB.getVisibility() == View.VISIBLE) {
                         navigationFAB.setVisibility(View.GONE);
-                        gpsFAB.setVisibility(View.VISIBLE);
                     }
                 }
             }
@@ -596,7 +582,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         isUpdatingSpots = true;
 
         navigationFAB.setVisibility(View.GONE);
-        gpsFAB.setVisibility(View.VISIBLE);
 
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
@@ -810,9 +795,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             };
             locationEngine.addLocationEngineListener(locationEngineListener);
-            gpsFAB.setImageResource(R.drawable.ic_location_disabled_24dp);
-        } else {
-            gpsFAB.setImageResource(R.drawable.ic_my_location_24dp);
         }
         // Enable or disable the location layer on the map
         map.setMyLocationEnabled(enabled);
