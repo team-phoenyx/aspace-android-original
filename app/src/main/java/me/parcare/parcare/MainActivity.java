@@ -904,10 +904,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
                 ParkingSpot closestSpot = response.body();
                 LatLng closestSpotLatLng = new LatLng(closestSpot.getLat(), closestSpot.getLon());
-                closestSpotMarkerOptions = new MarkerViewOptions()
-                        .position(closestSpotLatLng)
-                        .icon(closestParkingSpotIcon);
-                map.addMarker(closestSpotMarkerOptions);
+                if (closestSpotMarkerOptions != null && closestSpotMarkerOptions.getMarker().getPosition() != closestSpotLatLng) {
+                    closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
+                } else {
+                    closestSpotMarkerOptions = new MarkerViewOptions()
+                            .position(closestSpotLatLng)
+                            .icon(closestParkingSpotIcon);
+                    map.addMarker(closestSpotMarkerOptions);
+                }
             }
 
             @Override
