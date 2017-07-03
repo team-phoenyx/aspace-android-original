@@ -342,11 +342,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
                         clickedSpotLatLng = marker.getPosition();
                         final LatLng clickedSpotLatLngF = new LatLng(marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
-                        isUpdatingSpots = false;
                         if (allowAlert) {
                             allowAlert = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            final Marker markerF = marker;
                             builder.setTitle("Directions to Spot")
                                     .setMessage("Would you like to see the route to this spot?")
                                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -366,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            isUpdatingSpots = true;
                                             navigationFAB.setVisibility(View.GONE);
                                             allowAlert = true;
                                         }
@@ -374,10 +371,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
                                         @Override
                                         public void onCancel(DialogInterface dialog) {
-                                            List<Polyline> polylines = map.getPolylines();
-                                            if (polylines.isEmpty()) {
-                                                isUpdatingSpots = true;
-                                            }
                                             allowAlert = true;
                                         }
                                     })
