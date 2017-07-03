@@ -341,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
                         clickedSpotLatLng = marker.getPosition();
+                        final LatLng clickedSpotLatLngF = new LatLng(marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
                         isUpdatingSpots = false;
                         if (allowAlert) {
                             allowAlert = false;
@@ -355,8 +356,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             for (Polyline polyline : polylines) {
                                                 map.removePolyline(polyline);
                                             }
-                                            drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), markerF.getPosition(), ROUTE_TYPE_DRIVING);
-                                            drawRouteToSpot(markerF.getPosition(), destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                            drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
+                                            drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
                                             navigationFAB.setVisibility(View.VISIBLE);
                                             cancelRouteFAB.setVisibility(View.VISIBLE);
                                             allowAlert = true;
