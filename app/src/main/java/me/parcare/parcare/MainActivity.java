@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
+    private String searchedLatString, searchedLngString;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -642,8 +643,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         }
         destinationMarker = destinationMarkerOptions.getMarker();
 
-        String searchedLatString = lat + "";
-        String searchedLngString = lng + "";
+        searchedLatString = lat + "";
+        searchedLngString = lng + "";
 
         getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
 
@@ -924,8 +925,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Pair<List<ParkingSpot>, List<ParkingSpot>> getDeltaParkingSpots(List<ParkingSpot> newParkingSpots, List<ParkingSpot> previousParkingSpots) {
         List<ParkingSpot> deltas = new ArrayList<>();
         List<ParkingSpot> nonDeltas = new ArrayList<>();
+        boolean spotExists = false;
         for (ParkingSpot checkSpot : newParkingSpots) {
-            boolean spotExists = false;
+            spotExists = false;
 
             for (ParkingSpot previousCheckSpot : previousParkingSpots) {
                 if (checkSpot.getSpotId() == previousCheckSpot.getSpotId()) {
@@ -943,12 +945,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             if (!spotExists) deltas.add(checkSpot);
         }
-
         Pair<List<ParkingSpot>, List<ParkingSpot>> pair = new Pair<List<ParkingSpot>, List<ParkingSpot>>(deltas, nonDeltas);
         return pair;
     }
 
     private void drawSpots(List<ParkingSpot> parkingSpots) {
+        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
         List<ParkingSpot> deltaParkingSpots = new ArrayList<>();
         List<ParkingSpot> nonDeltaParkingSpots = new ArrayList<>();
 
