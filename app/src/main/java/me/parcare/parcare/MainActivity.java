@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String TAG = "MainActivity";
     public static final String BASE_URL = "http://192.241.224.224:3000/api/";
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
-    private static final int SPOT_UPDATE_RATE = 4000; // milliseconds
+    private static final int SPOT_UPDATE_RATE = 2000; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
     private static final String SPOT_UNAVAILABLE = "T";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
