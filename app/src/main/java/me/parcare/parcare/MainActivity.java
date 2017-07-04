@@ -401,15 +401,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             Log.i(TAG + "3", upperLon);
                             */
                             getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
-
-                            //*****Implement later, this is designed to fix edge case of closest parking spot switching to unavailable*****
-                            //                        if (destinationMarker != null) {
-                            //                            LatLng destinationLatLng = destinationMarker.getPosition();
-                            //                            String destinationLatString = String.valueOf(destinationLatLng.getLatitude());
-                            //                            String destinationLonString = String.valueOf(destinationLatLng.getLongitude());
-                            //                            getClosestParkingSpot(parCareService, destinationLatString, destinationLonString);
-                            //                        }
-                            //******
                         }
                     }
                 };
