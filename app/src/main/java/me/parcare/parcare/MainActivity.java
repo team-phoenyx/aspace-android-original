@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
-    private FloatingActionButton navigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
+    private FloatingActionButton startNavigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
     private LocationEngineListener locationEngineListener;
@@ -254,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         // (default threshhold is 50 meters).
         mapboxNavigationOptions.setMaximumDistanceOffRoute(50);
 
-        navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
-        navigationFAB.setOnClickListener(new View.OnClickListener() {
+        startNavigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
+        startNavigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                             map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
 
-                            navigationFAB.setVisibility(View.GONE);
+                            startNavigationFAB.setVisibility(View.GONE);
                             cancelRouteFAB.setVisibility(View.GONE);
                             cancelNavigationFAB.setVisibility(View.VISIBLE);
                             snapToLocationFAB.setVisibility(View.VISIBLE);
@@ -302,6 +302,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 cancelRouteFAB.setVisibility(View.VISIBLE);
                 cancelNavigationFAB.setVisibility(View.GONE);
                 snapToLocationFAB.setVisibility(View.GONE);
+                startNavigationFAB.setVisibility(View.VISIBLE);
             }
         });
 
@@ -357,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             }
                                             drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
                                             drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
-                                            navigationFAB.setVisibility(View.VISIBLE);
+                                            startNavigationFAB.setVisibility(View.VISIBLE);
                                             cancelRouteFAB.setVisibility(View.VISIBLE);
                                             allowAlert = true;
                                         }
@@ -365,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            navigationFAB.setVisibility(View.GONE);
+                                            startNavigationFAB.setVisibility(View.GONE);
                                             allowAlert = true;
                                         }
                                     })
@@ -563,8 +564,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         map.removePolyline(route);
                     }
                     cancelRouteFAB.setVisibility(View.GONE);
-                    if (navigationFAB.getVisibility() == View.VISIBLE) {
-                        navigationFAB.setVisibility(View.GONE);
+                    if (startNavigationFAB.getVisibility() == View.VISIBLE) {
+                        startNavigationFAB.setVisibility(View.GONE);
                     }
                 }
             }
@@ -576,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         isUpdatingSpots = true;
 
-        navigationFAB.setVisibility(View.GONE);
+        startNavigationFAB.setVisibility(View.GONE);
 
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
