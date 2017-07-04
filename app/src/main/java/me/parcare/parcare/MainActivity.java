@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
         // sets off route distance threshhold to 10 meters for testing.
         // (default threshhold is 50 meters).
-        mapboxNavigationOptions.setMaximumDistanceOffRoute(25);
+        mapboxNavigationOptions.setMaximumDistanceOffRoute(50);
 
         navigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
         navigationFAB.setOnClickListener(new View.OnClickListener() {
