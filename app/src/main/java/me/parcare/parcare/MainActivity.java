@@ -638,8 +638,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         searchedLatString = lat + "";
         searchedLngString = lng + "";
-
-        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
+        // Removal of this
+        //getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
 
 //        if (closestSpotMarkerOptions != null) {
 //            MarkerView closestSpotMarker = closestSpotMarkerOptions.getMarker();
@@ -865,7 +865,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
-        if (isUpdatingSpots) {
+        //if (isUpdatingSpots) {
             Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
             call.enqueue(new Callback<List<ParkingSpot>>() {
                 @Override
@@ -885,7 +885,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Log.i(TAG + "2", "Failed to connect: " + t.toString());
                 }
             });
-        }
+        //}
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
@@ -990,7 +990,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             //Replace the old ParkingSpot with the new one
             deltaParkingSpots.remove(i);
             deltaParkingSpots.add(i, spot);
+            // Remove after debugging
+            Log.i(TAG + "Spots", "ID: " + deltaParkingSpots.get(i).getSpotId() +" STATUS: " + deltaParkingSpots.get(i).getStatus());
         }
+        // Remove after debugging
+        // vvvvvvvvvvvvvvvvvv
+        List<Marker> totalMarkersOnMap = map.getMarkers();
+        Log.i(TAG + "Spots", "TOTAL MARKERS ON MAP (including destination & closest marker): " + totalMarkersOnMap.size());
+        // ^^^^^^^^^^^^^^^^^^
         //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
         if (previousParkingSpots == null) {
             previousParkingSpots = new ArrayList<>();
