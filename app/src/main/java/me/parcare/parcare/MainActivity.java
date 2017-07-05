@@ -360,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                             drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
                                             startNavigationFAB.setVisibility(View.VISIBLE);
                                             cancelRouteFAB.setVisibility(View.VISIBLE);
+                                            snapToLocationFAB.setVisibility(View.GONE);
                                             allowAlert = true;
                                         }
                                     })
@@ -534,6 +535,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
 
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
+        snapToLocationFAB.setVisibility(View.VISIBLE);
         snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -555,6 +557,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         map.removePolyline(route);
                     }
                     cancelRouteFAB.setVisibility(View.GONE);
+                    snapToLocationFAB.setVisibility(View.VISIBLE);
                     if (startNavigationFAB.getVisibility() == View.VISIBLE) {
                         startNavigationFAB.setVisibility(View.GONE);
                     }
@@ -567,8 +570,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private void onSearch(int searchedIndex) {
 
         isUpdatingSpots = true;
-
-        startNavigationFAB.setVisibility(View.GONE);
 
         Feature selectedFeature = rawSuggestions.get(searchedIndex);
 
