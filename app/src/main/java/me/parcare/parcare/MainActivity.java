@@ -63,6 +63,7 @@ import com.mapbox.services.api.directions.v5.models.LegStep;
 import com.mapbox.services.commons.models.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private List<ParkingSpot> previousParkingSpots;
+    private HashMap<Integer, Integer> redrawSpotIDs;
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
     private boolean allowAlert;
@@ -922,13 +924,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         for (ParkingSpot checkSpot : newParkingSpots) {
             spotExists = false;
 
-            for (ParkingSpot previousCheckSpot : previousParkingSpots) {
+            for (int i = 0; i < previousParkingSpots.size(); i++) {
+                ParkingSpot previousCheckSpot = previousParkingSpots.get(i);
                 if (checkSpot.getSpotId() == previousCheckSpot.getSpotId()) {
                     spotExists = true;
                     if (checkSpot.getLat() != previousCheckSpot.getLat() ||
                             checkSpot.getLon() != previousCheckSpot.getLon() ||
                             !checkSpot.getStatus().equals(previousCheckSpot.getStatus())) {
                         deltas.add(checkSpot);
+                        redrawSpotIDs.put(checkSpot.getSpotId(), i);
                     } else {
                         nonDeltas.add(previousCheckSpot);
                     }
@@ -946,6 +950,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
         List<ParkingSpot> deltaParkingSpots = new ArrayList<>();
         List<ParkingSpot> nonDeltaParkingSpots = new ArrayList<>();
+        redrawSpotIDs = new HashMap<>();
 
         if (previousParkingSpots != null && previousParkingSpots.size() > 0) {
             Pair<List<ParkingSpot>, List<ParkingSpot>> pair = getDeltaParkingSpots(parkingSpots, previousParkingSpots);
@@ -967,6 +972,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             map.addMarker(closestSpotMarkerOptions);
         }
         */
+        Log.d("DRAWSPOT", deltaParkingSpots.size() + " deltas");
 
         //Draw changed spots
         for (int i = 0; i < deltaParkingSpots.size(); i++) {
@@ -974,7 +980,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             ParkingSpot spot = deltaParkingSpots.get(i);
 
             //remove the previous marker, if there is one
-            if (spot.getMarker() != null) map.removeMarker(spot.getMarker());
+
+            if (redrawSpotIDs.containsKey(spot.getSpotId())) {
+                map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(spot.getSpotId())).getMarker());
+            }
 
             LatLng spotLatLng = new LatLng(spot.getLat(), spot.getLon());
             if (spot.getStatus().equals(SPOT_AVAILABLE)) {
@@ -993,11 +1002,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             // Remove after debugging
             Log.i(TAG + "Spots", "ID: " + deltaParkingSpots.get(i).getSpotId() +" STATUS: " + deltaParkingSpots.get(i).getStatus());
         }
-        // Remove after debugging
-        // vvvvvvvvvvvvvvvvvv
-        List<Marker> totalMarkersOnMap = map.getMarkers();
-        Log.i(TAG + "Spots", "TOTAL MARKERS ON MAP (including destination & closest marker): " + totalMarkersOnMap.size());
-        // ^^^^^^^^^^^^^^^^^^
+
         //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
         if (previousParkingSpots == null) {
             previousParkingSpots = new ArrayList<>();
