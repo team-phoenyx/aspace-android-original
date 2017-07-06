@@ -1,4 +1,4 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -25,7 +25,7 @@ import java.util.TimerTask;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import me.parcare.parcare.realmmodels.UserCredentials;
+import com.aspace.aspace.realmmodels.UserCredentials;
 
 public class LoginActivity extends AppCompatActivity {
 

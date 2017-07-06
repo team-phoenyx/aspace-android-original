@@ -1,4 +1,4 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import android.Manifest;
 import android.content.Context;
@@ -66,10 +66,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import me.parcare.parcare.retrofitmodels.Feature;
-import me.parcare.parcare.retrofitmodels.GeocodingResponse;
-import me.parcare.parcare.retrofitmodels.ParkingSpot;
-import me.parcare.parcare.retrofitmodels.Suggestion;
+import com.aspace.aspace.retrofitmodels.Feature;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.Suggestion;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

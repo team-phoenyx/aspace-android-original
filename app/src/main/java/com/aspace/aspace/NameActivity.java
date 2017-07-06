@@ -1,4 +1,4 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +16,7 @@ import android.widget.TextView;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import me.parcare.parcare.realmmodels.UserCredentials;
+import com.aspace.aspace.realmmodels.UserCredentials;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;

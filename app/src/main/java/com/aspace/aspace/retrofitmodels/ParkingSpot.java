@@ -6,7 +6,6 @@ package me.parcare.parcare.retrofitmodels;
 import com.google.gson.annotations.SerializedName;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 public class ParkingSpot {
 

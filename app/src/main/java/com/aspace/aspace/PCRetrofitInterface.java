@@ -1,9 +1,9 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import java.util.List;
 
-import me.parcare.parcare.retrofitmodels.GeocodingResponse;
-import me.parcare.parcare.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.retrofitmodels.ParkingSpot;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;

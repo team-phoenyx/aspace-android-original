@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="me.parcare.parcare">
+    package="com.aspace.aspace">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,7 +19,7 @@
         <activity
             android:name=".SplashActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="ParCare"
+            android:label="Aspace"
             android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
             <intent-filter>

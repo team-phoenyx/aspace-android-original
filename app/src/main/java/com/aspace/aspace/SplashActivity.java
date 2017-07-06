@@ -1,4 +1,4 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +17,7 @@ import java.net.URL;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import me.parcare.parcare.realmmodels.UserCredentials;
+import com.aspace.aspace.realmmodels.UserCredentials;
 
 /**
  * Created by Terrance on 6/24/2017.

@@ -1,4 +1,4 @@
-package me.parcare.parcare;
+package com.aspace.aspace;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -37,9 +37,9 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import me.parcare.parcare.realmmodels.UserCredentials;
-import me.parcare.parcare.retrofitmodels.Feature;
-import me.parcare.parcare.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.realmmodels.UserCredentials;
+import com.aspace.aspace.retrofitmodels.Feature;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,8 +48,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
-import static me.parcare.parcare.MainActivity.BASE_URL;
-import static me.parcare.parcare.MainActivity.MAPBOX_BASE_URL;
+import static com.aspace.aspace.MainActivity.BASE_URL;
+import static com.aspace.aspace.MainActivity.MAPBOX_BASE_URL;
 
 /**
  * Created by Terrance on 6/24/2017.

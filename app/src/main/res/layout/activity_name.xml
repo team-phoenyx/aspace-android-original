@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="me.parcare.parcare.NameActivity">
+    tools:context="com.aspace.aspace.NameActivity">
 
     <EditText
         android:id="@+id/name_edittext"
