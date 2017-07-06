@@ -658,6 +658,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     protected void onStart() {
         super.onStart();
         mMapView.onStart();
+        navigation.onStart();
     }
 
     @Override
@@ -685,6 +686,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     protected void onStop() {
         super.onStop();
         mMapView.onStop();
+        navigation.onStop();
     }
 
     @Override
