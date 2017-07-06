@@ -24,6 +24,10 @@ import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
+import com.aspace.aspace.retrofitmodels.Feature;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.Suggestion;
 import com.mapbox.directions.DirectionsCriteria;
 import com.mapbox.directions.MapboxDirections;
 import com.mapbox.directions.service.models.DirectionsResponse;
@@ -66,10 +70,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.aspace.aspace.retrofitmodels.Feature;
-import com.aspace.aspace.retrofitmodels.GeocodingResponse;
-import com.aspace.aspace.retrofitmodels.ParkingSpot;
-import com.aspace.aspace.retrofitmodels.Suggestion;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -904,7 +904,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     closestSpotMarkerOptions = new MarkerViewOptions()
                             .position(closestSpotLatLng)
                             .icon(closestParkingSpotIcon);
-                    map.addMarker(closestSpotMarkerOptions);
+                    Marker marker = map.addMarker(closestSpotMarkerOptions);
+                    map.selectMarker(marker);
                 }
             }
 
