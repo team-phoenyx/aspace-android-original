@@ -24,8 +24,6 @@ import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
-import com.instabug.library.Instabug;
-import com.instabug.library.invocation.InstabugInvocationEvent;
 import com.mapbox.directions.DirectionsCriteria;
 import com.mapbox.directions.MapboxDirections;
 import com.mapbox.directions.service.models.DirectionsResponse;
@@ -150,10 +148,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         Mapbox.getInstance(this, getString(R.string.access_token));
 
         setContentView(R.layout.activity_main);
-
-        new Instabug.Builder(getApplication(), "6b6c0881b17446216f69f587e1b48021")
-                .setInvocationEvent(InstabugInvocationEvent.SHAKE)
-                .build();
 
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
