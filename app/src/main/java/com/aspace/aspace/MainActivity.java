@@ -665,8 +665,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 isUpdatingSpots = true;
             }
             mMapView.onResume();
+            toggleGps(true, false);
         }
-        toggleGps(true, false);
+
     }
 
     @Override
