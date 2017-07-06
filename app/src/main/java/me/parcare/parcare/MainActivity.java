@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                 map.removePolyline(drivingRoutePolyline);
                             }
                             // draw new driving route
-                            drawRouteToSpot(newOriginLatLng, destinationLatLng, ROUTE_TYPE_DRIVING);
+                            drawRouteToSpot(newOriginLatLng, clickedSpotLatLng, ROUTE_TYPE_DRIVING);
                             Log.i(TAG + "Directions", "Route Update Successful");
                         } else {
                             Log.i(TAG + "Directions", "Route Update Unsuccessful");
@@ -947,7 +947,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     private void drawSpots(List<ParkingSpot> parkingSpots) {
-        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
         List<ParkingSpot> deltaParkingSpots = new ArrayList<>();
         List<ParkingSpot> nonDeltaParkingSpots = new ArrayList<>();
         redrawSpotIDs = new HashMap<>();
@@ -999,8 +998,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             //Replace the old ParkingSpot with the new one
             deltaParkingSpots.remove(i);
             deltaParkingSpots.add(i, spot);
-            // Remove after debugging
-            Log.i(TAG + "Spots", "ID: " + deltaParkingSpots.get(i).getSpotId() +" STATUS: " + deltaParkingSpots.get(i).getStatus());
         }
 
         //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
@@ -1010,6 +1007,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         previousParkingSpots.clear();
         previousParkingSpots.addAll(deltaParkingSpots);
         previousParkingSpots.addAll(nonDeltaParkingSpots);
+        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
     }
 
     // Draws polyline route from the origin to the spot specified by the given destination. Route determined
