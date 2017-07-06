@@ -1,4 +1,4 @@
-package me.parcare.parcare.realmmodels;
+package com.aspace.aspace.realmmodels;
 
 import io.realm.RealmObject;
 

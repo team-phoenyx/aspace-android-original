@@ -1,5 +1,5 @@
 
-package me.parcare.parcare.retrofitmodels;
+package com.aspace.aspace.retrofitmodels;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;

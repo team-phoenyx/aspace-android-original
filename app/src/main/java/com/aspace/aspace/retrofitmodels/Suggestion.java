@@ -1,4 +1,4 @@
-package me.parcare.parcare.retrofitmodels;
+package com.aspace.aspace.retrofitmodels;
 
 import android.os.Parcel;
 
