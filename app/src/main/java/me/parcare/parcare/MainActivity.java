@@ -671,6 +671,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
             mMapView.onResume();
         }
+        toggleGps(true, false);
     }
 
     @Override
