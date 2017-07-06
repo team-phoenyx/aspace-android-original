@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "139784371888",
+    "firebase_url": "https://aspace-proj.firebaseio.com",
+    "project_id": "aspace-proj",
+    "storage_bucket": "aspace-proj.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139784371888:android:6080b0ea8573e2b1",
+        "android_client_info": {
+          "package_name": "com.aspace.aspace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "139784371888-b6n9bv23epldg29hk8cdh21513k83vnn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQRb1Bz79xNWBULZ40pArJRHIzdmccrJo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
