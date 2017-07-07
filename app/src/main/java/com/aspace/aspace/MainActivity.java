@@ -705,6 +705,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             locationEngine.removeLocationEngineListener(locationEngineListener);
         }
         // make sure to remove all navigation listeners being used
+        navigation.onDestroy(); // *
         navigation.endNavigation();
     }
 
