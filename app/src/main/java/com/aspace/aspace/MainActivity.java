@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LocationEngineListener locationEngineListener;
     private MarkerViewOptions closestSpotMarkerOptions, destinationMarkerOptions;
     private MarkerView destinationMarker;
+    private Marker closestMarker;
     private LatLng currentDisplayTopLeft, currentDisplayBottomRight;
     private Icon openParkingSpotIcon, closedParkingSpotIcon, closestParkingSpotIcon;
     private Timer timer;
@@ -891,21 +892,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
     private void getClosestParkingSpot(PCRetrofitInterface parCareService, String lat, String lon) {
         Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
-        final String latF = lat;
-        final String lonF = lon;
+
         call.enqueue(new Callback<ParkingSpot>() {
             @Override
             public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
                 ParkingSpot closestSpot = response.body();
                 LatLng closestSpotLatLng = new LatLng(closestSpot.getLat(), closestSpot.getLon());
+
                 if (closestSpotMarkerOptions != null && closestSpotMarkerOptions.getMarker().getPosition() != closestSpotLatLng) {
                     closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
                 } else {
                     closestSpotMarkerOptions = new MarkerViewOptions()
                             .position(closestSpotLatLng)
                             .icon(closestParkingSpotIcon);
-                    Marker marker = map.addMarker(closestSpotMarkerOptions);
-                    map.selectMarker(marker);
+                    closestMarker = map.addMarker(closestSpotMarkerOptions);
+                    map.selectMarker(closestMarker);
                 }
             }
 
@@ -1006,7 +1007,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         previousParkingSpots.clear();
         previousParkingSpots.addAll(deltaParkingSpots);
         previousParkingSpots.addAll(nonDeltaParkingSpots);
-        getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
+
+        //draw the closest spot marker
+        if (searchedLatString != null && searchedLngString != null && !searchedLatString.equals("") && !searchedLngString.equals("")) {
+            getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
+        }
     }
 
     // Draws polyline route from the origin to the spot specified by the given destination. Route determined
