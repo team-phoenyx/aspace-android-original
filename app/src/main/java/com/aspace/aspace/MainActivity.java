@@ -213,11 +213,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void userOffRoute(Location location) {
                 final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                /*
                 double destinationLat = destinationMarker.getPosition().getLatitude();
                 double destinationLng = destinationMarker.getPosition().getLongitude();
                 final LatLng destinationLatLng = new LatLng (destinationLat, destinationLng);
+                */
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
-                Position destination = Position.fromCoordinates(destinationLng, destinationLat);
+                Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
                 navigation.getRoute(newOrigin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
@@ -339,42 +341,46 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 markerViewManager.setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
-                        clickedSpotLatLng = marker.getPosition();
-                        final LatLng clickedSpotLatLngF = new LatLng(marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
-                        if (allowAlert) {
-                            allowAlert = false;
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            builder.setTitle("Directions to Spot")
-                                    .setMessage("Would you like to see the route to this spot?")
-                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            List<Polyline> polylines = map.getPolylines();
-                                            for (Polyline polyline : polylines) {
-                                                map.removePolyline(polyline);
+                        if (destinationMarkerOptions != null && marker == destinationMarkerOptions.getMarker()) {
+                            return false;
+                        } else {
+                            clickedSpotLatLng = marker.getPosition();
+                            final LatLng clickedSpotLatLngF = new LatLng(marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
+                            if (allowAlert) {
+                                allowAlert = false;
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setTitle("Directions to Spot")
+                                        .setMessage("Would you like to see the route to this spot?")
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                List<Polyline> polylines = map.getPolylines();
+                                                for (Polyline polyline : polylines) {
+                                                    map.removePolyline(polyline);
+                                                }
+                                                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
+                                                drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                                startNavigationFAB.setVisibility(View.VISIBLE);
+                                                cancelRouteFAB.setVisibility(View.VISIBLE);
+                                                snapToLocationFAB.setVisibility(View.GONE);
+                                                allowAlert = true;
                                             }
-                                            drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
-                                            drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
-                                            startNavigationFAB.setVisibility(View.VISIBLE);
-                                            cancelRouteFAB.setVisibility(View.VISIBLE);
-                                            snapToLocationFAB.setVisibility(View.GONE);
-                                            allowAlert = true;
-                                        }
-                                    })
-                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startNavigationFAB.setVisibility(View.GONE);
-                                            allowAlert = true;
-                                        }
-                                    })
-                                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                        @Override
-                                        public void onCancel(DialogInterface dialog) {
-                                            allowAlert = true;
-                                        }
-                                    })
-                                    .create().show();
+                                        })
+                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                startNavigationFAB.setVisibility(View.GONE);
+                                                allowAlert = true;
+                                            }
+                                        })
+                                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialog) {
+                                                allowAlert = true;
+                                            }
+                                        })
+                                        .create().show();
+                            }
                         }
                         return true;
                     }
