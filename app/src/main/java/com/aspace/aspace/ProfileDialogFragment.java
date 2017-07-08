@@ -26,6 +26,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.aspace.aspace.realmmodels.UserCredentials;
+import com.aspace.aspace.retrofitmodels.Feature;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,9 +41,6 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import com.aspace.aspace.realmmodels.UserCredentials;
-import com.aspace.aspace.retrofitmodels.Feature;
-import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,9 +48,9 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
-import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 import static com.aspace.aspace.MainActivity.BASE_URL;
 import static com.aspace.aspace.MainActivity.MAPBOX_BASE_URL;
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -68,11 +69,6 @@ public class ProfileDialogFragment extends DialogFragment {
     private String homeLocationID = "", workLocationID = "";
     private double lat, lng;
 
-    private static final String SP_USER_NAME_TAG = "user_name";
-    private static final String SP_USER_HOME_ADDRESS_TAG = "user_home_address";
-    private static final String SP_USER_WORK_ADDRESS_TAG = "user_work_address";
-    private static final String SP_USER_HOME_LOC_ID_TAG = "user_home_loc_id";
-    private static final String SP_USER_WORK_LOC_ID_TAG = "user_work_loc+id";
     private static final String USER_PROFILE_PICTURE_FILENAME_TAG = "user_profile_picture.png";
     private static final String USER_PROFILE_PICTURE_DIRECTORY_TAG = "profile_picture_directory_path";
     private static final int PICK_IMAGE_REQUEST_CALLBACK = 1;
@@ -300,7 +296,7 @@ public class ProfileDialogFragment extends DialogFragment {
         builder.setNeutralButton("Log Out", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //Clear all UserCredential and UserProfile objects from Realm
+                //Clear all UserCredential objects from Realm
                 final RealmResults<UserCredentials> credentialResults = realm.where(UserCredentials.class).findAll();
 
                 realm.executeTransaction(new Realm.Transaction() {
@@ -309,6 +305,8 @@ public class ProfileDialogFragment extends DialogFragment {
                         credentialResults.deleteAllFromRealm();
                     }
                 });
+
+                realm.close();
 
                 //Start loginactivity
                 Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);

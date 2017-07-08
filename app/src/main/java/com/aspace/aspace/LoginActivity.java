@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.aspace.aspace.realmmodels.UserCredentials;
 import com.securepreferences.SecurePreferences;
 
 import java.security.SecureRandom;
@@ -25,7 +26,6 @@ import java.util.TimerTask;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import com.aspace.aspace.realmmodels.UserCredentials;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -193,6 +193,8 @@ public class LoginActivity extends AppCompatActivity {
                                                         credentials.setUserPhoneNumber(userPhoneNumber);
 
                                                         realm.commitTransaction();
+
+                                                        realm.close();
 
                                                         Intent intent;
                                                         //TODO Check success code 101 or 102

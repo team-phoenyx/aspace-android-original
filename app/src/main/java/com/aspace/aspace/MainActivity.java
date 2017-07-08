@@ -708,12 +708,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     @Override
     public void onLowMemory() {
+        Log.i("ACTIVITY_LIFECYCLE", "LOW MEMORY");
         super.onLowMemory();
         mMapView.onLowMemory();
     }
 
     @Override
     protected void onDestroy() {
+        Log.i("ACTIVITY_LIFECYCLE", "ACTIVITY DESTROYED");
         super.onDestroy();
         mMapView.onDestroy();
         if (locationEngineListener != null) {

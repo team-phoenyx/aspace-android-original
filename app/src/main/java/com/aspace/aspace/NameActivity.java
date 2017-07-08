@@ -13,10 +13,11 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.aspace.aspace.realmmodels.UserCredentials;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import com.aspace.aspace.realmmodels.UserCredentials;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -125,6 +126,8 @@ public class NameActivity extends AppCompatActivity {
                 credentialResults.deleteAllFromRealm();
             }
         });
+
+        realm.close();
 
         //Start loginactivity
         Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);

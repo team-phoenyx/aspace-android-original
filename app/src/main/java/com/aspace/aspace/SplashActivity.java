@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.view.View;
 
+import com.aspace.aspace.realmmodels.UserCredentials;
 import com.securepreferences.SecurePreferences;
 
 import java.net.HttpURLConnection;
@@ -17,7 +18,6 @@ import java.net.URL;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
-import com.aspace.aspace.realmmodels.UserCredentials;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -90,6 +90,8 @@ public class SplashActivity extends AppCompatActivity {
                                     intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
                                     intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
 
+                                    realm.close();
+
                                     startActivity(intent);
                                     finish();
                                 } else {
@@ -133,6 +135,8 @@ public class SplashActivity extends AppCompatActivity {
                     credentialResults.deleteAllFromRealm();
                 }
             });
+
+            realm.close();
         }
 
         Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
