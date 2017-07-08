@@ -358,6 +358,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                                 for (Polyline polyline : polylines) {
                                                     map.removePolyline(polyline);
                                                 }
+                                                if (navigation != null) {
+                                                    navigation.endNavigation();
+                                                }
                                                 drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
                                                 drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
                                                 startNavigationFAB.setVisibility(View.VISIBLE);
