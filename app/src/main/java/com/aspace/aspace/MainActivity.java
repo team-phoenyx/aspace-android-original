@@ -28,6 +28,8 @@ import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.ParkingSpot;
 import com.aspace.aspace.retrofitmodels.Suggestion;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mapbox.directions.DirectionsCriteria;
 import com.mapbox.directions.MapboxDirections;
 import com.mapbox.directions.service.models.DirectionsResponse;
@@ -64,6 +66,7 @@ import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.api.directions.v5.models.LegStep;
 import com.mapbox.services.commons.models.Position;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -576,6 +579,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
+
+        /* restore instance state
+        if (savedInstanceState != null) {
+            Gson gson = new Gson();
+
+            newSuggestions = (List<SearchSuggestion>) gson.fromJson(savedInstanceState.getString("newSuggestions"), List.class);
+            rawSuggestions = (List<Feature>) gson.fromJson(savedInstanceState.getString("rawSuggestions"), List.class);
+        }
+        */
     }
 
     //When user selects a search suggestion
@@ -704,6 +716,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
+
+        Gson gson = new Gson();
+
+        Type newListType = new TypeToken<List<SearchSuggestion>>() {}.getType();
+        Type rawListType = new TypeToken<List<Feature>>() {}.getType();
+
+        outState.putString("newSuggestions", gson.toJson(newSuggestions, newListType));
+        outState.putString("rawSuggestions", gson.toJson(rawSuggestions, rawListType));
     }
 
     @Override
