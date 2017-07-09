@@ -8,9 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,7 +21,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
@@ -58,7 +55,6 @@ import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 public class ProfileDialogFragment extends DialogFragment {
 
-    ImageView profilePictureImageView;
     EditText nameEditText;
     AutoCompleteTextView homeAddressEditText, workAddressEditText;
     TextView errorTextView;
@@ -117,7 +113,6 @@ public class ProfileDialogFragment extends DialogFragment {
 
         builder.setView(dialogView).setCancelable(false);
 
-        profilePictureImageView = (ImageView) dialogView.findViewById(R.id.profile_pic_imageview);
         nameEditText = (EditText) dialogView.findViewById(R.id.name_edittext);
         homeAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.home_address_edittext);
         workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
@@ -131,17 +126,6 @@ public class ProfileDialogFragment extends DialogFragment {
         workAddressEditText.setText(userProfile.getWorkAddress());
         homeLocationID = userProfile.getHomeLocationID();
         workLocationID = userProfile.getWorkLocationID();
-
-        //TODO Image shouldn't be permanently saved, must be uploaded to server
-        String directoryPath = userProfile.getProfileImageDirectory();
-
-        if (directoryPath == null || directoryPath.equals("")) directoryPath = "no_picture";
-
-        if (directoryPath.equals("no_picture")) {
-            profilePictureImageView.setImageResource(R.drawable.sample_profile_pic);
-        } else {
-            profilePictureImageView.setImageBitmap(openImage(directoryPath));
-        }
         */
 
         homeAddressEditText.setLines(1);
@@ -265,15 +249,6 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
 
-        profilePictureImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent chooseImageIntent = new Intent();
-                chooseImageIntent.setType("image/*");
-                chooseImageIntent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(chooseImageIntent, "Select a picture"), PICK_IMAGE_REQUEST_CALLBACK);
-            }
-        });
 
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
@@ -323,8 +298,9 @@ public class ProfileDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (data == null) return;
+        //if (data == null) return;
 
+        /*
         switch (requestCode) {
             case PICK_IMAGE_REQUEST_CALLBACK:
                 Uri imageURI = data.getData();
@@ -356,6 +332,7 @@ public class ProfileDialogFragment extends DialogFragment {
                 }
                 break;
         }
+        */
     }
 
     @Override
