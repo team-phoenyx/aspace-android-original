@@ -17,7 +17,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -937,15 +936,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 ParkingSpot closestSpot = response.body();
                 LatLng closestSpotLatLng = new LatLng(closestSpot.getLat(), closestSpot.getLon());
 
-                if (closestSpotMarkerOptions != null && closestSpotMarkerOptions.getMarker().getPosition() != closestSpotLatLng) {
-                    closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
+                if (closestSpotMarkerOptions != null) {
+                    if (!closestSpotMarkerOptions.getMarker().getPosition().equals(closestSpotLatLng)) {
+                        map.removeMarker(closestMarker);
+                        closestMarker = map.addMarker(closestSpotMarkerOptions);
+                        closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
+                    }
                 } else {
-                    closestSpotMarkerOptions = new MarkerViewOptions()
-                            .position(closestSpotLatLng)
-                            .icon(closestParkingSpotIcon);
+                    closestSpotMarkerOptions = new MarkerViewOptions().position(closestSpotLatLng).icon(closestParkingSpotIcon);
+                    if (closestMarker != null) map.removeMarker(closestMarker);
                     closestMarker = map.addMarker(closestSpotMarkerOptions);
-                    map.selectMarker(closestMarker);
                 }
+                map.selectMarker(closestMarker);
+                mMapView.bringToFront();
+                Log.d("MARKER", "CLOSEST MARKER SELECTED");
             }
 
             @Override
@@ -955,9 +959,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
     }
 
-    private Pair<List<ParkingSpot>, List<ParkingSpot>> getDeltaParkingSpots(List<ParkingSpot> newParkingSpots, List<ParkingSpot> previousParkingSpots) {
+    private List<List<ParkingSpot>> getDeltaParkingSpots(List<ParkingSpot> newParkingSpots, List<ParkingSpot> previousParkingSpots) {
         List<ParkingSpot> deltas = new ArrayList<>();
         List<ParkingSpot> nonDeltas = new ArrayList<>();
+        List<ParkingSpot> removes = new ArrayList<>();
         boolean spotExists = false;
         for (ParkingSpot checkSpot : newParkingSpots) {
             spotExists = false;
@@ -980,36 +985,50 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             if (!spotExists) deltas.add(checkSpot);
         }
-        Pair<List<ParkingSpot>, List<ParkingSpot>> pair = new Pair<List<ParkingSpot>, List<ParkingSpot>>(deltas, nonDeltas);
-        return pair;
+
+        for (int i = 0; i < previousParkingSpots.size(); i++) {
+            ParkingSpot checkStillExistsSpot = previousParkingSpots.get(i);
+
+            int oldSpotID = checkStillExistsSpot.getSpotId();
+            boolean spotStillExists = false;
+            for (ParkingSpot newSpot : newParkingSpots) {
+                if (newSpot.getSpotId() == oldSpotID) {
+                    spotStillExists = true;
+                    break;
+                }
+            }
+
+            if (!spotStillExists) {
+                redrawSpotIDs.put(checkStillExistsSpot.getSpotId(), i);
+                removes.add(checkStillExistsSpot);
+            }
+        }
+
+        List<List<ParkingSpot>> redrawData = new ArrayList<>();
+        redrawData.add(deltas);
+        redrawData.add(nonDeltas);
+        redrawData.add(removes);
+        return redrawData;
     }
 
     private void drawSpots(List<ParkingSpot> parkingSpots) {
         List<ParkingSpot> deltaParkingSpots = new ArrayList<>();
+        List<ParkingSpot> removedParkingSpots = new ArrayList<>();
         List<ParkingSpot> nonDeltaParkingSpots = new ArrayList<>();
         redrawSpotIDs = new HashMap<>();
 
         if (previousParkingSpots != null && previousParkingSpots.size() > 0) {
-            Pair<List<ParkingSpot>, List<ParkingSpot>> pair = getDeltaParkingSpots(parkingSpots, previousParkingSpots);
+            List<List<ParkingSpot>> redrawData = getDeltaParkingSpots(parkingSpots, previousParkingSpots);
 
-            deltaParkingSpots = pair.first;
-            nonDeltaParkingSpots = pair.second;
+            deltaParkingSpots = redrawData.get(0);
+            nonDeltaParkingSpots = redrawData.get(1);
+            removedParkingSpots = redrawData.get(2);
 
         } else {
             deltaParkingSpots = parkingSpots;
         }
 
-        /*
-        // redraw destination spot marker
-        if (destinationMarkerOptions != null) {
-            map.addMarker(destinationMarkerOptions);
-        }
-        // redraw closest spot marker
-        if (closestSpotMarkerOptions != null) {
-            map.addMarker(closestSpotMarkerOptions);
-        }
-        */
-        Log.d("DRAWSPOT", deltaParkingSpots.size() + " deltas");
+        Log.d("DRAWSPOT", deltaParkingSpots.size() + " deltas/adds; " + removedParkingSpots.size() + " removed;" + nonDeltaParkingSpots.size() + " unchanged.");
 
         //Draw changed spots
         for (int i = 0; i < deltaParkingSpots.size(); i++) {
@@ -1017,7 +1036,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             ParkingSpot spot = deltaParkingSpots.get(i);
 
             //remove the previous marker, if there is one
-
             if (redrawSpotIDs.containsKey(spot.getSpotId())) {
                 map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(spot.getSpotId())).getMarker());
             }
@@ -1038,6 +1056,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             deltaParkingSpots.add(i, spot);
         }
 
+        for (ParkingSpot removeSpot : removedParkingSpots) {
+            map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(removeSpot.getSpotId())).getMarker());
+        }
+
         //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
         if (previousParkingSpots == null) {
             previousParkingSpots = new ArrayList<>();
@@ -1050,6 +1072,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         if (searchedLatString != null && searchedLngString != null && !searchedLatString.equals("") && !searchedLngString.equals("")) {
             getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
         }
+        Log.d("MARKERS", map.getMarkers().size() + " markers total");
     }
 
     // Draws polyline route from the origin to the spot specified by the given destination. Route determined
