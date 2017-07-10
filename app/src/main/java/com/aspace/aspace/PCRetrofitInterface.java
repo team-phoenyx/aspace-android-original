@@ -1,9 +1,10 @@
 package com.aspace.aspace;
 
-import java.util.List;
-
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.ParkingSpot;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -17,6 +18,8 @@ import retrofit2.http.Query;
  */
 
 public interface PCRetrofitInterface {
+
+    //********SPOT ENDPOINTS********
     @FormUrlEncoded
     @POST("spots/single/")
     Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spot_id);
@@ -30,12 +33,31 @@ public interface PCRetrofitInterface {
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
 
+    //********AUTH ENDPOINTS********
+    @FormUrlEncoded
+    @POST("users/auth/pin/")
+    Call<ParkingSpot> requestPIN(@Field("phone") String phone);
+
+    @FormUrlEncoded
+    @POST("users/auth/verify/")
+    Call<ParkingSpot> verifyPIN(@Field("phone") String phone, @Field("pin") String pin);
+
+    @FormUrlEncoded
+    @POST("users/auth/reauth/")
+    Call<ParkingSpot> reauthenticate(@Field("access_token") String accessToken, @Field("phone") String phone, @Field("user_id") String userID);
+
+    //********PROFILE ENDPOINTS********
     @FormUrlEncoded
     @POST("users/profile/update/")
     Call<String> updateProfile(@Field("name") String name, @Field("work_address") String work_address,
                                @Field("home_address") String home_address, @Field("home_loc_id") String home_loc_id,
                                @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token);
 
+    @FormUrlEncoded
+    @POST("users/profile/get/")
+    Call<ParkingSpot> getProfile(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+
+    //********GEOCODING ENDPOINT********
     @GET("geocoding/v5/mapbox.places/{query}.json")
     Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
 }
