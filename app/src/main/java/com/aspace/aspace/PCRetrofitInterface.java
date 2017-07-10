@@ -2,6 +2,10 @@ package com.aspace.aspace;
 
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.Profile;
+import com.aspace.aspace.retrofitmodels.ReauthenticateResponse;
+import com.aspace.aspace.retrofitmodels.RequestPINResponse;
+import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
 
 import java.util.List;
 
@@ -36,15 +40,15 @@ public interface PCRetrofitInterface {
     //********AUTH ENDPOINTS********
     @FormUrlEncoded
     @POST("users/auth/pin/")
-    Call<ParkingSpot> requestPIN(@Field("phone") String phone);
+    Call<RequestPINResponse> requestPIN(@Field("phone") String phone);
 
     @FormUrlEncoded
     @POST("users/auth/verify/")
-    Call<ParkingSpot> verifyPIN(@Field("phone") String phone, @Field("pin") String pin);
+    Call<VerifyPINResponse> verifyPIN(@Field("phone") String phone, @Field("pin") String pin);
 
     @FormUrlEncoded
     @POST("users/auth/reauth/")
-    Call<ParkingSpot> reauthenticate(@Field("access_token") String accessToken, @Field("phone") String phone, @Field("user_id") String userID);
+    Call<ReauthenticateResponse> reauthenticate(@Field("access_token") String accessToken, @Field("phone") String phone, @Field("user_id") String userID);
 
     //********PROFILE ENDPOINTS********
     @FormUrlEncoded
@@ -55,7 +59,7 @@ public interface PCRetrofitInterface {
 
     @FormUrlEncoded
     @POST("users/profile/get/")
-    Call<ParkingSpot> getProfile(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+    Call<Profile> getProfile(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
 
     //********GEOCODING ENDPOINT********
     @GET("geocoding/v5/mapbox.places/{query}.json")
