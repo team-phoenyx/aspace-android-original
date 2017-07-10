@@ -51,6 +51,7 @@ import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.services.Constants;
 import com.mapbox.services.android.navigation.v5.MapboxNavigation;
 import com.mapbox.services.android.navigation.v5.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.RouteProgress;
@@ -63,6 +64,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.api.directions.v5.models.LegStep;
+import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
 import java.lang.reflect.Type;
@@ -233,7 +235,33 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                 map.removePolyline(drivingRoutePolyline);
                             }
                             // draw new driving route
-                            drawRouteToSpot(newOriginLatLng, clickedSpotLatLng, ROUTE_TYPE_DRIVING);
+                            LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
+                            List<Position> coordinates = lineString.getCoordinates();
+                            LatLng[] points = new LatLng[coordinates.size()];
+                            for (int i = 0; i < coordinates.size(); i++) {
+                                // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
+                                // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
+                                points[i] = new LatLng(
+                                        coordinates.get(i).getLatitude() / 10.0,
+                                        coordinates.get(i).getLongitude() / 10.0);
+                                //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
+                            }
+
+                            // Draw Points on MapView
+
+                            if (map != null && !map.getPolylines().isEmpty()) {
+                                map.removePolyline(drivingRoutePolyline);
+                            }
+
+                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
+                                    .add(points)
+                                    .color(Color.parseColor("#3887be"))
+                                    .alpha((float) 0.5)
+                                    .width(5);
+                            map.addPolyline(polylineOptionsDrive);
+
+                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
+
                             Log.i(TAG + "Directions", "Route Update Successful");
                         } else {
                             Log.i(TAG + "Directions", "Route Update Unsuccessful");
@@ -265,6 +293,34 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         if (response.isSuccessful()) {
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
                             MainActivity.this.route = route;
+
+                            LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
+                            List<Position> coordinates = lineString.getCoordinates();
+                            LatLng[] points = new LatLng[coordinates.size()];
+                            for (int i = 0; i < coordinates.size(); i++) {
+                                // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
+                                // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
+                                points[i] = new LatLng(
+                                        coordinates.get(i).getLatitude() / 10.0,
+                                        coordinates.get(i).getLongitude() / 10.0);
+                                //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
+                            }
+
+                            // Draw Points on MapView
+
+                            if (map != null && !map.getPolylines().isEmpty()) {
+                                map.removePolyline(drivingRoutePolyline);
+                            }
+
+                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
+                                    .add(points)
+                                    .color(Color.parseColor("#3887be"))
+                                    .alpha((float) 0.5)
+                                    .width(5);
+                            map.addPolyline(polylineOptionsDrive);
+
+                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
+
                             navigation.startNavigation(route);
                             // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
                             Location myCurrentLocation = map.getMyLocation();
@@ -1062,6 +1118,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Draws polyline route from the origin to the spot specified by the given destination. Route determined
     // by the given routeType.
+    // TODO: Use the navigation's directionroute callback to retrieve the route points instead of the mapboxdirections client
     private void drawRouteToSpot(LatLng origin, LatLng destination, int routeType) {
         // Note that waypoint takes in longitude first instead of latitude
         Waypoint originWaypoint = new Waypoint(origin.getLongitude(), origin.getLatitude());
