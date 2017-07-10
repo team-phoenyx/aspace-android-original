@@ -100,6 +100,7 @@ public class SplashActivity extends AppCompatActivity {
                                         //If success...
                                         if (response.body().getRespCode().equals("101") || response.body().getRespCode().equals("102")) {
                                             Intent intent;
+                                            Log.d("REAUTH_RESPONSE", response.body().getRespCode());
                                             if (response.body().getRespCode().equals("102")) intent = new Intent(getApplicationContext(), MainActivity.class);
                                             else intent = new Intent(getApplicationContext(), NameActivity.class);
 
@@ -107,8 +108,6 @@ public class SplashActivity extends AppCompatActivity {
                                             intent.putExtra(getString(R.string.user_id_tag), userID);
                                             intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
                                             intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
-
-                                            realm.close();
 
                                             startActivity(intent);
                                             finish();

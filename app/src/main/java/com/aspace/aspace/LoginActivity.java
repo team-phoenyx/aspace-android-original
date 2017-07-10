@@ -165,7 +165,7 @@ public class LoginActivity extends AppCompatActivity {
                                                         @Override
                                                         public void run() {
                                                             final String userPhoneNumber = phoneNumberEditText.getText().toString();
-                                                            String userCC = CCEditText.getText().toString();
+                                                            final String userCC = CCEditText.getText().toString();
                                                             String inputPIN = pinEditText.getText().toString();
 
 
@@ -196,7 +196,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                                                         credentials.setUserID(userID);
                                                                         credentials.setUserAccessToken(userAccessToken);
-                                                                        credentials.setUserPhoneNumber(userPhoneNumber);
+                                                                        credentials.setUserPhoneNumber(userCC + userPhoneNumber);
 
                                                                         realm.commitTransaction();
 
@@ -207,6 +207,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                         String respCode = response.body().getRespCode();
 
                                                                         //Check success new user (101) or returning user (102)
+                                                                        Log.d("AUTH_RESPONSE", respCode);
                                                                         if (respCode.equals("102")) {
                                                                             intent = new Intent(getApplicationContext(), MainActivity.class);
                                                                         } else {
