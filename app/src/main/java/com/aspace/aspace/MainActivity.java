@@ -215,11 +215,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void userOffRoute(Location location) {
                 final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                /*
-                double destinationLat = destinationMarker.getPosition().getLatitude();
-                double destinationLng = destinationMarker.getPosition().getLongitude();
-                final LatLng destinationLatLng = new LatLng (destinationLat, destinationLng);
-                */
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
                 Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
                 navigation.getRoute(newOrigin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
@@ -251,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
 
         MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
-        // sets off route distance threshhold to 10 meters for testing.
+        // sets off route distance threshhold to 50 meters.
         // (default threshhold is 50 meters).
         mapboxNavigationOptions.setMaximumDistanceOffRoute(50);
 
@@ -314,9 +309,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 .build();
 
         parCareService = retrofit.create(PCRetrofitInterface.class);
-
         retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-
         mapboxService = retrofit.create(PCRetrofitInterface.class);
 
         IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
@@ -391,7 +384,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
                 });
 
-                // ******************** SKETCHY TIMER TASK HERE ******************** \\
                 updateSpotTimerTask = new TimerTask() {
                     @Override
                     public void run() {
@@ -414,8 +406,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
                 };
                 timer.scheduleAtFixedRate(updateSpotTimerTask, 1000, SPOT_UPDATE_RATE);
-                // ******************** SKETCHY TIMER TASK HERE ******************** //
-                Log.i(TAG + "Call", "ON MAP READY");
                 mMapView.addOnMapChangedListener(new MapView.OnMapChangedListener() {
                     @Override
                     public void onMapChanged(int change) {
@@ -428,7 +418,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         });
 
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
-
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override
             public void onFocus() {
@@ -556,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 if (map != null && map.isMyLocationEnabled()) {
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
                 }
             }
         });
@@ -663,16 +652,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchedLngString = lng + "";
         // Removal of this
         //getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
-
-//        if (closestSpotMarkerOptions != null) {
-//            MarkerView closestSpotMarker = closestSpotMarkerOptions.getMarker();
-//            if (closestSpotMarker != null) {
-//                drawDrivingRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotMarker.getPosition());
-//            }
-//        }
-
-        //* Gives me a null pointer for the marker here for some reason?
-        //drawDrivingRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), closestSpotMarkerOptions.getMarker().getPosition());
     }
 
     @Override
@@ -904,25 +883,25 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                                     String lowerLat, String lowerLon,
                                                     String upperLat, String upperLon) {
         //if (isUpdatingSpots) {
-            Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
-            call.enqueue(new Callback<List<ParkingSpot>>() {
-                @Override
-                public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+        Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
+        call.enqueue(new Callback<List<ParkingSpot>>() {
+            @Override
+            public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
 
-                    if (response.isSuccessful()) {
-                        List<ParkingSpot> spots = response.body();
-                        drawSpots(spots);
-                        Log.i(TAG + "2", "Response Successful");
-                    } else {
-                        Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
-                    }
+                if (response.isSuccessful()) {
+                    List<ParkingSpot> spots = response.body();
+                    drawSpots(spots);
+                    Log.i(TAG + "2", "Response Successful");
+                } else {
+                    Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
                 }
+            }
 
-                @Override
-                public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
-                    Log.i(TAG + "2", "Failed to connect: " + t.toString());
-                }
-            });
+            @Override
+            public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+                Log.i(TAG + "2", "Failed to connect: " + t.toString());
+            }
+        });
         //}
     }
 
@@ -937,9 +916,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 LatLng closestSpotLatLng = new LatLng(closestSpot.getLat(), closestSpot.getLon());
 
                 if (closestSpotMarkerOptions != null) {
+                    // if the current marker's position is different than the "closest spot"
                     if (!closestSpotMarkerOptions.getMarker().getPosition().equals(closestSpotLatLng)) {
+                        // removing and readding here makes the marker blink. is this necessary? *******
                         map.removeMarker(closestMarker);
                         closestMarker = map.addMarker(closestSpotMarkerOptions);
+                        // ^^^^^
                         closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
                     }
                 } else {
