@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.aspace.aspace.realmmodels.UserCredentials;
 import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.retrofitmodels.Profile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,15 +119,26 @@ public class ProfileDialogFragment extends DialogFragment {
         workAddressEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.work_address_edittext);
         errorTextView = (TextView) dialogView.findViewById(R.id.enter_name_label);
 
-        //TODO Implement retrofit getProfile method to retrieve profile from server
+        parCareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+            @Override
+            public void onResponse(Call<Profile> call, Response<Profile> response) {
+                //TODO check resp code 100 first, if 7, show snackbar
+                Profile userProfile = response.body();
 
-        /*
-        nameEditText.setText(userProfile.getName());
-        homeAddressEditText.setText(userProfile.getHomeAddress());
-        workAddressEditText.setText(userProfile.getWorkAddress());
-        homeLocationID = userProfile.getHomeLocationID();
-        workLocationID = userProfile.getWorkLocationID();
-        */
+                nameEditText.setText(userProfile.getName());
+                homeAddressEditText.setText(userProfile.getHomeAddress());
+                workAddressEditText.setText(userProfile.getWorkAddress());
+                homeLocationID = userProfile.getHomeLocId();
+                workLocationID = userProfile.getWorkLocId();
+            }
+
+            @Override
+            public void onFailure(Call<Profile> call, Throwable t) {
+                //TODO as of July 10, a failed getProfile will go here :/
+                Log.d("GET_PROFILE_FAIL", t.getMessage());
+            }
+        });
+
 
         homeAddressEditText.setLines(1);
         workAddressEditText.setLines(1);

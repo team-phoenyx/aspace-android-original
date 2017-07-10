@@ -7,17 +7,25 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
+import com.aspace.aspace.retrofitmodels.ReauthenticateResponse;
 import com.securepreferences.SecurePreferences;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Terrance on 6/24/2017.
@@ -28,12 +36,22 @@ public class SplashActivity extends AppCompatActivity {
     boolean isConnected;
     String realmEncryptionKey;
     Realm realm;
+    PCRetrofitInterface parcareService;
+
+    byte[] key;
+
+    public static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         isConnected = false;
+
+        key = new byte[64];
+
+        //Initialize Realm
+        Realm.init(SplashActivity.this);
 
         new Thread(new Runnable() {
             @Override
@@ -47,12 +65,8 @@ public class SplashActivity extends AppCompatActivity {
 
                     //Check if realmEncryptionKey exists; if it doesn't, user is new, go to LoginActivity for unAuth start
                     if (!realmEncryptionKey.equals("")) {
-                        byte[] key = new byte[64];
 
                         key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
-
-                        //Initialize Realm
-                        Realm.init(SplashActivity.this);
 
                         RealmConfiguration config = new RealmConfiguration.Builder()
                                 .encryptionKey(key)
@@ -68,39 +82,60 @@ public class SplashActivity extends AppCompatActivity {
                         } else {
                             //Retrieve credential data from object
                             UserCredentials credentials = credentialsRealmResults.get(0);
-                            String userID = credentials.getUserID();
-                            String userAccessToken = credentials.getUserAccessToken();
-                            String userPhoneNumber = credentials.getUserPhoneNumber();
+                            final String userID = credentials.getUserID();
+                            final String userAccessToken = credentials.getUserAccessToken();
+                            final String userPhoneNumber = credentials.getUserPhoneNumber();
 
                             //If any data is empty, unAuth start, loginactivity
                             if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
                                 startLoginActivity();
                             } else {
-                                //TODO reauthenticate call; check for success or fail response
-                                //If success...
-                                if (true) {
-                                    Intent intent;
-                                    //If success 101, intent = NameActivity
-                                    intent = new Intent(getApplicationContext(), NameActivity.class);
-                                    //If success 102, intent = MainActivity
-                                    intent = new Intent(getApplicationContext(), MainActivity.class);
+                                Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
 
-                                    intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                                    intent.putExtra(getString(R.string.user_id_tag), userID);
-                                    intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                    intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                parcareService = retrofit.create(PCRetrofitInterface.class);
 
-                                    realm.close();
+                                parcareService.reauthenticate(userAccessToken, userPhoneNumber, userID).enqueue(new Callback<ReauthenticateResponse>() {
+                                    @Override
+                                    public void onResponse(Call<ReauthenticateResponse> call, Response<ReauthenticateResponse> response) {
+                                        //If success...
+                                        if (response.body().getRespCode().equals("101") || response.body().getRespCode().equals("102")) {
+                                            Intent intent;
+                                            if (response.body().getRespCode().equals("102")) intent = new Intent(getApplicationContext(), MainActivity.class);
+                                            else intent = new Intent(getApplicationContext(), NameActivity.class);
 
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    //If fail (4 or 5), startLoginActivity()
-                                    startLoginActivity();
-                                }
+                                            intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                            intent.putExtra(getString(R.string.user_id_tag), userID);
+                                            intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                            intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+
+                                            realm.close();
+
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            startLoginActivity();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ReauthenticateResponse> call, Throwable t) {
+                                        Log.d("REAUTHENTICATE_FAIL", t.getMessage());
+                                    }
+                                });
+
                             }
                         }
                     } else {
+                        //Realm encryption hasn't been set up yet, must generate and store a key
+                        new SecureRandom().nextBytes(key);
+
+                        //base64 encode string and store
+                        realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
+
+                        SharedPreferences.Editor editor = new SecurePreferences(SplashActivity.this).edit();
+                        editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                        editor.apply();
+
                         startLoginActivity();
                     }
                 } else {
@@ -125,6 +160,12 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void startLoginActivity() {
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .encryptionKey(key)
+                .build();
+
+        realm = Realm.getInstance(config);
+
         //Delete all credential objects
         if (!realmEncryptionKey.equals("") && realm != null) {
             final RealmResults<UserCredentials> credentialResults = realm.where(UserCredentials.class).findAll();
