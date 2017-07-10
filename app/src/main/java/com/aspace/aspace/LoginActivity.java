@@ -18,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
+import com.aspace.aspace.retrofitmodels.ParkingSpot;
 import com.securepreferences.SecurePreferences;
 
 import java.security.SecureRandom;
@@ -26,6 +27,11 @@ import java.util.TimerTask;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -33,7 +39,11 @@ public class LoginActivity extends AppCompatActivity {
     Button nextButton;
     ProgressBar phoneProgressCircle;
 
+    PCRetrofitInterface parcareService;
+
     String realmEncryptionKey;
+
+    public static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +84,6 @@ public class LoginActivity extends AppCompatActivity {
                             });
 
                         } else {
-                            //TODO request to server; if request is successful, continue code below
-
                             //Disable the resend button
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -101,125 +109,146 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }, 15000);
 
-                            //Create the dialog for PIN input
-                            final AlertDialog.Builder verifyDialogBuilder = new AlertDialog.Builder(LoginActivity.this);
-                            View verifyDialogView = getLayoutInflater().inflate(R.layout.verify_dialog, null);
+                            //TODO request to server; if request is successful, continue code below
+                            Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL)
+                                    .addConverterFactory(GsonConverterFactory.create()).build();
 
-                            final EditText pinEditText = (EditText) verifyDialogView.findViewById(R.id.pin_edittext);
-                            final ProgressBar loginProgressCircle = (ProgressBar) verifyDialogView.findViewById(R.id.login_progress_circle);
-                            final TextView noticeLabel = (TextView) verifyDialogView.findViewById(R.id.notice_label);
+                            parcareService = retrofit.create(PCRetrofitInterface.class);
 
-                            loginProgressCircle.setIndeterminate(true);
-
-                            verifyDialogBuilder.setView(verifyDialogView).setTitle("Enter PIN number");
-                            verifyDialogBuilder.setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                            parcareService.requestPIN(rawCCInput + rawPhoneInput).enqueue(new Callback<ParkingSpot>() {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //KEEP THIS METHOD (only to show button, behavior defined after verifyDialog.show();
-                                }
-                            });
+                                public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
 
-                            verifyDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
+                                    //TODO put this dialog creation in a method and call in onCreate, and just call .create and .show
+                                    //Create the dialog for PIN input
+                                    final AlertDialog.Builder verifyDialogBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                    View verifyDialogView = getLayoutInflater().inflate(R.layout.verify_dialog, null);
 
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AlertDialog verifyDialog = verifyDialogBuilder.create();
-                                    verifyDialog.show();
-                                    phoneProgressCircle.setVisibility(View.INVISIBLE);
+                                    final EditText pinEditText = (EditText) verifyDialogView.findViewById(R.id.pin_edittext);
+                                    final ProgressBar loginProgressCircle = (ProgressBar) verifyDialogView.findViewById(R.id.login_progress_circle);
+                                    final TextView noticeLabel = (TextView) verifyDialogView.findViewById(R.id.notice_label);
 
-                                    verifyDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                                    loginProgressCircle.setIndeterminate(true);
+
+                                    verifyDialogBuilder.setView(verifyDialogView).setTitle("Enter PIN number");
+                                    verifyDialogBuilder.setPositiveButton("Login", new DialogInterface.OnClickListener() {
                                         @Override
-                                        public void onClick(View v) {
-
-                                            if (pinEditText.getText().toString().isEmpty() ||pinEditText.getText().toString().equals("")) {
-                                                noticeLabel.setText("Please enter your PIN");
-                                                return;
-                                            }
-
-                                            loginProgressCircle.setVisibility(View.VISIBLE);
-
-                                            new Thread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    String userPhoneNumber = phoneNumberEditText.getText().toString();
-                                                    String inputPIN = pinEditText.getText().toString();
-
-                                                    //TODO Call the API; if successful (response code 101 or 102, run code below
-                                                    if (true) {
-                                                        //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
-                                                        //TODO Set the id and accesstoken (these are placeholders)
-                                                        String userID = "30";
-                                                        String userAccessToken = "test_access_token";
-
-                                                        byte[] key = new byte[64];
-
-                                                        if (realmEncryptionKey.equals("")) {
-                                                            //Realm encryption hasn't been set up yet, must generate and store a key
-                                                            new SecureRandom().nextBytes(key);
-
-                                                            //base64 encode string and store
-                                                            realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
-
-                                                            SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
-                                                            editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                                                            editor.apply();
-                                                        } else {
-                                                            //base64 decode string
-                                                            key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
-                                                        }
-
-                                                        //Realm initialization
-                                                        Realm.init(LoginActivity.this);
-
-                                                        RealmConfiguration config = new RealmConfiguration.Builder()
-                                                                .encryptionKey(key)
-                                                                .build();
-
-                                                        Realm realm = Realm.getInstance(config);
-
-                                                        //Save usercredentials in encrypted realm
-                                                        realm.beginTransaction();
-
-                                                        UserCredentials credentials = realm.createObject(UserCredentials.class);
-
-                                                        credentials.setUserID(userID);
-                                                        credentials.setUserAccessToken(userAccessToken);
-                                                        credentials.setUserPhoneNumber(userPhoneNumber);
-
-                                                        realm.commitTransaction();
-
-                                                        realm.close();
-
-                                                        Intent intent;
-                                                        //TODO Check success code 101 or 102
-                                                        //if 101, new user, run this code
-                                                        intent = new Intent(getApplicationContext(), NameActivity.class);
-
-                                                        //if 102, returning user, run this code
-                                                        intent = new Intent(getApplicationContext(), MainActivity.class);
-
-                                                        intent.putExtra(getString(R.string.user_id_tag), userID);
-                                                        intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                                        intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
-                                                        intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-
-                                                        startActivity(intent);
-                                                        finish();
-                                                    } else {
-                                                        //TODO error responses, if error code 2, PIN incorrect, update noticeLabel; if error code 3, PIN expired, dismiss dialog and show snackbar
-                                                    }
-                                                }
-                                            }).start();
-
-
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            //KEEP THIS METHOD (only to show button, behavior defined after verifyDialog.show();
                                         }
                                     });
+
+                                    verifyDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    });
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            AlertDialog verifyDialog = verifyDialogBuilder.create();
+                                            verifyDialog.show();
+                                            phoneProgressCircle.setVisibility(View.INVISIBLE);
+
+                                            verifyDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+
+                                                    if (pinEditText.getText().toString().isEmpty() ||pinEditText.getText().toString().equals("")) {
+                                                        noticeLabel.setText("Please enter your PIN");
+                                                        return;
+                                                    }
+
+                                                    loginProgressCircle.setVisibility(View.VISIBLE);
+
+                                                    new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            String userPhoneNumber = phoneNumberEditText.getText().toString();
+                                                            String inputPIN = pinEditText.getText().toString();
+
+                                                            //TODO Call the API; if successful (response code 101 or 102, run code below
+                                                            if (true) {
+                                                                //if login is successful, the user is technically signed in already, so save the UserCredentials in Realm
+                                                                //TODO Set the id and accesstoken (these are placeholders)
+                                                                String userID = "30";
+                                                                String userAccessToken = "test_access_token";
+
+                                                                byte[] key = new byte[64];
+
+                                                                if (realmEncryptionKey.equals("")) {
+                                                                    //Realm encryption hasn't been set up yet, must generate and store a key
+                                                                    new SecureRandom().nextBytes(key);
+
+                                                                    //base64 encode string and store
+                                                                    realmEncryptionKey = Base64.encodeToString(key, Base64.DEFAULT);
+
+                                                                    SharedPreferences.Editor editor = new SecurePreferences(LoginActivity.this).edit();
+                                                                    editor.putString(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                                                    editor.apply();
+                                                                } else {
+                                                                    //base64 decode string
+                                                                    key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                                                                }
+
+                                                                //Realm initialization
+                                                                Realm.init(LoginActivity.this);
+
+                                                                RealmConfiguration config = new RealmConfiguration.Builder()
+                                                                        .encryptionKey(key)
+                                                                        .build();
+
+                                                                Realm realm = Realm.getInstance(config);
+
+                                                                //Save usercredentials in encrypted realm
+                                                                realm.beginTransaction();
+
+                                                                UserCredentials credentials = realm.createObject(UserCredentials.class);
+
+                                                                credentials.setUserID(userID);
+                                                                credentials.setUserAccessToken(userAccessToken);
+                                                                credentials.setUserPhoneNumber(userPhoneNumber);
+
+                                                                realm.commitTransaction();
+
+                                                                realm.close();
+
+                                                                Intent intent;
+                                                                //TODO Check success code 101 or 102
+                                                                //if 101, new user, run this code
+                                                                intent = new Intent(getApplicationContext(), NameActivity.class);
+
+                                                                //if 102, returning user, run this code
+                                                                intent = new Intent(getApplicationContext(), MainActivity.class);
+
+                                                                intent.putExtra(getString(R.string.user_id_tag), userID);
+                                                                intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                                                intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                                                intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+
+                                                                startActivity(intent);
+                                                                finish();
+                                                            } else {
+                                                                //TODO error responses, if error code 2, PIN incorrect, update noticeLabel; if error code 3, PIN expired, dismiss dialog and show snackbar
+                                                            }
+                                                        }
+                                                    }).start();
+
+
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onFailure(Call<ParkingSpot> call, Throwable t) {
+                                    nextButton.setEnabled(true);
+                                    nextButton.setText("Resend");
+                                    nextButton.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                                    Snackbar.make(findViewById(android.R.id.content), "Request failed", Snackbar.LENGTH_SHORT).show();
                                 }
                             });
 
