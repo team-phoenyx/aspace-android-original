@@ -66,6 +66,7 @@ import com.mapbox.services.api.directions.v5.models.LegStep;
 import com.mapbox.services.commons.models.Position;
 
 import java.lang.reflect.Type;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -203,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
                         + ", Duration: " + currentStep.getDuration());
                 Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "You will arrive at your destination in " + (int)routeProgress.getDurationRemaining() / 60 + " minutes", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "In " + translateDistance(routeStepProgress.getDistanceRemaining()) + ": " + routeProgress.getCurrentLegProgress().getUpComingStep().getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
                 /* Complete directions log
                 for (LegStep step : steps) {
                     Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance());
@@ -1130,5 +1133,35 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Log.i(TAG + "2", t.toString());
             }
         });
+    }
+
+    // Converts the given meters to the appropriate feet or miles measure.
+    // Returns the translated distance concatenated with its respective measure.
+    private static String translateDistance(double meters) {
+        if (meters < 305) { // 305 meters is approximately 1000 feet
+            String feet = metersToFeet(meters) + " feet";
+            return feet;
+        } else {
+            double miles = metersToMiles(meters);
+            if (miles == 1.0) {
+                return miles + " mile";
+            }
+            return miles + " miles";
+        }
+    }
+
+    // Converts the given meters into feet. Returns feet rounded to the
+    // nearest 50th.
+    private static int metersToFeet(double meters) {
+        int feet = (int) Math.round(3.279 * meters);
+        return (feet + 49)/50 * 50;
+    }
+
+    // Converts the given meters into miles. Returns miles rounded
+    // to one decimal place.
+    private static double metersToMiles(double meters) {
+        double miles = Math.round(0.000621371192 * meters * 10);
+        miles = miles / 10;
+        return miles;
     }
 }
