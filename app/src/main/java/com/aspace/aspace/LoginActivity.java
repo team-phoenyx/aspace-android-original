@@ -223,7 +223,9 @@ public class LoginActivity extends AppCompatActivity {
                                                                         finish();
                                                                     } else if (response.body().getRespCode().equals("2")) {
                                                                         noticeLabel.setText("PIN Incorrect, try again");
+                                                                        loginProgressCircle.setVisibility(View.INVISIBLE);
                                                                     } else if (response.body().getRespCode().equals("3")) {
+                                                                        loginProgressCircle.setVisibility(View.INVISIBLE);
                                                                         verifyDialog.dismiss();
                                                                         Snackbar.make(findViewById(android.R.id.content), "PIN expired, try again", Snackbar.LENGTH_LONG).show();
                                                                     }
