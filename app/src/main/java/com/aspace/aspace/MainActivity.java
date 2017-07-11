@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
-                final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                //final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
                 Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
                 navigation.getRoute(newOrigin, destination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
@@ -230,37 +230,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute newRoute = response.body().getRoutes().get(0);
                             // update new route to navigation
                             navigation.updateRoute(newRoute);
-                            // remove old driving route
-                            if (map != null && !map.getPolylines().isEmpty()) {
-                                map.removePolyline(drivingRoutePolyline);
-                            }
                             // draw new driving route
-                            LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
-                            List<Position> coordinates = lineString.getCoordinates();
-                            LatLng[] points = new LatLng[coordinates.size()];
-                            for (int i = 0; i < coordinates.size(); i++) {
-                                // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
-                                // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
-                                points[i] = new LatLng(
-                                        coordinates.get(i).getLatitude() / 10.0,
-                                        coordinates.get(i).getLongitude() / 10.0);
-                                //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
-                            }
-
-                            // Draw Points on MapView
-
-                            if (map != null && !map.getPolylines().isEmpty()) {
-                                map.removePolyline(drivingRoutePolyline);
-                            }
-
-                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
-                                    .add(points)
-                                    .color(Color.parseColor("#3887be"))
-                                    .alpha((float) 0.5)
-                                    .width(5);
-                            map.addPolyline(polylineOptionsDrive);
-
-                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
+                            drawNavRoute(newRoute);
 
                             Log.i(TAG + "Directions", "Route Update Successful");
                         } else {
@@ -294,32 +265,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
                             MainActivity.this.route = route;
 
-                            LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
-                            List<Position> coordinates = lineString.getCoordinates();
-                            LatLng[] points = new LatLng[coordinates.size()];
-                            for (int i = 0; i < coordinates.size(); i++) {
-                                // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
-                                // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
-                                points[i] = new LatLng(
-                                        coordinates.get(i).getLatitude() / 10.0,
-                                        coordinates.get(i).getLongitude() / 10.0);
-                                //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
-                            }
-
-                            // Draw Points on MapView
-
-                            if (map != null && !map.getPolylines().isEmpty()) {
-                                map.removePolyline(drivingRoutePolyline);
-                            }
-
-                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
-                                    .add(points)
-                                    .color(Color.parseColor("#3887be"))
-                                    .alpha((float) 0.5)
-                                    .width(5);
-                            map.addPolyline(polylineOptionsDrive);
-
-                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
+                            drawNavRoute(route);
 
                             navigation.startNavigation(route);
                             // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
@@ -1116,18 +1062,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         Log.d("MARKERS", map.getMarkers().size() + " markers total");
     }
 
-    // Draws polyline route from the origin to the spot specified by the given destination. Route determined
+    // Draws polyline route from the given origin to the spot specified by the given destination. Route determined
     // by the given routeType.
-    // TODO: Use the navigation's directionroute callback to retrieve the route points instead of the mapboxdirections client
     private void drawRouteToSpot(LatLng origin, LatLng destination, int routeType) {
-        // Note that waypoint takes in longitude first instead of latitude
-        Waypoint originWaypoint = new Waypoint(origin.getLongitude(), origin.getLatitude());
-
-        Waypoint destinationWaypoint = new Waypoint(destination.getLongitude(), destination.getLatitude());
-
-        MapboxDirections client = null;
 
 
+        /*
         switch (routeType) {
             case ROUTE_TYPE_WALKING:
                 client = new MapboxDirections.Builder()
@@ -1146,50 +1086,95 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         .build();
                 break;
         }
+        */
 
-        final int routeTypeF = routeType;
+        if (routeType == ROUTE_TYPE_DRIVING) {
+            if (navigation != null) {
+                Position originPos = Position.fromLngLat(origin.getLongitude(), origin.getLatitude());
+                navDestination = Position.fromLngLat(destination.getLongitude(), destination.getLatitude());
+                navigation.getRoute(originPos, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
+                        com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
+                        drawNavRoute(route);
+                    }
 
-        client.enqueue(new retrofit.Callback<DirectionsResponse>() {
-            @Override
-            public void onResponse(retrofit.Response<DirectionsResponse> response, retrofit.Retrofit retrofit) {
-                if (response.isSuccess()) {
-                    DirectionsRoute route = response.body().getRoutes().get(0);
-                    //int distance = route.getDistance(); // meters
-                    List<Waypoint> waypoints = route.getGeometry().getWaypoints();
-                    LatLng[] points = new LatLng[waypoints.size()];
-                    for (int i = 0; i < waypoints.size(); i++) {
-                        points[i] = new LatLng(
-                                waypoints.get(i).getLatitude(),
-                                waypoints.get(i).getLongitude());
+                    @Override
+                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
+
                     }
-                    switch (routeTypeF) {
-                        case ROUTE_TYPE_WALKING:
-                            PolylineOptions polylineOptionsWalk = new PolylineOptions()
-                                    .add(points)
-                                    .color(Color.parseColor("#d84315"))
-                                    .width(2);
-                            map.addPolyline(polylineOptionsWalk);
-                            break;
-                        case ROUTE_TYPE_DRIVING:
-                            PolylineOptions polylineOptionsDrive = new PolylineOptions()
-                                    .add(points)
-                                    .color(Color.parseColor("#3887be"))
-                                    .alpha((float) 0.5)
-                                    .width(5);
-                            map.addPolyline(polylineOptionsDrive);
-                            drivingRoutePolyline = polylineOptionsDrive.getPolyline();
-                            break;
+                });
+            }
+        } else if (routeType == ROUTE_TYPE_WALKING) {
+            // Note that waypoint takes in longitude first instead of latitude
+            Waypoint originWaypoint = new Waypoint(origin.getLongitude(), origin.getLatitude());
+            Waypoint destinationWaypoint = new Waypoint(destination.getLongitude(), destination.getLatitude());
+            MapboxDirections client = new MapboxDirections.Builder()
+                    .setAccessToken(getString(R.string.access_token))
+                    .setOrigin(originWaypoint)
+                    .setDestination(destinationWaypoint)
+                    .setProfile(DirectionsCriteria.PROFILE_WALKING)
+                    .build();
+            client.enqueue(new retrofit.Callback<DirectionsResponse>() {
+                @Override
+                public void onResponse(retrofit.Response<DirectionsResponse> response, retrofit.Retrofit retrofit) {
+                    if (response.isSuccess()) {
+                        DirectionsRoute route = response.body().getRoutes().get(0);
+                        //int distance = route.getDistance(); // meters
+                        List<Waypoint> waypoints = route.getGeometry().getWaypoints();
+                        LatLng[] points = new LatLng[waypoints.size()];
+                        for (int i = 0; i < waypoints.size(); i++) {
+                            points[i] = new LatLng(
+                                    waypoints.get(i).getLatitude(),
+                                    waypoints.get(i).getLongitude());
+                        }
+                        PolylineOptions polylineOptionsWalk = new PolylineOptions()
+                                .add(points)
+                                .color(Color.parseColor("#d84315"))
+                                .width(2);
+                        map.addPolyline(polylineOptionsWalk);
+                    } else {
+                        Log.i(TAG + "2", response.raw().toString());
                     }
-                } else {
-                    Log.i(TAG +"2", response.raw().toString());
                 }
-            }
 
-            @Override
-            public void onFailure(Throwable t) {
-                Log.i(TAG + "2", t.toString());
+                @Override
+                public void onFailure(Throwable t) {
+                    Log.i(TAG + "2", t.toString());
+                }
+            });
+        }
+    }
+
+    // Draws the given route on the map -- shows driving route that nav is or will likely follow.
+    public void drawNavRoute(com.mapbox.services.api.directions.v5.models.DirectionsRoute route) {
+        LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
+        List<Position> coordinates = lineString.getCoordinates();
+        LatLng[] points = new LatLng[coordinates.size()];
+        for (int i = 0; i < coordinates.size(); i++) {
+            // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
+            // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
+            points[i] = new LatLng(
+                    coordinates.get(i).getLatitude() / 10.0,
+                    coordinates.get(i).getLongitude() / 10.0);
+            //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
+        }
+
+        // Draw Points on MapView
+
+        if (map != null && !map.getPolylines().isEmpty()) {
+            if (drivingRoutePolyline != null) {
+                map.removePolyline(drivingRoutePolyline);
             }
-        });
+        }
+
+        PolylineOptions polylineOptionsDrive = new PolylineOptions()
+                .add(points)
+                .color(Color.parseColor("#3887be"))
+                .alpha((float) 0.5)
+                .width(5);
+        map.addPolyline(polylineOptionsDrive);
+        drivingRoutePolyline = polylineOptionsDrive.getPolyline();
     }
 
     // Converts the given meters to the appropriate feet or miles measure.
