@@ -5,6 +5,7 @@ import com.aspace.aspace.retrofitmodels.ParkingSpot;
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.ReauthenticateResponse;
 import com.aspace.aspace.retrofitmodels.RequestPINResponse;
+import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
 import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
 
 import java.util.List;
@@ -53,9 +54,9 @@ public interface PCRetrofitInterface {
     //********PROFILE ENDPOINTS********
     @FormUrlEncoded
     @POST("users/profile/update/")
-    Call<String> updateProfile(@Field("name") String name, @Field("work_address") String work_address,
-                               @Field("home_address") String home_address, @Field("home_loc_id") String home_loc_id,
-                               @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token);
+    Call<UpdateProfileResponse> updateProfile(@Field("name") String name, @Field("work_address") String work_address,
+                                              @Field("home_address") String home_address, @Field("home_loc_id") String home_loc_id,
+                                              @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token);
 
     @FormUrlEncoded
     @POST("users/profile/get/")

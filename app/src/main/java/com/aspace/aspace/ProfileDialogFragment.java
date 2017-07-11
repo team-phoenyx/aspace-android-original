@@ -27,6 +27,7 @@ import com.aspace.aspace.realmmodels.UserCredentials;
 import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.Profile;
+import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -421,16 +422,16 @@ public class ProfileDialogFragment extends DialogFragment {
 
     // Updates the user's profile based on the given info
     private void updateProfile(PCRetrofitInterface parCareService, String name, String workAddress, String homeAddress, String homeLocID, String workLocID, String userID, String userPhoneNumber, String userAccessToken) {
-        Call<String> call = parCareService.updateProfile(name, workAddress, homeAddress, homeLocID, workLocID, userID, userPhoneNumber, userAccessToken);
-        call.enqueue(new Callback<String>() {
+        Call<UpdateProfileResponse> call = parCareService.updateProfile(name, workAddress, homeAddress, homeLocID, workLocID, userID, userPhoneNumber, userAccessToken);
+        call.enqueue(new Callback<UpdateProfileResponse>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                String resp = response.body();
-                Log.i("PROFILE", "Response Received: " + resp);
+            public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
+                UpdateProfileResponse resp = response.body();
+                Log.i("PROFILE", "Response Received: " + resp.getRespCode());
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
                 Log.i("PROFILE", "Profile update response failure: " + t.toString());
             }
         });

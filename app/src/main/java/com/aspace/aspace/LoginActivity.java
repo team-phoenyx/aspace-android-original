@@ -216,7 +216,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                                                         intent.putExtra(getString(R.string.user_id_tag), userID);
                                                                         intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                                                                        intent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                                                        intent.putExtra(getString(R.string.user_phone_number_tag), userCC + userPhoneNumber);
                                                                         intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
 
                                                                         startActivity(intent);

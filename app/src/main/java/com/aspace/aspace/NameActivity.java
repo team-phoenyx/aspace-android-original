@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -14,10 +15,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
+import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -81,18 +86,39 @@ public class NameActivity extends AppCompatActivity {
                         });
                     } else {
                         //TODO get response from this, success 100 or fail 6
-                        parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken);
+                        parcareService.updateProfile(name, "", "", "", "", userID, userPhoneNumber, userAccessToken).enqueue(new Callback<UpdateProfileResponse>() {
+                            @Override
+                            public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
+                                if (response.body().getRespCode().equals("100")) {
+                                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    mainIntent.putExtra(getString(R.string.user_id_tag), userID);
+                                    mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                                    mainIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                                    mainIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                                    startActivity(mainIntent);
+                                    finish();
+                                } else {
+                                    View view = NameActivity.this.getCurrentFocus();
+                                    if (view != null) {
+                                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                    }
+                                    Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
 
-                        //If success, run this code
-                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        mainIntent.putExtra(getString(R.string.user_id_tag), userID);
-                        mainIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
-                        mainIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
-                        mainIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
-                        startActivity(mainIntent);
-                        finish();
+                            @Override
+                            public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
+                                View view = NameActivity.this.getCurrentFocus();
+                                if (view != null) {
+                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                }
+                                Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
 
-                        //If fail, hide keyboard and show snackbar
+                                Log.d("UPDATE_PROFILE", t.getMessage());
+                            }
+                        });
                     }
                 }
             }).start();
