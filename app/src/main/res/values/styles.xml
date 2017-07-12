@@ -24,4 +24,9 @@
         <item name="colorAccent">@android:color/white</item>
     </style>
 
+    <style name="PinDialogAnimation" >
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
 </resources>

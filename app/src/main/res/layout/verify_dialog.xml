@@ -10,16 +10,17 @@
         android:id="@+id/pin_edittext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:hint="e.g. 123456"
-        android:inputType="number"
+        android:inputType="numberPassword"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
@@ -55,6 +56,20 @@
         tools:layout_conversion_absoluteX="200dp"
         tools:layout_conversion_absoluteY="50dp"
         tools:layout_editor_absoluteX="351dp" />
+
+    <TextView
+        android:id="@+id/pin_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Pin"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textSize="15sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
         navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+        navigation.setSnapToRoute(true);
         navigation.addNavigationEventListener(new NavigationEventListener() {
             @Override
             public void onRunning(boolean running) {

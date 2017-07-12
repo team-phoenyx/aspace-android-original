@@ -1,13 +1,19 @@
 package com.aspace.aspace;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText phoneNumberEditText, CCEditText;
     Button nextButton;
     ProgressBar phoneProgressCircle;
+    FloatingActionButton helpFAB;
 
     PCRetrofitInterface parcareService;
 
@@ -48,22 +55,40 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         realmEncryptionKey = getIntent().getExtras().getString(getString(R.string.realm_encryption_key_tag), "");
 
-        getSupportActionBar().setTitle("Get Started");
+        // Sets the color of action bar text to white.
+        SpannableString loginString = new SpannableString("Login");
+        loginString.setSpan(new ForegroundColorSpan(Color.WHITE), 0, loginString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        getSupportActionBar().setTitle(loginString);
 
         phoneNumberEditText = (EditText) findViewById(R.id.phone_number_edittext);
         CCEditText = (EditText) findViewById(R.id.country_code_edittext);
         nextButton = (Button) findViewById(R.id.next_button);
+        helpFAB = (FloatingActionButton) findViewById(R.id.help_fab);
         phoneProgressCircle = (ProgressBar) findViewById(R.id.phone_progress_circle);
 
         phoneProgressCircle.setIndeterminate(true);
 
+        helpFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                builder.setTitle("What's up with the \"1\"?")
+                        .setMessage(getString(R.string.country_code_explanation))
+                        .setPositiveButton("GOT IT", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // No action needed here.
+                            }
+                        }).create().show();
+            }
+        });
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hideKeyboard(LoginActivity.this);
+                helpFAB.setVisibility(View.GONE);
 
                 phoneProgressCircle.setVisibility(View.VISIBLE);
 
@@ -140,6 +165,7 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
+                                            helpFAB.setVisibility(View.VISIBLE);
                                         }
                                     });
 
@@ -147,6 +173,7 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             final AlertDialog verifyDialog = verifyDialogBuilder.create();
+                                            verifyDialog.getWindow().getAttributes().windowAnimations = R.style.PinDialogAnimation;
                                             verifyDialog.show();
                                             phoneProgressCircle.setVisibility(View.INVISIBLE);
 
@@ -219,7 +246,11 @@ public class LoginActivity extends AppCompatActivity {
                                                                         intent.putExtra(getString(R.string.user_phone_number_tag), userCC + userPhoneNumber);
                                                                         intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
 
-                                                                        startActivity(intent);
+                                                                        // Animation for introducing the map. Map MainActivity slides in from the right to the left
+                                                                        // LoginActivity fades out.
+                                                                        ActivityOptions options =
+                                                                                ActivityOptions.makeCustomAnimation(LoginActivity.this, R.anim.slide_to_left, R.anim.fade_out);
+                                                                        startActivity(intent, options.toBundle());
                                                                         finish();
                                                                     } else if (response.body().getRespCode().equals("2")) {
                                                                         noticeLabel.setText("PIN Incorrect, try again");
