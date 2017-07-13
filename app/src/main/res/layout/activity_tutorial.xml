@@ -54,5 +54,5 @@
         android:background="@color/transparent"
         android:text="Back"
         android:textColor="@android:color/white"
-        android:visibility="gone" />
+        android:visibility="visible" />
 </RelativeLayout>
