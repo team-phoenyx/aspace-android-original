@@ -87,4 +87,18 @@
         app:layout_constraintRight_toRightOf="@+id/tutorial_locations_expl_label"
         app:layout_constraintTop_toBottomOf="@+id/home_address_edittext" />
 
+    <TextView
+        android:id="@+id/error_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Select a location in the suggestions,\nor leave blank"
+        android:textAlignment="center"
+        android:visibility="invisible"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/work_address_edittext" />
+
 </android.support.constraint.ConstraintLayout>
