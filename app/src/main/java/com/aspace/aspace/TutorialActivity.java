@@ -20,7 +20,7 @@ import com.aspace.aspace.tutorialfragments.TutorialWelcomeFragment;
 
 public class TutorialActivity extends FragmentActivity {
 
-    ViewPager viewPager;
+    TutorialViewPager viewPager;
     PagerAdapter pagerAdapter;
     Button backButton, nextButton;
 
@@ -42,7 +42,7 @@ public class TutorialActivity extends FragmentActivity {
         backButton = (Button) findViewById(R.id.back_button);
         nextButton = (Button) findViewById(R.id.next_button);
 
-        viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager = (TutorialViewPager) findViewById(R.id.pager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabDots);
         tabLayout.setupWithViewPager(viewPager, true);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
@@ -61,25 +61,34 @@ public class TutorialActivity extends FragmentActivity {
                     case START_FRAGMENT_TAG:
                         backButton.setVisibility(View.GONE);
                         nextButton.setVisibility(View.VISIBLE);
+                        viewPager.setAllowedSwipeDirection(SwipeDirection.right);
                         break;
                     case NAME_FRAGMENT_TAG:
                         backButton.setVisibility(View.VISIBLE);
 
-                        if (((EditText) findViewById(R.id.name_edittext)).getText().toString().isEmpty()) nextButton.setVisibility(View.GONE);
-                        else nextButton.setVisibility(View.VISIBLE);
+                        if (((EditText) findViewById(R.id.name_edittext)).getText().toString().isEmpty()) {
+                            nextButton.setVisibility(View.GONE);
+                            viewPager.setAllowedSwipeDirection(SwipeDirection.left);
+                        } else {
+                            nextButton.setVisibility(View.VISIBLE);
+                            viewPager.setAllowedSwipeDirection(SwipeDirection.all);
+                        }
 
                         break;
                     case CAR_FRAGMENT_TAG:
                         backButton.setVisibility(View.VISIBLE);
                         nextButton.setVisibility(View.VISIBLE);
+                        viewPager.setAllowedSwipeDirection(SwipeDirection.all);
                         break;
                     case LOCATIONS_FRAGMENT_TAG:
                         backButton.setVisibility(View.VISIBLE);
                         nextButton.setVisibility(View.VISIBLE);
+                        viewPager.setAllowedSwipeDirection(SwipeDirection.all);
                         break;
                     case WELCOME_FRAGMENT_TAG:
                         backButton.setVisibility(View.GONE);
                         nextButton.setVisibility(View.VISIBLE);
+                        viewPager.setAllowedSwipeDirection(SwipeDirection.none);
                         break;
                 }
             }
@@ -109,6 +118,7 @@ public class TutorialActivity extends FragmentActivity {
         });
 
         backButton.setVisibility(View.GONE);
+        viewPager.setAllowedSwipeDirection(SwipeDirection.right);
     }
 
     @Override
