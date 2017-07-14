@@ -1,5 +1,6 @@
 package com.aspace.aspace;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -30,7 +31,8 @@ public class TutorialActivity extends FragmentActivity {
     TutorialViewPager viewPager;
     PagerAdapter pagerAdapter;
     Button backButton, nextButton;
-    String userID, userPhoneNumber, userAccessToken;
+    String userID, userPhoneNumber, userAccessToken, realmEncryptionKey;
+    String name;
 
     PCRetrofitInterface aspaceService;
 
@@ -53,6 +55,7 @@ public class TutorialActivity extends FragmentActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+        realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
 
         backButton = (Button) findViewById(R.id.back_button);
         nextButton = (Button) findViewById(R.id.next_button);
@@ -95,6 +98,12 @@ public class TutorialActivity extends FragmentActivity {
 
                         break;
                     case CAR_FRAGMENT_TAG:
+
+                        View nameFragmentView = ((TutorialNameFragment) pagerAdapter.instantiateItem(viewPager, NAME_FRAGMENT_TAG)).getView();
+                        if (nameFragmentView != null) {
+                            EditText nameEditText = (EditText) nameFragmentView.findViewById(R.id.name_edittext);
+                            name = nameEditText.getText().toString();
+                        }
                         backButton.setVisibility(View.VISIBLE);
                         nextButton.setVisibility(View.VISIBLE);
                         viewPager.setAllowedSwipeDirection(SwipeDirection.all);
@@ -107,21 +116,27 @@ public class TutorialActivity extends FragmentActivity {
                     case WELCOME_FRAGMENT_TAG:
                         backButton.setVisibility(View.GONE);
 
-                        EditText nameEditText = (EditText) findViewById(R.id.name_edittext);
-                        EditText homeAddressEditText = (EditText) findViewById(R.id.home_address_edittext);
-                        EditText workAddressEditText = (EditText) findViewById(R.id.work_address_edittext);
+                        TutorialLocationsFragment locationsFragment = (TutorialLocationsFragment) pagerAdapter.instantiateItem(viewPager, LOCATIONS_FRAGMENT_TAG);
+
+                        View locationsFragmentView = locationsFragment.getView();
+
+                        EditText homeAddressEditText = (EditText) locationsFragmentView.findViewById(R.id.home_address_edittext);
+                        EditText workAddressEditText = (EditText) locationsFragmentView.findViewById(R.id.work_address_edittext);
 
                         //TODO send car info up to server (if the user inputted one)
 
+                        String[] locationIDs = locationsFragment.getLocationIDs();
                         aspaceService.updateProfile(
-                                nameEditText.getText().toString(),
+                                name,
                                 workAddressEditText.getText().toString(),
                                 homeAddressEditText.getText().toString(),
-                                homeLocID, workLocID, userID, userPhoneNumber, userAccessToken)
+                                locationIDs[0], locationIDs[1], userID, userPhoneNumber, userAccessToken)
                                 .enqueue(new Callback<UpdateProfileResponse>() {
                                     @Override
                                     public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
-
+                                        //TODO CHECK RESPONSE IS GOOD
+                                        nextButton.setVisibility(View.VISIBLE);
+                                        nextButton.setText("Start");
                                     }
 
                                     @Override
@@ -129,10 +144,8 @@ public class TutorialActivity extends FragmentActivity {
 
                                     }
                                 });
-                        //TODO send profile info up to server
 
-                        nextButton.setVisibility(View.VISIBLE);
-                        nextButton.setText("Start");
+
                         viewPager.setAllowedSwipeDirection(SwipeDirection.none);
                         break;
                 }
@@ -155,7 +168,13 @@ public class TutorialActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 if (viewPager.getCurrentItem() == WELCOME_FRAGMENT_TAG) {
-                    //TODO Start mainactivity, pass 3 identifiers
+                    Intent startIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    startIntent.putExtra(getString(R.string.user_id_tag), userID);
+                    startIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                    startIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                    startIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+                    startActivity(startIntent);
+                    finish();
                 } else {
                     viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
                 }
