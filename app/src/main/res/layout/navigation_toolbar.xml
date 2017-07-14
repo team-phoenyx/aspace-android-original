@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+        <Toolbar
+            android:id="@+id/navigation_toolbar"
+            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/colorPrimary"
+            mapbox:elevation="4dp">
+            <ImageView
+                android:id="@+id/navigation_iv_maneuver"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@color/transparent"
+                android:src="@drawable/ic_turn_right_24dp"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp">
+                <TextView
+                    android:id="@+id/navigation_tv_distance_till_maneuver"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="In 800 ft"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:paddingTop="7dp"
+                    android:textColor="@android:color/white"/>
+                <TextView
+                    android:id="@+id/navigation_tv_road"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NE 4th Street"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"/>
+            </LinearLayout>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="10dp"
+                android:background="@color/transparent"
+                android:src="@drawable/ic_volume_on_24dp"/>
+        </Toolbar>
+        <LinearLayout
+            android:id="@+id/navigation_sub_view"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:background="#FFFFFF"
+            android:layout_height="29dp">
+            <ImageView
+                android:id="@+id/navigation_iv_duration_remaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/navigation_tv_duration_remaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+            <ImageView
+                android:id="@+id/navigation_iv_total_distance_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/navigation_tv_total_distance_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+            <ImageView
+                android:id="@+id/navigation_iv_spots_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/navigation_tv_spots_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+</LinearLayout>

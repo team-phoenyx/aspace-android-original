@@ -121,8 +121,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
-    private Toolbar navigationToolbar;
-    private LinearLayout navigationSubView;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -577,9 +575,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
-        navigationSubView = (LinearLayout) findViewById(R.id.navigation_sub_view);
-        navigationSubView.setVisibility(View.VISIBLE);
-        navigationToolbar = (Toolbar) findViewById(R.id.navigation_toolbar);
 
         /* restore instance state
         if (savedInstanceState != null) {

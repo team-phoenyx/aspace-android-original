@@ -83,32 +83,5 @@
             app:srcCompat="@drawable/ic_cancel_route_24dp"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_height="wrap_content">
-            <Toolbar
-                android:id="@+id/navigation_toolbar"
-                android:visibility="visible"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@color/colorAccent"
-                mapbox:elevation="4dp">
-            </Toolbar>
-            <LinearLayout
-                android:id="@+id/navigation_sub_view"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:background="#FFFFFF"
-                android:layout_height="50dp">
-                <Button
-                    android:id="@+id/test_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </LinearLayout>
     </com.mapbox.mapboxsdk.maps.MapView>
 </RelativeLayout>
