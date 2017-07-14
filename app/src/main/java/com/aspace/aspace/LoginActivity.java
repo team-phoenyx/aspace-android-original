@@ -173,7 +173,8 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             final AlertDialog verifyDialog = verifyDialogBuilder.create();
-                                            verifyDialog.getWindow().getAttributes().windowAnimations = R.style.PinDialogAnimation;
+                                            //Attaching Animation
+                                            //verifyDialog.getWindow().getAttributes().windowAnimations = R.style.PinDialogAnimation;
                                             verifyDialog.show();
                                             phoneProgressCircle.setVisibility(View.INVISIBLE);
 
@@ -248,9 +249,10 @@ public class LoginActivity extends AppCompatActivity {
 
                                                                         // Animation for introducing the map. Map MainActivity slides in from the right to the left
                                                                         // LoginActivity fades out.
-                                                                        ActivityOptions options =
-                                                                                ActivityOptions.makeCustomAnimation(LoginActivity.this, R.anim.slide_to_left, R.anim.fade_out);
-                                                                        startActivity(intent, options.toBundle());
+                                                                        //ActivityOptions options =
+                                                                        //        ActivityOptions.makeCustomAnimation(LoginActivity.this, R.anim.slide_to_left, R.anim.fade_out);
+                                                                        //startActivity(intent, options.toBundle());
+                                                                        startActivity(intent);
                                                                         finish();
                                                                     } else if (response.body().getRespCode().equals("2")) {
                                                                         noticeLabel.setText("PIN Incorrect, try again");

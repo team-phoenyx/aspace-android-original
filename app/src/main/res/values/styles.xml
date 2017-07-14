@@ -23,10 +23,10 @@
         <item name="android:background">@color/colorPrimary</item>
         <item name="colorAccent">@android:color/white</item>
     </style>
-
+    <!--Not being used-
     <style name="PinDialogAnimation" >
         <item name="android:windowEnterAnimation">@anim/slide_up</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
-
+    -Not being used-->
 </resources>
