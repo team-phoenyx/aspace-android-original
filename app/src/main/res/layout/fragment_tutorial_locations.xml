@@ -70,19 +70,23 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:hint="Home Address"
+        android:inputType="textCapWords|textNoSuggestions|textPostalAddress"
+        android:maxLines="1"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toRightOf="@+id/home_icon_imageview"
         app:layout_constraintRight_toRightOf="@+id/tutorial_locations_expl_label"
-        app:layout_constraintTop_toBottomOf="@+id/tutorial_locations_expl_label"
-        app:layout_constraintHorizontal_bias="0.5" />
+        app:layout_constraintTop_toBottomOf="@+id/tutorial_locations_expl_label" />
 
     <AutoCompleteTextView
         android:id="@+id/work_address_edittext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:inputType="textCapWords|textNoSuggestions|textPostalAddress"
         android:layout_marginEnd="0dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:hint="Work Address"
+        android:maxLines="1"
         app:layout_constraintLeft_toRightOf="@+id/work_icon_imageview"
         app:layout_constraintRight_toRightOf="@+id/tutorial_locations_expl_label"
         app:layout_constraintTop_toBottomOf="@+id/home_address_edittext" />

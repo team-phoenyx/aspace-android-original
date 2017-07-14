@@ -14,9 +14,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
@@ -24,11 +28,19 @@ import android.widget.TextView;
 import com.aspace.aspace.PCRetrofitInterface;
 import com.aspace.aspace.R;
 import com.aspace.aspace.retrofitmodels.Feature;
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Terrance on 7/12/2017.
@@ -47,6 +59,7 @@ public class TutorialLocationsFragment extends Fragment {
     Location currentLocation;
 
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
+    public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
 
     @Nullable
     @Override
@@ -60,6 +73,12 @@ public class TutorialLocationsFragment extends Fragment {
         workAddressEditText = (AutoCompleteTextView) viewGroup.findViewById(R.id.work_address_edittext);
 
         enableGps();
+
+        try {
+            currentLocation = locationEngine.getLastLocation();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
 
         homeAddressEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -86,6 +105,130 @@ public class TutorialLocationsFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
+            }
+        });
+
+        homeAddressEditText.setLines(1);
+        workAddressEditText.setLines(1);
+
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        mapboxService = retrofit.create(PCRetrofitInterface.class);
+
+        homeAddressEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                homeLocationID = "";
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //refresh the adapter with new string s
+
+                final List<String> autocompleteSuggestions = new ArrayList<String>();
+
+                if (s.equals("")) {
+                    autocompleteSuggestions.clear();
+
+                    autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                    homeAddressEditText.setAdapter(autocompleteAdapter);
+                } else {
+                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+                    mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            rawSuggestions = geocodingResponse.getFeatures();
+
+                            for (Feature feature : rawSuggestions) {
+                                autocompleteSuggestions.add(feature.getPlaceName());
+                            }
+
+                            autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                            homeAddressEditText.setAdapter(autocompleteAdapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                            Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
+                        }
+                    });
+                }
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        workAddressEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                workLocationID = "";
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                final List<String> autocompleteSuggestions = new ArrayList<String>();
+
+                if (s.equals("")) {
+                    autocompleteSuggestions.clear();
+
+                    autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                    workAddressEditText.setAdapter(autocompleteAdapter);
+                } else {
+                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+                    mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            rawSuggestions = geocodingResponse.getFeatures();
+
+                            for (Feature feature : rawSuggestions) {
+                                autocompleteSuggestions.add(feature.getPlaceName());
+                            }
+
+                            autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                            workAddressEditText.setAdapter(autocompleteAdapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                            Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        homeAddressEditText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Feature result = rawSuggestions.get(position);
+                homeAddressEditText.setText(result.getPlaceName());
+                homeLocationID = result.getId();
+            }
+        });
+
+        workAddressEditText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Feature result = rawSuggestions.get(position);
+                workAddressEditText.setText(result.getPlaceName());
+                workLocationID = result.getId();
             }
         });
 
