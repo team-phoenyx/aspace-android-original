@@ -1,7 +1,9 @@
 package com.aspace.aspace;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -10,6 +12,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -134,14 +137,27 @@ public class TutorialActivity extends FragmentActivity {
                                 .enqueue(new Callback<UpdateProfileResponse>() {
                                     @Override
                                     public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
-                                        //TODO CHECK RESPONSE IS GOOD
-                                        nextButton.setVisibility(View.VISIBLE);
-                                        nextButton.setText("Start");
+                                        if (response.body().getRespCode().equals("100")) {
+                                            nextButton.setVisibility(View.VISIBLE);
+                                            nextButton.setText("Start");
+                                        } else {
+                                            View view = TutorialActivity.this.getCurrentFocus();
+                                            if (view != null) {
+                                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                            }
+                                            Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
+                                        }
                                     }
 
                                     @Override
                                     public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
-
+                                        View view = TutorialActivity.this.getCurrentFocus();
+                                        if (view != null) {
+                                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                        }
+                                        Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
                                     }
                                 });
 
