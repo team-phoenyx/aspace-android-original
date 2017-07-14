@@ -16,6 +16,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.LinearLayout;
+import android.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -119,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
+    private Toolbar navigationToolbar;
+    private LinearLayout navigationSubView;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -548,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (map != null && map.isMyLocationEnabled()) {
+                if (map != null && map.isMyLocationEnabled() && currentLocation != null) {
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
@@ -573,6 +577,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
             }
         });
+        navigationSubView = (LinearLayout) findViewById(R.id.navigation_sub_view);
+        navigationSubView.setVisibility(View.VISIBLE);
+        navigationToolbar = (Toolbar) findViewById(R.id.navigation_toolbar);
 
         /* restore instance state
         if (savedInstanceState != null) {
