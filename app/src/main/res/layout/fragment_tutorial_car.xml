@@ -35,13 +35,15 @@
         android:layout_marginStart="32dp" />
 
     <TextView
-        android:id="@+id/tutorial_car_directions_label"
+        android:id="@+id/tutorial_car_info_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
         android:layout_marginTop="8dp"
-        android:text="This can be found in front of your dashboard,\nin the driver-side doorpost, or in the vehicle manual. "
+        android:text="This can be found in front of your dashboard,\nor in the driver-side doorpost."
         app:layout_constraintLeft_toLeftOf="@+id/vin_edittext"
+        app:layout_constraintRight_toRightOf="@+id/vin_edittext"
         app:layout_constraintTop_toBottomOf="@+id/vin_edittext" />
 
     <EditText
@@ -73,5 +75,5 @@
         android:text="Help"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tutorial_car_directions_label" />
+        app:layout_constraintTop_toBottomOf="@+id/tutorial_car_info_label" />
 </android.support.constraint.ConstraintLayout>
