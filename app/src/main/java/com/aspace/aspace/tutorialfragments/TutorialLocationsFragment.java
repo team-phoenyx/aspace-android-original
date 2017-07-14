@@ -23,10 +23,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.aspace.aspace.PCRetrofitInterface;
 import com.aspace.aspace.R;
+import com.aspace.aspace.SwipeDirection;
+import com.aspace.aspace.TutorialViewPager;
 import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.mapbox.mapboxsdk.location.LocationSource;
@@ -57,6 +60,8 @@ public class TutorialLocationsFragment extends Fragment {
     LocationEngineListener locationEngineListener;
     LocationEngine locationEngine;
     Location currentLocation;
+    TutorialViewPager parentViewPager;
+    Button nextButton, backButton;
 
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
@@ -66,11 +71,16 @@ public class TutorialLocationsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.fragment_tutorial_locations, container, false);
 
+        parentViewPager = (TutorialViewPager) getActivity().findViewById(R.id.pager);
+
         locationEngine = LocationSource.getLocationEngine(getActivity());
         locationEngine.activate();
 
         homeAddressEditText = (AutoCompleteTextView) viewGroup.findViewById(R.id.home_address_edittext);
         workAddressEditText = (AutoCompleteTextView) viewGroup.findViewById(R.id.work_address_edittext);
+
+        nextButton = (Button) getActivity().findViewById(R.id.next_button);
+        backButton = (Button) getActivity().findViewById(R.id.back_button);
 
         enableGps();
 
@@ -131,6 +141,12 @@ public class TutorialLocationsFragment extends Fragment {
 
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                     homeAddressEditText.setAdapter(autocompleteAdapter);
+
+                    if (workAddressEditText.getText().toString().equals("") || !workLocationID.isEmpty()) {
+                        parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
+                        nextButton.setVisibility(View.VISIBLE);
+                        backButton.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
@@ -155,6 +171,10 @@ public class TutorialLocationsFragment extends Fragment {
                             Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
                         }
                     });
+
+                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.none);
+                    nextButton.setVisibility(View.GONE);
+                    backButton.setVisibility(View.GONE);
                 }
 
 
@@ -181,6 +201,12 @@ public class TutorialLocationsFragment extends Fragment {
 
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                     workAddressEditText.setAdapter(autocompleteAdapter);
+
+                    if (homeAddressEditText.getText().toString().equals("") || !homeLocationID.isEmpty()) {
+                        parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
+                        nextButton.setVisibility(View.VISIBLE);
+                        backButton.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
@@ -205,6 +231,10 @@ public class TutorialLocationsFragment extends Fragment {
                             Log.e("MAPBOX_GEO_AUTO", "Fetch failed");
                         }
                     });
+
+                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.none);
+                    nextButton.setVisibility(View.GONE);
+                    backButton.setVisibility(View.GONE);
                 }
             }
 
@@ -220,6 +250,12 @@ public class TutorialLocationsFragment extends Fragment {
                 Feature result = rawSuggestions.get(position);
                 homeAddressEditText.setText(result.getPlaceName());
                 homeLocationID = result.getId();
+
+                if (workAddressEditText.getText().toString().isEmpty() || !workLocationID.isEmpty()) {
+                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
+                    nextButton.setVisibility(View.VISIBLE);
+                    backButton.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -229,6 +265,12 @@ public class TutorialLocationsFragment extends Fragment {
                 Feature result = rawSuggestions.get(position);
                 workAddressEditText.setText(result.getPlaceName());
                 workLocationID = result.getId();
+
+                if (homeAddressEditText.getText().toString().isEmpty() || !homeLocationID.isEmpty()) {
+                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
+                    nextButton.setVisibility(View.VISIBLE);
+                    backButton.setVisibility(View.VISIBLE);
+                }
             }
         });
 

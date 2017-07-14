@@ -20,7 +20,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.3" />
+        app:layout_constraintVertical_bias="0.3"
+        android:layout_marginStart="32dp" />
 
     <TextView
         android:id="@+id/tutorial_name_expl_label"
@@ -30,18 +31,23 @@
         android:layout_marginTop="8dp"
         android:text="Just to get to know you a little"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tutorial_name_label" />
+        app:layout_constraintTop_toBottomOf="@+id/tutorial_name_label"
+        android:layout_marginStart="32dp" />
 
     <EditText
         android:id="@+id/name_edittext"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="Name"
         android:inputType="textCapWords|textPersonName"
+        android:textColorHint="@color/hint_color"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tutorial_name_expl_label" />

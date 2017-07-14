@@ -115,6 +115,8 @@ public class TutorialActivity extends FragmentActivity {
                         backButton.setVisibility(View.VISIBLE);
                         nextButton.setVisibility(View.VISIBLE);
                         viewPager.setAllowedSwipeDirection(SwipeDirection.all);
+
+
                         break;
                     case WELCOME_FRAGMENT_TAG:
                         backButton.setVisibility(View.GONE);
