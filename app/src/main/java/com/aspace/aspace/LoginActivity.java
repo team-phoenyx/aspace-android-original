@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -43,8 +44,6 @@ public class LoginActivity extends AppCompatActivity {
     EditText phoneNumberEditText, CCEditText;
     Button nextButton;
     ProgressBar phoneProgressCircle;
-    FloatingActionButton helpFAB;
-
     PCRetrofitInterface parcareService;
 
     String realmEncryptionKey;
@@ -65,30 +64,14 @@ public class LoginActivity extends AppCompatActivity {
         phoneNumberEditText = (EditText) findViewById(R.id.phone_number_edittext);
         CCEditText = (EditText) findViewById(R.id.country_code_edittext);
         nextButton = (Button) findViewById(R.id.next_button);
-        helpFAB = (FloatingActionButton) findViewById(R.id.help_fab);
         phoneProgressCircle = (ProgressBar) findViewById(R.id.phone_progress_circle);
 
         phoneProgressCircle.setIndeterminate(true);
 
-        helpFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                builder.setTitle("What's up with the \"1\"?")
-                        .setMessage(getString(R.string.country_code_explanation))
-                        .setPositiveButton("GOT IT", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // No action needed here.
-                            }
-                        }).create().show();
-            }
-        });
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hideKeyboard(LoginActivity.this);
-                helpFAB.setVisibility(View.GONE);
 
                 phoneProgressCircle.setVisibility(View.VISIBLE);
 
@@ -165,7 +148,6 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
-                                            helpFAB.setVisibility(View.VISIBLE);
                                         }
                                     });
 
