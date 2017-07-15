@@ -16,8 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.LinearLayout;
-import android.widget.Toolbar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,7 +69,6 @@ import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
 import java.lang.reflect.Type;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -283,6 +281,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             cancelRouteFAB.setVisibility(View.GONE);
                             cancelNavigationFAB.setVisibility(View.VISIBLE);
                             snapToLocationFAB.setVisibility(View.VISIBLE);
+
+                            //TODO maybe animate the search bar out and the nav directions toolbar in?
+                            searchView.setVisibility(View.GONE);
+
+                            Toolbar toolbar = new Toolbar(MainActivity.this);
+                            setSupportActionBar(toolbar);
+                            View navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar, null);
+                            toolbar.addView(navToolbarView);
+
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
                             Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
