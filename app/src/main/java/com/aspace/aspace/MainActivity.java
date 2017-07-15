@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -119,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
+    private Toolbar navToolbar;
+    private ConstraintLayout navLowerBar;
+    private View navToolbarView;
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -284,11 +288,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                             //TODO maybe animate the search bar out and the nav directions toolbar in?
                             searchView.setVisibility(View.GONE);
+                            navLowerBar.setVisibility(View.VISIBLE);
 
-                            Toolbar toolbar = new Toolbar(MainActivity.this);
-                            setSupportActionBar(toolbar);
-                            View navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar, null);
-                            toolbar.addView(navToolbarView);
+                            navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar_constraint_views, null);
+                            navToolbar.addView(navToolbarView);
 
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
@@ -314,6 +317,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 cancelNavigationFAB.setVisibility(View.GONE);
                 snapToLocationFAB.setVisibility(View.GONE);
                 startNavigationFAB.setVisibility(View.VISIBLE);
+                navLowerBar.setVisibility(View.GONE);
+                searchView.setVisibility(View.VISIBLE);
+                navToolbar.removeAllViews();
             }
         });
 
@@ -431,6 +437,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 });
             }
         });
+
+        navToolbar = (Toolbar) findViewById(R.id.nav_toolbar);
+        setSupportActionBar(navToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
@@ -591,6 +601,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             rawSuggestions = (List<Feature>) gson.fromJson(savedInstanceState.getString("rawSuggestions"), List.class);
         }
         */
+        navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
     }
 
     //When user selects a search suggestion

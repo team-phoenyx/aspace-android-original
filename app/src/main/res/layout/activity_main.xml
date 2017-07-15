@@ -19,6 +19,126 @@
         mapbox:mapbox_cameraTilt="20"
         mapbox:mapbox_cameraZoom="12"
         mapbox:mapbox_styleUrl="@string/mapbox_style_mapbox_streets">
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/nav_toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/nav_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:background="@color/colorPrimary"
+                android:visibility="visible"
+                mapbox:elevation="4dp">
+            </android.support.v7.widget.Toolbar>
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/nav_subview"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:background="#FFFFFF"
+                android:visibility="gone"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/nav_info_duration_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_marginLeft="16dp"
+                    android:background="@color/transparent"
+                    mapbox:layout_constraintBottom_toBottomOf="parent"
+                    mapbox:layout_constraintLeft_toLeftOf="parent"
+                    mapbox:layout_constraintTop_toTopOf="parent"
+                    mapbox:layout_constraintVertical_bias="0.5">
+
+                    <ImageView
+                        android:id="@+id/nav_info_duration_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/ic_alarm_24dp"
+                        mapbox:layout_constraintLeft_toLeftOf="parent" />
+
+                    <TextView
+                        android:id="@+id/nav_info_duration_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="4dp"
+                        android:text="10 min"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nav_info_distance_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:background="@color/transparent"
+                    mapbox:layout_constraintBottom_toBottomOf="parent"
+                    mapbox:layout_constraintLeft_toRightOf="@+id/nav_info_duration_layout"
+                    mapbox:layout_constraintRight_toLeftOf="@+id/nav_info_spots_layout"
+                    mapbox:layout_constraintTop_toTopOf="parent"
+                    mapbox:layout_constraintVertical_bias="0.5">
+
+                    <ImageView
+                        android:id="@+id/nav_info_distance_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/ic_directions_24dp" />
+
+                    <TextView
+                        android:id="@+id/nav_info_distance_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="4dp"
+                        android:text="5 mi"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nav_info_spots_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_marginRight="16dp"
+                    android:background="@color/transparent"
+                    mapbox:layout_constraintBottom_toBottomOf="parent"
+                    mapbox:layout_constraintRight_toRightOf="parent"
+                    mapbox:layout_constraintTop_toTopOf="parent"
+                    mapbox:layout_constraintVertical_bias="0.5">
+
+                    <ImageView
+                        android:id="@+id/nav_info_spots_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:scaleX="0.90"
+                        android:scaleY="0.90"
+                        android:src="@drawable/ic_parking_24dp" />
+
+                    <TextView
+                        android:id="@+id/nav_info_spots_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="10+ spots"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </android.support.constraint.ConstraintLayout>
+        </LinearLayout>
 
         <com.arlib.floatingsearchview.FloatingSearchView
             android:id="@+id/search_view"
