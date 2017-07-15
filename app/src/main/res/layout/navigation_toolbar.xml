@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,20 +9,21 @@
             android:id="@+id/navigation_toolbar"
             android:visibility="visible"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="75dp"
             android:background="@color/colorPrimary"
-            mapbox:elevation="4dp">
+            mapbox:elevation="5dp">
             <ImageView
                 android:id="@+id/navigation_iv_maneuver"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:paddingLeft="-7dp"
                 android:background="@color/transparent"
                 android:src="@drawable/ic_turn_right_24dp"/>
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:paddingLeft="10dp">
+                android:paddingLeft="5dp">
                 <TextView
                     android:id="@+id/navigation_tv_distance_till_maneuver"
                     android:layout_width="wrap_content"
@@ -29,7 +31,7 @@
                     android:text="In 800 ft"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:paddingTop="7dp"
+                    android:paddingTop="15dp"
                     android:textColor="@android:color/white"/>
                 <TextView
                     android:id="@+id/navigation_tv_road"
@@ -48,44 +50,107 @@
                 android:background="@color/transparent"
                 android:src="@drawable/ic_volume_on_24dp"/>
         </Toolbar>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/navigation_sub_view"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal">
         <LinearLayout
-            android:id="@+id/navigation_sub_view"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:background="#FFFFFF"
-            android:layout_height="29dp">
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@color/transparent"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="0dp"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="8dp"
+            mapbox:layout_constraintLeft_toLeftOf="parent"
+            android:id="@+id/navigation_ll_duration_remaining"
+            mapbox:layout_constraintVertical_bias="0.5">
+
             <ImageView
                 android:id="@+id/navigation_iv_duration_remaining"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_alarm_24dp"
+                mapbox:layout_constraintLeft_toLeftOf="parent" />
+
             <TextView
                 android:id="@+id/navigation_tv_duration_remaining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="10 min"
+                android:textColor="@color/colorPrimary"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white" />
+                android:textStyle="bold" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/navigation_ll_total_distance_left"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@color/transparent"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="0dp"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="0dp"
+            mapbox:layout_constraintVertical_bias="0.5"
+            mapbox:layout_constraintLeft_toRightOf="@+id/navigation_ll_duration_remaining"
+            mapbox:layout_constraintRight_toLeftOf="@+id/navigation_ll_spots_left">
+
             <ImageView
                 android:id="@+id/navigation_iv_total_distance_left"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_directions_24dp" />
+
             <TextView
                 android:id="@+id/navigation_tv_total_distance_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="5 mi"
+                android:textColor="@color/colorPrimary"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white" />
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@color/transparent"
+            android:id="@+id/navigation_ll_spots_left"
+            android:layout_marginRight="8dp"
+            mapbox:layout_constraintRight_toRightOf="parent"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="0dp"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="0dp"
+            mapbox:layout_constraintVertical_bias="0.5">
+
             <ImageView
                 android:id="@+id/navigation_iv_spots_left"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="-3dp"
+                android:src="@drawable/ic_parking_24dp" />
+
             <TextView
                 android:id="@+id/navigation_tv_spots_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="10+ spots"
+                android:textColor="@color/colorPrimary"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white" />
+                android:textStyle="bold" />
         </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 </LinearLayout>
