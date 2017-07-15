@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
     private View navToolbarView;
+
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
@@ -140,29 +141,65 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
+        //LOCATION INIT
+        locationEngine = LocationSource.getLocationEngine(this);
+        locationEngine.activate();
+
+        //VIEWS INIT
+        startNavigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
+        cancelNavigationFAB = (FloatingActionButton) findViewById(R.id.cancel_navigation_fab);
+        mMapView = (MapView) findViewById(R.id.mapview);
+        searchView = (FloatingSearchView) findViewById(R.id.search_view);
+        snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
+        cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
+
+        navToolbar = (Toolbar) findViewById(R.id.nav_toolbar);
+        setSupportActionBar(navToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
+
+        //MAPBOX INIT
+        Mapbox.getInstance(this, getString(R.string.access_token));
+        navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+        navigation.setSnapToRoute(true);
+        MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
+        mapboxNavigationOptions.setMaximumDistanceOffRoute(50); //off-route threshold to 50 meters (default)
+        mMapView.onCreate(savedInstanceState);
+
+        //RETROFIT INIT
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
+        parCareService = retrofit.create(PCRetrofitInterface.class);
+        retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        mapboxService = retrofit.create(PCRetrofitInterface.class);
+
+        //ICONS INIT
+        IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
+        openParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_available_48px);
+        closedParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_unavailable_48px);
+        closestParkingSpotIcon = iconFactory.fromResource(R.drawable.blue_marker_view);
+
+        //IDENTIFIERS AND ENCRYPTIONKEY INIT
         Bundle extras = getIntent().getExtras();
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
+
+        //BOOLEAN FLAGS INIT
         isUpdatingSpots = true;
         allowAlert = true;
 
+        //TIMER INIT
         if (timer != null) {
             timer.cancel();
         }
 
         timer = new Timer();
 
-        Mapbox.getInstance(this, getString(R.string.access_token));
-
-        setContentView(R.layout.activity_main);
-
-        locationEngine = LocationSource.getLocationEngine(this);
-        locationEngine.activate();
-        navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
-        navigation.setSnapToRoute(true);
+        //********NAVIGATION EVENT HANDLERS********
         navigation.addNavigationEventListener(new NavigationEventListener() {
             @Override
             public void onRunning(boolean running) {
@@ -252,94 +289,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
-        // sets off route distance threshhold to 50 meters.
-        // (default threshhold is 50 meters).
-        mapboxNavigationOptions.setMaximumDistanceOffRoute(50);
-
-        startNavigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
-        startNavigationFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
-                navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
-                navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
-                        if (response.isSuccessful()) {
-                            com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
-                            MainActivity.this.route = route;
-
-                            drawNavRoute(route);
-
-                            navigation.startNavigation(route);
-                            // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
-                            Location myCurrentLocation = map.getMyLocation();
-                            LatLng myCurrentLocationLatLng = new LatLng(myCurrentLocation.getLatitude(), myCurrentLocation.getLongitude());
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(myCurrentLocationLatLng, DEFAULT_SNAP_ZOOM));
-
-                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
-                            map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
-
-                            startNavigationFAB.setVisibility(View.GONE);
-                            cancelRouteFAB.setVisibility(View.GONE);
-                            cancelNavigationFAB.setVisibility(View.VISIBLE);
-                            snapToLocationFAB.setVisibility(View.VISIBLE);
-
-                            //TODO maybe animate the search bar out and the nav directions toolbar in?
-                            searchView.setVisibility(View.GONE);
-                            navLowerBar.setVisibility(View.VISIBLE);
-
-                            navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar_constraint_views, null);
-                            navToolbar.addView(navToolbarView);
-
-                            Log.i(TAG + "nav", "Response success: " + response.raw().toString());
-                        } else {
-                            Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
-                        Log.i(TAG + "nav", "Response failed: ", t);
-                    }
-                });
-            }
-        });
-
-        cancelNavigationFAB = (FloatingActionButton) findViewById(R.id.cancel_navigation_fab);
-        cancelNavigationFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navigation.endNavigation();
-                map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
-                cancelRouteFAB.setVisibility(View.VISIBLE);
-                cancelNavigationFAB.setVisibility(View.GONE);
-                snapToLocationFAB.setVisibility(View.GONE);
-                startNavigationFAB.setVisibility(View.VISIBLE);
-                navLowerBar.setVisibility(View.GONE);
-                searchView.setVisibility(View.VISIBLE);
-                navToolbar.removeAllViews();
-            }
-        });
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        parCareService = retrofit.create(PCRetrofitInterface.class);
-        retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-        mapboxService = retrofit.create(PCRetrofitInterface.class);
-
-        IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
-        openParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_available_48px);
-        closedParkingSpotIcon = iconFactory.fromResource(R.drawable.circle_unavailable_48px);
-        closestParkingSpotIcon = iconFactory.fromResource(R.drawable.blue_marker_view);
-
-        mMapView = (MapView) findViewById(R.id.mapview);
-        mMapView.onCreate(savedInstanceState);
+        //MAPVIEW INIT HANDLER
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -416,12 +366,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
                             String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
                             String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
-                            /*
-                            Log.i(TAG + "3", lowerLat);
-                            Log.i(TAG + "3", lowerLon);
-                            Log.i(TAG + "3", upperLat);
-                            Log.i(TAG + "3", upperLon);
-                            */
+
                             getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
                         }
                     }
@@ -438,23 +383,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        navToolbar = (Toolbar) findViewById(R.id.nav_toolbar);
-        setSupportActionBar(navToolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        searchView = (FloatingSearchView) findViewById(R.id.search_view);
+        //********SEARCHVIEW EVENT HANDLERS********
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override
             public void onFocus() {
                 toggleGps(true, false);
-
-                /*
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    searchView.clearSearchFocus();
-                }
-                */
-
 
                 try {
                     currentLocation = locationEngine.getLastLocation();
@@ -562,8 +495,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
-        snapToLocationFAB.setVisibility(View.VISIBLE);
+        //********FAB ONCLICKLISTENERS********
         snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -575,7 +507,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
         cancelRouteFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -593,15 +524,69 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        /* restore instance state
-        if (savedInstanceState != null) {
-            Gson gson = new Gson();
+        startNavigationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
+                navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
+                navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
+                        if (response.isSuccessful()) {
+                            com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
+                            MainActivity.this.route = route;
 
-            newSuggestions = (List<SearchSuggestion>) gson.fromJson(savedInstanceState.getString("newSuggestions"), List.class);
-            rawSuggestions = (List<Feature>) gson.fromJson(savedInstanceState.getString("rawSuggestions"), List.class);
-        }
-        */
-        navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
+                            drawNavRoute(route);
+
+                            navigation.startNavigation(route);
+                            // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
+                            Location myCurrentLocation = map.getMyLocation();
+                            LatLng myCurrentLocationLatLng = new LatLng(myCurrentLocation.getLatitude(), myCurrentLocation.getLongitude());
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(myCurrentLocationLatLng, DEFAULT_SNAP_ZOOM));
+
+                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                            map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+
+                            startNavigationFAB.setVisibility(View.GONE);
+                            cancelRouteFAB.setVisibility(View.GONE);
+                            cancelNavigationFAB.setVisibility(View.VISIBLE);
+                            snapToLocationFAB.setVisibility(View.VISIBLE);
+
+                            //TODO maybe animate the search bar out and the nav directions toolbar in?
+                            searchView.setVisibility(View.GONE);
+                            navLowerBar.setVisibility(View.VISIBLE);
+
+                            navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar_constraint_views, null);
+                            navToolbar.addView(navToolbarView);
+
+                            Log.i(TAG + "nav", "Response success: " + response.raw().toString());
+                        } else {
+                            Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
+                        Log.i(TAG + "nav", "Response failed: ", t);
+                    }
+                });
+            }
+        });
+
+        cancelNavigationFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigation.endNavigation();
+                map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
+                cancelRouteFAB.setVisibility(View.VISIBLE);
+                cancelNavigationFAB.setVisibility(View.GONE);
+                snapToLocationFAB.setVisibility(View.GONE);
+                startNavigationFAB.setVisibility(View.VISIBLE);
+                navLowerBar.setVisibility(View.GONE);
+                searchView.setVisibility(View.VISIBLE);
+                navToolbar.removeAllViews();
+            }
+        });
     }
 
     //When user selects a search suggestion
@@ -853,7 +838,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Toast.LENGTH_LONG).show();
     }
 
-
     // Required by PermissionsListener interface. Not actually being called anywhere right now.
     @Override
     public void onPermissionResult(boolean granted) {
@@ -905,9 +889,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Retrieves all of the spots in a bound area given by upper and lower latitudes/longitudes,
     // returns a list of the spots in the area.
-    private void getParkingSpotsNearby(PCRetrofitInterface parCareService,
-                                                    String lowerLat, String lowerLon,
-                                                    String upperLat, String upperLon) {
+    private void getParkingSpotsNearby(PCRetrofitInterface parCareService, String lowerLat, String lowerLon, String upperLat, String upperLon) {
         //if (isUpdatingSpots) {
         Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
         call.enqueue(new Callback<List<ParkingSpot>>() {
@@ -1086,28 +1068,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     // Draws polyline route from the given origin to the spot specified by the given destination. Route determined
     // by the given routeType.
     private void drawRouteToSpot(LatLng origin, LatLng destination, int routeType) {
-
-
-        /*
-        switch (routeType) {
-            case ROUTE_TYPE_WALKING:
-                client = new MapboxDirections.Builder()
-                        .setAccessToken(getString(R.string.access_token))
-                        .setOrigin(originWaypoint)
-                        .setDestination(destinationWaypoint)
-                        .setProfile(DirectionsCriteria.PROFILE_WALKING)
-                        .build();
-                break;
-            case ROUTE_TYPE_DRIVING:
-                client = new MapboxDirections.Builder()
-                        .setAccessToken(getString(R.string.access_token))
-                        .setOrigin(originWaypoint)
-                        .setDestination(destinationWaypoint)
-                        .setProfile(DirectionsCriteria.PROFILE_DRIVING)
-                        .build();
-                break;
-        }
-        */
 
         if (routeType == ROUTE_TYPE_DRIVING) {
             if (navigation != null) {
