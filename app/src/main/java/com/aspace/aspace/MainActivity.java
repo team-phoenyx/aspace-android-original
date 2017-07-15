@@ -18,9 +18,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
@@ -141,11 +143,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
 
         //LOCATION INIT
         locationEngine = LocationSource.getLocationEngine(this);
         locationEngine.activate();
+
+        //MAPBOX INIT
+        Mapbox.getInstance(this, getString(R.string.access_token));
+        navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
+        navigation.setSnapToRoute(true);
+        MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
+        mapboxNavigationOptions.setMaximumDistanceOffRoute(50); //off-route threshold to 50 meters (default)
+
+        setContentView(R.layout.activity_main);
 
         //VIEWS INIT
         startNavigationFAB = (FloatingActionButton) findViewById(R.id.navigate_route_fab);
@@ -154,20 +165,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
         cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
+        mMapView.onCreate(savedInstanceState);
 
         navToolbar = (Toolbar) findViewById(R.id.nav_toolbar);
         setSupportActionBar(navToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
         navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
-
-        //MAPBOX INIT
-        Mapbox.getInstance(this, getString(R.string.access_token));
-        navigation = new MapboxNavigation(this, Mapbox.getAccessToken());
-        navigation.setSnapToRoute(true);
-        MapboxNavigationOptions mapboxNavigationOptions = navigation.getMapboxNavigationOptions();
-        mapboxNavigationOptions.setMaximumDistanceOffRoute(50); //off-route threshold to 50 meters (default)
-        mMapView.onCreate(savedInstanceState);
 
         //RETROFIT INIT
         Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
@@ -554,10 +557,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                             //TODO maybe animate the search bar out and the nav directions toolbar in?
                             searchView.setVisibility(View.GONE);
-                            navLowerBar.setVisibility(View.VISIBLE);
 
-                            navToolbarView = getLayoutInflater().inflate(R.layout.navigation_toolbar_constraint_views, null);
-                            navToolbar.addView(navToolbarView);
+                            navLowerBar.setVisibility(View.VISIBLE);
+                            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
+                            layoutParams.height = dpToPx(80);
+                            navToolbar.setLayoutParams(layoutParams);
 
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
@@ -587,6 +591,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navToolbar.removeAllViews();
             }
         });
+    }
+
+    public int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        return Math.round(dp * ((float) displayMetrics.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT));
     }
 
     //When user selects a search suggestion
