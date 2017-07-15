@@ -136,7 +136,7 @@ public class TutorialLocationsFragment extends Fragment {
 
                 final List<String> autocompleteSuggestions = new ArrayList<String>();
 
-                if (s.equals("")) {
+                if (s.length() == 0) {
                     autocompleteSuggestions.clear();
 
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
@@ -196,7 +196,7 @@ public class TutorialLocationsFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 final List<String> autocompleteSuggestions = new ArrayList<String>();
 
-                if (s.equals("")) {
+                if (s.length() == 0) {
                     autocompleteSuggestions.clear();
 
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);

@@ -78,7 +78,7 @@ public class TutorialCarFragment extends Fragment {
     }
 
     private String getCarFromVin(String vin) {
-        vinDecodeService.getCarSpecs(vin, "json,", )
+        //vinDecodeService.getCarSpecs(vin, "json,", )
         return null;
     }
 }
