@@ -37,18 +37,25 @@
         </activity>
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/LoginTheme"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/LoginTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".NameActivity"
-            android:theme="@style/LoginTheme"
-            android:screenOrientation="portrait">
+        <activity
+            android:name=".NameActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/LoginTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".TutorialActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

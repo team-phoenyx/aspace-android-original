@@ -6,6 +6,7 @@ import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.ReauthenticateResponse;
 import com.aspace.aspace.retrofitmodels.RequestPINResponse;
 import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
+import com.aspace.aspace.retrofitmodels.VINDecodeResponse;
 import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
 
 import java.util.List;
@@ -65,4 +66,8 @@ public interface PCRetrofitInterface {
     //********GEOCODING ENDPOINT********
     @GET("geocoding/v5/mapbox.places/{query}.json")
     Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
+
+    //********VIN DECODING ENDPOINT********
+    @GET("api/vehicle/v2/vins/{vin}")
+    Call<VINDecodeResponse> getCarSpecs(@Path("vin") String vin, @Query("fmt") String format, @Query("api_key") String apiKey);
 }

@@ -10,7 +10,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -221,7 +220,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                         if (respCode.equals("102")) {
                                                                             intent = new Intent(getApplicationContext(), MainActivity.class);
                                                                         } else {
-                                                                            intent = new Intent(getApplicationContext(), NameActivity.class);
+                                                                            intent = new Intent(getApplicationContext(), TutorialActivity.class);
                                                                         }
 
                                                                         intent.putExtra(getString(R.string.user_id_tag), userID);
