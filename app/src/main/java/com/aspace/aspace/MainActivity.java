@@ -23,6 +23,9 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
@@ -124,7 +127,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private String searchedLatString, searchedLngString;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
-    private View navToolbarView;
+    private ImageView navManeuverImageView;
+    private ImageButton navMuteButton;
+    private TextView navManeuverDistanceLabel, navManeuverTargetLabel;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -165,6 +170,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
         cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
+
+        navManeuverImageView = (ImageView) findViewById(R.id.nav_ic_maneuver);
+        navMuteButton = (ImageButton) findViewById(R.id.nav_mute_button);
+        navManeuverDistanceLabel = (TextView) findViewById(R.id.nav_maneuver_distance);
+        navManeuverTargetLabel = (TextView) findViewById(R.id.nav_maneuver_target);
+
         mMapView.onCreate(savedInstanceState);
 
         navToolbar = (Toolbar) findViewById(R.id.nav_toolbar);
@@ -563,6 +574,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             layoutParams.height = dpToPx(80);
                             navToolbar.setLayoutParams(layoutParams);
 
+                            navManeuverImageView.setVisibility(View.VISIBLE);
+                            navManeuverDistanceLabel.setVisibility(View.VISIBLE);
+                            navManeuverTargetLabel.setVisibility(View.VISIBLE);
+                            navMuteButton.setVisibility(View.VISIBLE);
+
                             Log.i(TAG + "nav", "Response success: " + response.raw().toString());
                         } else {
                             Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
@@ -588,7 +604,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 startNavigationFAB.setVisibility(View.VISIBLE);
                 navLowerBar.setVisibility(View.GONE);
                 searchView.setVisibility(View.VISIBLE);
-                navToolbar.removeAllViews();
+
+                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
+                layoutParams.height = dpToPx(64);
+                navToolbar.setLayoutParams(layoutParams);
+
+                navManeuverImageView.setVisibility(View.INVISIBLE);
+                navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
+                navManeuverTargetLabel.setVisibility(View.INVISIBLE);
+                navMuteButton.setVisibility(View.INVISIBLE);
             }
         });
     }

@@ -34,13 +34,15 @@
                 android:layout_marginRight="8dp"
                 android:background="@color/transparent"
                 android:paddingLeft="-6dp"
-                android:src="@drawable/ic_turn_right_24dp" />
+                android:src="@drawable/ic_turn_right_24dp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/nav_instructions_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="visible">
 
                 <TextView
                     android:id="@+id/nav_maneuver_distance"
@@ -51,7 +53,8 @@
                     android:text="In 800 ft"
                     android:textColor="@android:color/white"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/nav_maneuver_target"
@@ -61,7 +64,8 @@
                     android:text="NE 4th Street"
                     android:textColor="@android:color/white"
                     android:textSize="28sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <ImageButton
@@ -71,7 +75,8 @@
                 android:layout_gravity="end"
                 android:layout_marginEnd="16dp"
                 android:background="@color/transparent"
-                android:src="@drawable/ic_volume_on_24dp" />
+                android:src="@drawable/ic_volume_on_24dp"
+                android:visibility="gone" />
 
         </android.support.v7.widget.Toolbar>
 
