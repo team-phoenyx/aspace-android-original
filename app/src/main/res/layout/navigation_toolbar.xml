@@ -2,12 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    android:id="@+id/nav_toolbar_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <Toolbar
-        android:id="@+id/navigation_toolbar"
+        android:id="@+id/nav_toolbar"
         android:layout_width="match_parent"
         android:layout_height="75dp"
         android:background="@color/colorPrimary"
@@ -15,7 +16,7 @@
         mapbox:elevation="4dp">
 
         <ImageView
-            android:id="@+id/navigation_iv_maneuver"
+            android:id="@+id/nav_ic_maneuver"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:background="@color/transparent"
@@ -23,13 +24,14 @@
             android:src="@drawable/ic_turn_right_24dp" />
 
         <LinearLayout
+            android:id="@+id/nav_instructions_layout"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingLeft="5dp">
 
             <TextView
-                android:id="@+id/navigation_tv_distance_till_maneuver"
+                android:id="@+id/nav_maneuver_distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="4dp"
@@ -40,7 +42,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/navigation_tv_road"
+                android:id="@+id/nav_maneuver_target"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="4dp"
@@ -51,6 +53,7 @@
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/nav_mute_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -60,14 +63,14 @@
     </Toolbar>
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/navigation_sub_view"
+        android:id="@+id/nav_subview"
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:background="#FFFFFF"
         android:orientation="horizontal">
 
         <LinearLayout
-            android:id="@+id/navigation_ll_duration_remaining"
+            android:id="@+id/nav_info_duration_layout"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_marginLeft="16dp"
@@ -78,7 +81,7 @@
             mapbox:layout_constraintVertical_bias="0.5">
 
             <ImageView
-                android:id="@+id/navigation_iv_duration_remaining"
+                android:id="@+id/nav_info_duration_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -86,7 +89,7 @@
                 mapbox:layout_constraintLeft_toLeftOf="parent" />
 
             <TextView
-                android:id="@+id/navigation_tv_duration_remaining"
+                android:id="@+id/nav_info_duration_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -97,27 +100,27 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navigation_ll_total_distance_left"
+            android:id="@+id/nav_info_distance_layout"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:background="@color/transparent"
             mapbox:layout_constraintBottom_toBottomOf="parent"
-            mapbox:layout_constraintLeft_toRightOf="@+id/navigation_ll_duration_remaining"
-            mapbox:layout_constraintRight_toLeftOf="@+id/navigation_ll_spots_left"
+            mapbox:layout_constraintLeft_toRightOf="@+id/nav_info_duration_layout"
+            mapbox:layout_constraintRight_toLeftOf="@+id/nav_info_spots_layout"
             mapbox:layout_constraintTop_toTopOf="parent"
             mapbox:layout_constraintVertical_bias="0.5">
 
             <ImageView
-                android:id="@+id/navigation_iv_total_distance_left"
+                android:id="@+id/nav_info_distance_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/ic_directions_24dp" />
 
             <TextView
-                android:id="@+id/navigation_tv_total_distance_left"
+                android:id="@+id/nav_info_distance_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -128,7 +131,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navigation_ll_spots_left"
+            android:id="@+id/nav_info_spots_layout"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_marginRight="16dp"
@@ -139,7 +142,7 @@
             mapbox:layout_constraintVertical_bias="0.5">
 
             <ImageView
-                android:id="@+id/navigation_iv_spots_left"
+                android:id="@+id/nav_info_spots_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -148,7 +151,7 @@
                 android:src="@drawable/ic_parking_24dp" />
 
             <TextView
-                android:id="@+id/navigation_tv_spots_left"
+                android:id="@+id/nav_info_spots_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
