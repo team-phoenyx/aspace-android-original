@@ -339,8 +339,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         if (response.isSuccessful()) {
                             Toast.makeText(MainActivity.this, "YOU ARE OFF-ROUTE! REROUTING NOW", Toast.LENGTH_LONG).show();
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute newRoute = response.body().getRoutes().get(0);
-                            // update new route to navigation
-                            navigation.updateRoute(newRoute);
+                            // ends old starts new navigation session with the new route
+                            navigation.endNavigation();
+                            navigation.startNavigation(newRoute);
                             // draw new driving route
                             drawNavRoute(newRoute);
 
@@ -572,6 +573,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
+                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                    map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                    map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
                 }
             }
         });
@@ -615,6 +619,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                             map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                             map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                            map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
 
                             startNavigationFAB.setVisibility(View.GONE);
                             cancelRouteFAB.setVisibility(View.GONE);
