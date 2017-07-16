@@ -264,49 +264,62 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep currentStep = routeStepProgress.step();
+                LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
+
                 // Current step log info
                 Log.i(TAG + "Directions", "Current Step: " + currentStep.getName()
                         + ", Current Maneuver: " + currentStep.getManeuver().getInstruction()
                         + ", Distance In: " + routeStepProgress.getDistanceTraveled()
                         + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
                         + ", Duration: " + currentStep.getDuration());
-                //Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
-                //Toast.makeText(MainActivity.this, "You will arrive at your destination in " + (int)routeProgress.getDurationRemaining() / 60 + " minutes", Toast.LENGTH_LONG).show();
-                //Toast.makeText(MainActivity.this, "In " + translateDistance(routeStepProgress.getDistanceRemaining()) + ": " + routeProgress.getCurrentLegProgress().getUpComingStep().getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
 
                 String maneuverType = currentStep.getManeuver().getType();
                 if (maneuverType.equalsIgnoreCase("continue")) {
                     maneuverType += "e";
                 }
                 String maneuverModifier = "" + currentStep.getManeuver().getModifier();
+
                 // Updating main navigation tool bar
+                navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
+                navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
+
+                String imageName = maneuverType;
+                if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                    imageName += " " + maneuverModifier;
+                    imageName = imageName.replace(' ', '_');
+                }
+                int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
+                navManeuverImageView.setImageResource(id);
+
+                /*
                 //First maneuver is slightly different
                 if (routeProgress.getCurrentLegProgress().getStepIndex() == 0) {
-                    navManeuverDistanceLabel.setText("For " + translateDistance(routeStepProgress.getDistanceRemaining()));
-                    navManeuverTargetLabel.setText(currentStep.getName());
-                    Context context = navManeuverImageView.getContext();
+                    navManeuverDistanceLabel.setText(currentStep.getManeuver().getInstruction() + " for " + translateDistance(routeStepProgress.getDistanceRemaining()) + ", then");
+                    navManeuverTargetLabel.setText(nextStep.getName());
+
                     String imageName = maneuverType;
                     if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
                         imageName += " " + maneuverModifier;
                         imageName = imageName.replace(' ', '_');
                     }
-                    int id = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
+                    int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
                     navManeuverImageView.setImageResource(id);
                 } else {
                     // if the user has just completed a maneuver, update to the next maneuver
                     if (!previousProgressChangeCurrentStepManeuver.equalsIgnoreCase(currentStep.getManeuver().getInstruction())) {
                         navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
                         navManeuverTargetLabel.setText(routeProgress.getCurrentLegProgress().getUpComingStep().getName());
-                        Context context = navManeuverImageView.getContext();
+
                         String imageName = maneuverType;
                         if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
                             imageName += " " + maneuverModifier;
                             imageName = imageName.replace(' ', '_');
                         }
-                        int id = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
+                        int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
                         navManeuverImageView.setImageResource(id);
                     }
                 }
+                */
 
                 // Updating lower navigation white bar
                 navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
@@ -665,6 +678,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navMuteButton.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    public String shortenStreetName (String streetName) {
+        return streetName.replace(" Street ", " St. ").replace(" Drive ", " Dr. ").replace(" Road ", " Rd. ").replace(" Boulevard ", " Blvd.").replace("Place", "Pl.").replace("Court", "Ct.").replace("Highway", "Hwy.").replace("Avenue", "Ave.").replace("Lane", "Ln.")
+                .replace("South", "S.").replace("south", "S.").replace("North", "N.").replace("north", "N.").replace("West", "W.").replace("West", "S.").replace("South", "S.").replace("south", "S.");
     }
 
     public int dpToPx(int dp) {
