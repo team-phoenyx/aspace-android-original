@@ -1,6 +1,7 @@
 package com.aspace.aspace;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -330,6 +331,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
+                final ProgressDialog rerouteProgressDialog = new ProgressDialog(MainActivity.this, ProgressDialog.STYLE_SPINNER);
+                rerouteProgressDialog.setTitle("You Are Offroute");
+                rerouteProgressDialog.setMessage("We are rerouting you now.");
+                rerouteProgressDialog.show();
                 //final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
                 Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
@@ -337,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "YOU ARE OFF-ROUTE! REROUTING NOW", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(MainActivity.this, "YOU ARE OFF-ROUTE! REROUTING NOW", Toast.LENGTH_SHORT).show();
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute newRoute = response.body().getRoutes().get(0);
                             // ends old starts new navigation session with the new route
                             navigation.endNavigation();
@@ -349,11 +354,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         } else {
                             Log.i(TAG + "Directions", "Route Update Unsuccessful");
                         }
+                        rerouteProgressDialog.dismiss();
                     }
 
                     @Override
                     public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
                         Log.i(TAG + "Directions", "Reroute FAILED", t);
+                        rerouteProgressDialog.dismiss();
                     }
                 });
             }
@@ -573,9 +580,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, DEFAULT_SNAP_ZOOM));
-                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
-                    map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
-                    map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
+                    if (cancelNavigationFAB.getVisibility() == View.VISIBLE) {
+                        map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                        map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                        map.getTrackingSettings().setDismissAllTrackingOnGesture(true);
+                    }
                 }
             }
         });
