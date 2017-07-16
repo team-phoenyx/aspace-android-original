@@ -72,7 +72,9 @@ import com.mapbox.services.android.navigation.v5.models.RouteStepProgress;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
+import com.mapbox.services.api.directions.v5.models.DirectionsWaypoint;
 import com.mapbox.services.api.directions.v5.models.LegStep;
+import com.mapbox.services.api.directions.v5.models.RouteLeg;
 import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
@@ -134,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
     private ImageButton navMuteButton;
     private TextView navManeuverDistanceLabel, navManeuverTargetLabel, navInfoDurationLabel, navInfoDistanceLabel, navInfoSpotsLabel;
+    private List<String> routeManeuverInstructions;
+    private List<String> offRouteManeuverInstructions;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -152,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         //LOCATION INIT
         locationEngine = LocationSource.getLocationEngine(this);
@@ -307,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
+        offRouteManeuverInstructions = new ArrayList<String>();
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
@@ -318,15 +322,32 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
                         if (response.isSuccessful()) {
-                            //Toast.makeText(MainActivity.this, "YOU ARE OFF-ROUTE! REROUTING NOW", Toast.LENGTH_SHORT).show();
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute newRoute = response.body().getRoutes().get(0);
-                            // ends old starts new navigation session with the new route
-                            navigation.endNavigation();
-                            navigation.startNavigation(newRoute);
-                            // draw new driving route
-                            drawNavRoute(newRoute);
+                            if (!offRouteManeuverInstructions.isEmpty()) {
+                                offRouteManeuverInstructions.clear();
+                            }
 
-                            Log.i(TAG + "Directions", "Route Update Successful");
+                            for (LegStep ls : newRoute.getLegs().get(0).getSteps()) {
+                                offRouteManeuverInstructions.add(ls.getManeuver().getInstruction());
+                            }
+
+                            // if this offroute's list of instructions are different than the one before this call
+                            // routeManeuverInstructions initialized when first nav session begins.
+                            if (!offRouteManeuverInstructions.equals(routeManeuverInstructions)) {
+                                // ends old starts new navigation session with the new route
+                                navigation.endNavigation();
+                                navigation.startNavigation(newRoute);
+                                // draw new driving route
+                                drawNavRoute(newRoute);
+                                Log.i(TAG + "Directions", "Route Update Successful");
+                                // update the route's instructions list to the new route instructions list
+                                routeManeuverInstructions.clear();
+                                routeManeuverInstructions.addAll(offRouteManeuverInstructions);
+                            }
+
+                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                            map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                            map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
                         } else {
                             Log.i(TAG + "Directions", "Route Update Unsuccessful");
                         }
@@ -557,7 +578,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     if (cancelNavigationFAB.getVisibility() == View.VISIBLE) {
                         map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
                         map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
-                        map.getTrackingSettings().setDismissAllTrackingOnGesture(true);
+                        map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
                     }
                 }
             }
@@ -591,8 +612,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         if (response.isSuccessful()) {
                             com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
                             MainActivity.this.route = route;
-
                             drawNavRoute(route);
+
+                            // if this is the first navigation session, then create the instructions list used to compare
+                            // with the offroute's instructions list.
+                            // isEmpty check also for when the user cancels the first nav session and restarts immediately
+                            if (routeManeuverInstructions == null) {
+                                routeManeuverInstructions = new ArrayList<String>();
+                            } else if (!routeManeuverInstructions.isEmpty()) {
+                                routeManeuverInstructions.clear();
+                            }
+
+                            // fill in the list with the route's instructions.
+                            for (LegStep ls : route.getLegs().get(0).getSteps()) {
+                                routeManeuverInstructions.add(ls.getManeuver().getInstruction());
+                            }
 
                             navigation.startNavigation(route);
                             // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
@@ -639,6 +673,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         cancelNavigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.i("TEST", routeManeuverInstructions.size() + "");
                 navigation.endNavigation();
                 map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
                 cancelRouteFAB.setVisibility(View.VISIBLE);
