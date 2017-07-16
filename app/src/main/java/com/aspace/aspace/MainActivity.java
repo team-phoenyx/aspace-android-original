@@ -260,28 +260,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
-
                 List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
-                LegStep currentStep = routeStepProgress.step();
                 LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
 
-                // Current step log info
-                Log.i(TAG + "Directions", "Current Step: " + currentStep.getName()
-                        + ", Current Maneuver: " + currentStep.getManeuver().getInstruction()
-                        + ", Distance In: " + routeStepProgress.getDistanceTraveled()
-                        + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
-                        + ", Duration: " + currentStep.getDuration());
-
-                String maneuverType = currentStep.getManeuver().getType();
+                String maneuverType = nextStep.getManeuver().getType();
                 if (maneuverType.equalsIgnoreCase("continue")) {
                     maneuverType += "e";
                 }
-                String maneuverModifier = "" + currentStep.getManeuver().getModifier();
+                String maneuverModifier = "" + nextStep.getManeuver().getModifier();
 
                 // Updating main navigation tool bar
                 navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
-                navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
+                if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
+                else navManeuverTargetLabel.setText(nextStep.getName());
 
                 String imageName = maneuverType;
                 if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
@@ -331,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
                 }
 
-                previousProgressChangeCurrentStepManeuver = currentStep.getManeuver().getInstruction();
+                //previousProgressChangeCurrentStepManeuver = currentStep.getManeuver().getInstruction();
             }
         });
 
