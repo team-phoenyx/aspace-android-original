@@ -1,7 +1,6 @@
 package com.aspace.aspace;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +13,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
-    private String previousProgressChangeCurrentStepManeuver;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
@@ -272,7 +271,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 String maneuverModifier = "" + nextStep.getManeuver().getModifier();
 
                 // Updating main navigation tool bar
-                navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
+                if (routeStepProgress.getDistanceRemaining() < 30.5) {
+                    String directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
+                    navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
+                }
+                else navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
+
                 if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
                 else navManeuverTargetLabel.setText(nextStep.getName());
 
@@ -284,36 +288,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
                 navManeuverImageView.setImageResource(id);
 
-                /*
-                //First maneuver is slightly different
-                if (routeProgress.getCurrentLegProgress().getStepIndex() == 0) {
-                    navManeuverDistanceLabel.setText(currentStep.getManeuver().getInstruction() + " for " + translateDistance(routeStepProgress.getDistanceRemaining()) + ", then");
-                    navManeuverTargetLabel.setText(nextStep.getName());
-
-                    String imageName = maneuverType;
-                    if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
-                        imageName += " " + maneuverModifier;
-                        imageName = imageName.replace(' ', '_');
-                    }
-                    int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
-                    navManeuverImageView.setImageResource(id);
-                } else {
-                    // if the user has just completed a maneuver, update to the next maneuver
-                    if (!previousProgressChangeCurrentStepManeuver.equalsIgnoreCase(currentStep.getManeuver().getInstruction())) {
-                        navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
-                        navManeuverTargetLabel.setText(routeProgress.getCurrentLegProgress().getUpComingStep().getName());
-
-                        String imageName = maneuverType;
-                        if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
-                            imageName += " " + maneuverModifier;
-                            imageName = imageName.replace(' ', '_');
-                        }
-                        int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
-                        navManeuverImageView.setImageResource(id);
-                    }
-                }
-                */
-
                 // Updating lower navigation white bar
                 navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
                 navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
@@ -323,18 +297,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 for (LegStep step : steps) {
                     Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
                 }
-
-                //previousProgressChangeCurrentStepManeuver = currentStep.getManeuver().getInstruction();
             }
         });
 
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
-                final ProgressDialog rerouteProgressDialog = new ProgressDialog(MainActivity.this, ProgressDialog.STYLE_SPINNER);
-                rerouteProgressDialog.setTitle("You Are Offroute");
-                rerouteProgressDialog.setMessage("We are rerouting you now.");
-                rerouteProgressDialog.show();
+                Snackbar.make(findViewById(android.R.id.content), "Rerouted", Snackbar.LENGTH_SHORT);
                 //final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
                 Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
@@ -354,13 +323,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         } else {
                             Log.i(TAG + "Directions", "Route Update Unsuccessful");
                         }
-                        rerouteProgressDialog.dismiss();
                     }
 
                     @Override
                     public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
                         Log.i(TAG + "Directions", "Reroute FAILED", t);
-                        rerouteProgressDialog.dismiss();
                     }
                 });
             }
