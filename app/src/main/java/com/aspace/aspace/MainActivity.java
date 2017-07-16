@@ -10,6 +10,7 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -79,6 +80,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -97,7 +99,7 @@ import static com.mapbox.services.android.navigation.v5.NavigationConstants.LOW_
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.MEDIUM_ALERT_LEVEL;
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.NONE_ALERT_LEVEL;
 
-public class MainActivity extends AppCompatActivity implements PermissionsListener {
+public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener {
 
     private MapView mMapView;
     private MapboxMap map;
@@ -123,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
+    private TextToSpeech textToSpeech;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
@@ -209,6 +212,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
+
+        //TTS INIT
+        textToSpeech = new TextToSpeech(this, this);
+        textToSpeech.setLanguage(Locale.US);
 
         //BOOLEAN FLAGS INIT
         isUpdatingSpots = true;
@@ -1257,5 +1264,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         double miles = Math.round(0.000621371192 * meters * 10);
         miles = miles / 10;
         return miles;
+    }
+
+    @Override
+    public void onInit(int status) {
+        
     }
 }
