@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
     private boolean allowAlert;
-    private boolean isFirstManeuver;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
@@ -271,9 +270,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         + ", Distance In: " + routeStepProgress.getDistanceTraveled()
                         + ", Distance Left: " + routeStepProgress.getDistanceRemaining()
                         + ", Duration: " + currentStep.getDuration());
-                Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
-                Toast.makeText(MainActivity.this, "You will arrive at your destination in " + (int)routeProgress.getDurationRemaining() / 60 + " minutes", Toast.LENGTH_LONG).show();
-                Toast.makeText(MainActivity.this, "In " + translateDistance(routeStepProgress.getDistanceRemaining()) + ": " + routeProgress.getCurrentLegProgress().getUpComingStep().getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "You will arrive at your destination in " + (int)routeProgress.getDurationRemaining() / 60 + " minutes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "In " + translateDistance(routeStepProgress.getDistanceRemaining()) + ": " + routeProgress.getCurrentLegProgress().getUpComingStep().getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
 
                 String maneuverType = currentStep.getManeuver().getType();
                 if (maneuverType.equalsIgnoreCase("continue")) {
@@ -281,12 +280,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
                 String maneuverModifier = "" + currentStep.getManeuver().getModifier();
                 // Updating main navigation tool bar
-                // TODO: Finish logic for initial departure maneuver updating UI.
-                // I don't think it will show the next maneuver until the first one is completed yet.
-                // This ^^^^^^^ is only for the first maneuver, subsequent maneuvers should work appropriately.
-                if (isFirstManeuver) {
-                    navManeuverDistanceLabel.setText("" + translateDistance(routeStepProgress.getDistanceRemaining()));
-                    navManeuverTargetLabel.setText("" + currentStep.getName());
+                //First maneuver is slightly different
+                if (routeProgress.getCurrentLegProgress().getStepIndex() == 0) {
+                    navManeuverDistanceLabel.setText("For " + translateDistance(routeStepProgress.getDistanceRemaining()));
+                    navManeuverTargetLabel.setText(currentStep.getName());
                     Context context = navManeuverImageView.getContext();
                     String imageName = maneuverType;
                     if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
@@ -299,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     // if the user has just completed a maneuver, update to the next maneuver
                     if (!previousProgressChangeCurrentStepManeuver.equalsIgnoreCase(currentStep.getManeuver().getInstruction())) {
                         navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
-                        navManeuverTargetLabel.setText("" + routeProgress.getCurrentLegProgress().getUpComingStep().getName());
+                        navManeuverTargetLabel.setText(routeProgress.getCurrentLegProgress().getUpComingStep().getName());
                         Context context = navManeuverImageView.getContext();
                         String imageName = maneuverType;
                         if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
@@ -310,20 +307,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         navManeuverImageView.setImageResource(id);
                     }
                 }
-                // Updating lower navigation white bar
-                navInfoDurationLabel.setText("" + (int)routeProgress.getDurationRemaining() / 60 + " min");
-                navInfoDistanceLabel.setText("" + translateDistance(routeProgress.getDistanceRemaining()));
-                navInfoSpotsLabel.setText("" + "10+ spots");
-                // Complete directions log
 
+                // Updating lower navigation white bar
+                navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
+                navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
+                navInfoSpotsLabel.setText("10+ spots");
+
+                // Complete directions log
                 for (LegStep step : steps) {
                     Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
                 }
 
                 previousProgressChangeCurrentStepManeuver = currentStep.getManeuver().getInstruction();
-                if (isFirstManeuver) {
-                    isFirstManeuver = false;
-                }
             }
         });
 
@@ -598,7 +593,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onClick(View v) {
                 Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
                 navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
-                isFirstManeuver = true;
                 navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
