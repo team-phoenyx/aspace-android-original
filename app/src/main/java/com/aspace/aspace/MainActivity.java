@@ -119,17 +119,19 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private PCRetrofitInterface parCareService, mapboxService;
     private boolean isUpdatingSpots;
     private boolean allowAlert;
+    private boolean isFirstManeuver;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
     private String searchedLatString, searchedLngString;
+    private String previousProgressChangeCurrentStepManeuver;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
-    private ImageView navManeuverImageView;
+    private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
     private ImageButton navMuteButton;
-    private TextView navManeuverDistanceLabel, navManeuverTargetLabel;
+    private TextView navManeuverDistanceLabel, navManeuverTargetLabel, navInfoDurationLabel, navInfoDistanceLabel, navInfoSpotsLabel;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -170,11 +172,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
         cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
-
+        // toolbar views
         navManeuverImageView = (ImageView) findViewById(R.id.nav_ic_maneuver);
         navMuteButton = (ImageButton) findViewById(R.id.nav_mute_button);
         navManeuverDistanceLabel = (TextView) findViewById(R.id.nav_maneuver_distance);
         navManeuverTargetLabel = (TextView) findViewById(R.id.nav_maneuver_target);
+        // lower white bar views
+        navInfoDurationImageView = (ImageView) findViewById(R.id.nav_info_duration_icon);
+        navInfoDistanceImageView = (ImageView) findViewById(R.id.nav_info_distance_icon);
+        navInfoSpotsImageView = (ImageView) findViewById(R.id.nav_info_spots_icon);
+        navInfoDurationLabel = (TextView) findViewById(R.id.nav_info_duration_label);
+        navInfoDistanceLabel = (TextView) findViewById(R.id.nav_info_distance_label);
+        navInfoSpotsLabel = (TextView) findViewById(R.id.nav_info_spots_label);
 
         mMapView.onCreate(savedInstanceState);
 
@@ -252,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
+
                 List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep currentStep = routeStepProgress.step();
@@ -264,11 +274,56 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 Toast.makeText(MainActivity.this, "" + currentStep.getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
                 Toast.makeText(MainActivity.this, "You will arrive at your destination in " + (int)routeProgress.getDurationRemaining() / 60 + " minutes", Toast.LENGTH_LONG).show();
                 Toast.makeText(MainActivity.this, "In " + translateDistance(routeStepProgress.getDistanceRemaining()) + ": " + routeProgress.getCurrentLegProgress().getUpComingStep().getManeuver().getInstruction(), Toast.LENGTH_LONG).show();
-                /* Complete directions log
-                for (LegStep step : steps) {
-                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance());
+
+                String maneuverType = currentStep.getManeuver().getType();
+                if (maneuverType.equalsIgnoreCase("continue")) {
+                    maneuverType += "e";
                 }
-                */
+                String maneuverModifier = "" + currentStep.getManeuver().getModifier();
+                // Updating main navigation tool bar
+                // TODO: Finish logic for initial departure maneuver updating UI.
+                // I don't think it will show the next maneuver until the first one is completed yet.
+                // This ^^^^^^^ is only for the first maneuver, subsequent maneuvers should work appropriately.
+                if (isFirstManeuver) {
+                    navManeuverDistanceLabel.setText("" + translateDistance(routeStepProgress.getDistanceRemaining()));
+                    navManeuverTargetLabel.setText("" + currentStep.getName());
+                    Context context = navManeuverImageView.getContext();
+                    String imageName = maneuverType;
+                    if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
+                        imageName += " " + maneuverModifier;
+                        imageName = imageName.replace(' ', '_');
+                    }
+                    int id = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
+                    navManeuverImageView.setImageResource(id);
+                } else {
+                    // if the user has just completed a maneuver, update to the next maneuver
+                    if (!previousProgressChangeCurrentStepManeuver.equalsIgnoreCase(currentStep.getManeuver().getInstruction())) {
+                        navManeuverDistanceLabel.setText("In " + translateDistance(routeStepProgress.getDistanceRemaining()));
+                        navManeuverTargetLabel.setText("" + routeProgress.getCurrentLegProgress().getUpComingStep().getName());
+                        Context context = navManeuverImageView.getContext();
+                        String imageName = maneuverType;
+                        if (!maneuverModifier.isEmpty() || maneuverModifier.length() != 0) {
+                            imageName += " " + maneuverModifier;
+                            imageName = imageName.replace(' ', '_');
+                        }
+                        int id = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
+                        navManeuverImageView.setImageResource(id);
+                    }
+                }
+                // Updating lower navigation white bar
+                navInfoDurationLabel.setText("" + (int)routeProgress.getDurationRemaining() / 60 + " min");
+                navInfoDistanceLabel.setText("" + translateDistance(routeProgress.getDistanceRemaining()));
+                navInfoSpotsLabel.setText("" + "10+ spots");
+                // Complete directions log
+
+                for (LegStep step : steps) {
+                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
+                }
+
+                previousProgressChangeCurrentStepManeuver = currentStep.getManeuver().getInstruction();
+                if (isFirstManeuver) {
+                    isFirstManeuver = false;
+                }
             }
         });
 
@@ -543,6 +598,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onClick(View v) {
                 Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
                 navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
+                isFirstManeuver = true;
                 navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
@@ -1195,14 +1251,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     // Returns the translated distance concatenated with its respective measure.
     private static String translateDistance(double meters) {
         if (meters < 305) { // 305 meters is approximately 1000 feet
-            String feet = metersToFeet(meters) + " feet";
+            String feet = metersToFeet(meters) + " ft";
             return feet;
         } else {
             double miles = metersToMiles(meters);
-            if (miles == 1.0) {
-                return miles + " mile";
-            }
-            return miles + " miles";
+            return miles + " mi";
         }
     }
 

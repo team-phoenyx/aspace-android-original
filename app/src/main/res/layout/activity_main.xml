@@ -35,6 +35,7 @@
                 android:background="@color/transparent"
                 android:paddingLeft="-6dp"
                 android:src="@drawable/ic_turn_right_24dp"
+                android:tint="@android:color/white"
                 android:visibility="gone" />
 
             <LinearLayout
