@@ -72,9 +72,7 @@ import com.mapbox.services.android.navigation.v5.models.RouteStepProgress;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
-import com.mapbox.services.api.directions.v5.models.DirectionsWaypoint;
 import com.mapbox.services.api.directions.v5.models.LegStep;
-import com.mapbox.services.api.directions.v5.models.RouteLeg;
 import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
@@ -122,8 +120,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<ParkingSpot> previousParkingSpots;
     private HashMap<Integer, Integer> redrawSpotIDs;
     private PCRetrofitInterface parCareService, mapboxService;
-    private boolean isUpdatingSpots;
-    private boolean allowAlert;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
@@ -150,6 +146,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
     private static final int ROUTE_TYPE_WALKING = 1;
     private static final int ROUTE_TYPE_DRIVING = 0;
+
+    //BOOLEAN FLAGS
+    private boolean isUpdatingSpots;
+    private boolean allowAlert;
+    private boolean isNavMuted;
 
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
@@ -358,6 +359,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         Log.i(TAG + "Directions", "Reroute FAILED", t);
                     }
                 });
+            }
+        });
+
+        //MUTE BUTTON HANDLER
+        navMuteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isNavMuted) {
+                    isNavMuted = false;
+                    navMuteButton.setImageDrawable(getDrawable(R.drawable.ic_volume_on_24dp));
+                } else {
+                    isNavMuted = true;
+                    navMuteButton.setImageDrawable(getDrawable(R.drawable.ic_volume_off_24dp));
+                }
             }
         });
 
