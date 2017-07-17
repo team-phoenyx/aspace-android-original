@@ -345,7 +345,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                     // Updating main navigation tool bar
                     if (routeStepProgress.getDistanceRemaining() <= 30.5) {
-                        String directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
+                        String directionString;
+                        if (nextStep.getManeuver().getType().equalsIgnoreCase("new name")) {
+                            directionString = "continue" + " " + nextStep.getManeuver().getModifier();
+                        } else {
+                            directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
+                        }
                         navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
                         textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
                     }
@@ -388,7 +393,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navigation.addOffRouteListener(new OffRouteListener() {
             @Override
             public void userOffRoute(Location location) {
-                Snackbar.make(findViewById(android.R.id.content), "Rerouted", Snackbar.LENGTH_SHORT);
                 //final LatLng newOriginLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 Position newOrigin = Position.fromCoordinates(location.getLongitude(), location.getLatitude());
                 Position destination = Position.fromCoordinates(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
@@ -407,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                             // if this offroute's list of instructions are different than the one before this call
                             // routeManeuverInstructions initialized when first nav session begins.
-                            if (!offRouteManeuverInstructions.equals(routeManeuverInstructions)) {
+                            if (!offRouteManeuverInstructions.equals(routeManeuverInstructions)) { // might also have to add && !routeManeuverInstructions.isEmpty()
                                 // ends old starts new navigation session with the new route
                                 navigation.endNavigation();
                                 navigation.startNavigation(newRoute);
@@ -417,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                 // update the route's instructions list to the new route instructions list
                                 routeManeuverInstructions.clear();
                                 routeManeuverInstructions.addAll(offRouteManeuverInstructions);
+                                Snackbar.make(findViewById(android.R.id.content), "Rerouted", Snackbar.LENGTH_SHORT).show();
                             }
 
                             map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
@@ -761,7 +766,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         cancelNavigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("TEST", routeManeuverInstructions.size() + "");
                 navigation.endNavigation();
                 map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
                 cancelRouteFAB.setVisibility(View.VISIBLE);
