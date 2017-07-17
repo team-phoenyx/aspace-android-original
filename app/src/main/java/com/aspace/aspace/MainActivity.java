@@ -322,58 +322,62 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     return;
                 }
 
-                //NEW MANEUVER
-                if (lastUpcomingStep == null || !nextStep.getManeuver().getInstruction().equals(lastUpcomingStep.getManeuver().getInstruction())) {
-                    double distance = routeStepProgress.getDistanceRemaining();
+                if (nextStep == null) {
 
-                    if (distance <= 30.5 || (distance >= 150 && distance < 182.9) || (distance >= 800 && distance < 965.6) || (distance >= 1600 && distance < 1649.8)) {
+                } else {
+                    //NEW MANEUVER
+                    if (lastUpcomingStep == null || !nextStep.getManeuver().getInstruction().equals(lastUpcomingStep.getManeuver().getInstruction())) {
+                        double distance = routeStepProgress.getDistanceRemaining();
 
-                    } else {
-                        String distanceString = translateDistance(distance);
-                        textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (distance <= 30.5 || (distance >= 150 && distance < 182.9) || (distance >= 800 && distance < 965.6) || (distance >= 1600 && distance < 1649.8)) {
+
+                        } else {
+                            String distanceString = translateDistance(distance);
+                            textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        }
                     }
-                }
 
-                String maneuverType = nextStep.getManeuver().getType();
-                if (maneuverType.equalsIgnoreCase("continue")) {
-                    maneuverType += "e";
-                }
-                String maneuverModifier = "" + nextStep.getManeuver().getModifier();
+                    String maneuverType = nextStep.getManeuver().getType();
+                    if (maneuverType.equalsIgnoreCase("continue")) {
+                        maneuverType += "e";
+                    }
+                    String maneuverModifier = "" + nextStep.getManeuver().getModifier();
 
-                // Updating main navigation tool bar
-                if (routeStepProgress.getDistanceRemaining() <= 30.5) {
-                    String directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
-                    navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
-                    textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                }
-                else {
-                    String distanceString = translateDistance(routeStepProgress.getDistanceRemaining());
-                    navManeuverDistanceLabel.setText("In " + distanceString);
+                    // Updating main navigation tool bar
+                    if (routeStepProgress.getDistanceRemaining() <= 30.5) {
+                        String directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
+                        navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
+                        textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                    }
+                    else {
+                        String distanceString = translateDistance(routeStepProgress.getDistanceRemaining());
+                        navManeuverDistanceLabel.setText("In " + distanceString);
 
-                    if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) textToSpeech.speak("In one mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                    if (distanceString.equals("0.5 mi")) textToSpeech.speak("In half a mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                    if (distanceString.equals("500 ft")) textToSpeech.speak("In 500 feet, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                }
+                        if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) textToSpeech.speak("In one mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (distanceString.equals("0.5 mi")) textToSpeech.speak("In half a mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (distanceString.equals("500 ft")) textToSpeech.speak("In 500 feet, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                    }
 
-                if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
-                else navManeuverTargetLabel.setText(nextStep.getName());
+                    if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
+                    else navManeuverTargetLabel.setText(nextStep.getName());
 
-                String imageName = maneuverType;
-                if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
-                    imageName += " " + maneuverModifier;
-                    imageName = imageName.replace(' ', '_');
-                }
-                int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
-                navManeuverImageView.setImageResource(id);
+                    String imageName = maneuverType;
+                    if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                        imageName += " " + maneuverModifier;
+                        imageName = imageName.replace(' ', '_');
+                    }
+                    int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
+                    navManeuverImageView.setImageResource(id);
 
-                // Updating lower navigation white bar
-                navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
-                navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
-                navInfoSpotsLabel.setText("10+ spots");
+                    // Updating lower navigation white bar
+                    navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
+                    navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
+                    navInfoSpotsLabel.setText("10+ spots");
 
-                // Complete directions log
-                for (LegStep step : steps) {
-                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
+                    // Complete directions log
+                    for (LegStep step : steps) {
+                        Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
+                    }
                 }
 
                 lastUpcomingStep = nextStep;
