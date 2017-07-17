@@ -277,11 +277,56 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
 
+                /*
+                if (nextStep == null) {
+                    navigation.endNavigation();
+                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
+                    cancelRouteFAB.setVisibility(View.VISIBLE);
+                    cancelNavigationFAB.setVisibility(View.GONE);
+                    snapToLocationFAB.setVisibility(View.GONE);
+                    startNavigationFAB.setVisibility(View.VISIBLE);
+                    navLowerBar.setVisibility(View.GONE);
+                    searchView.setVisibility(View.VISIBLE);
+
+                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
+                    layoutParams.height = dpToPx(64);
+                    navToolbar.setLayoutParams(layoutParams);
+
+                    navManeuverImageView.setVisibility(View.INVISIBLE);
+                    navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
+                    navManeuverTargetLabel.setVisibility(View.INVISIBLE);
+                    navMuteButton.setVisibility(View.INVISIBLE);
+                    return;
+                }
+                */
+
+                if (routeProgress.getCurrentLegProgress().getCurrentStep().getManeuver().getType().equals("arrive")) {
+                    navigation.endNavigation();
+                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
+                    cancelRouteFAB.setVisibility(View.VISIBLE);
+                    cancelNavigationFAB.setVisibility(View.GONE);
+                    snapToLocationFAB.setVisibility(View.GONE);
+                    startNavigationFAB.setVisibility(View.VISIBLE);
+                    navLowerBar.setVisibility(View.GONE);
+                    searchView.setVisibility(View.VISIBLE);
+
+                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
+                    layoutParams.height = dpToPx(64);
+                    navToolbar.setLayoutParams(layoutParams);
+
+                    navManeuverImageView.setVisibility(View.INVISIBLE);
+                    navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
+                    navManeuverTargetLabel.setVisibility(View.INVISIBLE);
+                    navMuteButton.setVisibility(View.INVISIBLE);
+                    textToSpeech.speak("You have arrived at your destination", TextToSpeech.QUEUE_ADD, null, null);
+                    return;
+                }
+
                 //NEW MANEUVER
                 if (lastUpcomingStep == null || !nextStep.getManeuver().getInstruction().equals(lastUpcomingStep.getManeuver().getInstruction())) {
                     double distance = routeStepProgress.getDistanceRemaining();
 
-                    if (distance <= 30.5 || (distance > 152.4 && distance < 182.9) || (distance > 804.7 && distance < 965.6) || (distance > 1609.3 && distance < 1649.8)) {
+                    if (distance <= 30.5 || (distance >= 150 && distance < 182.9) || (distance >= 800 && distance < 965.6) || (distance >= 1600 && distance < 1649.8)) {
 
                     } else {
                         String distanceString = translateDistance(distance);
