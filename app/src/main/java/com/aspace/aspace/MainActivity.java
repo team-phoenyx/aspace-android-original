@@ -1337,15 +1337,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Draws the given route on the map -- shows driving route that nav is or will likely follow.
     public void drawNavRoute(com.mapbox.services.api.directions.v5.models.DirectionsRoute route) {
-        LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.OSRM_PRECISION_V5);
+        LineString lineString = LineString.fromPolyline(route.getGeometry(), Constants.PRECISION_6);
         List<Position> coordinates = lineString.getCoordinates();
         LatLng[] points = new LatLng[coordinates.size()];
         for (int i = 0; i < coordinates.size(); i++) {
-            // COORDINATES ARE AN ENTIRE DECIMAL PLACE OFF AS OF 5.0.2 MAPBOX SDK
-            // MANUAL CORRECTION CURRENTLY IMPLEMENTED, REMOVE DIVISOR ONCE FIXED BY MAPBOX.
             points[i] = new LatLng(
-                    coordinates.get(i).getLatitude() / 10.0,
-                    coordinates.get(i).getLongitude() / 10.0);
+                    coordinates.get(i).getLatitude(),
+                    coordinates.get(i).getLongitude());
             //Log.i(TAG + "COORDS", "" + coordinates.get(i).toString());
         }
 
