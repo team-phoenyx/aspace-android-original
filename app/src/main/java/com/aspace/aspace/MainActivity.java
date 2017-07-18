@@ -614,40 +614,40 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-            @Override
-            public void onSearchTextChanged(String oldQuery, String newQuery) {
-                if (newQuery.equals("")) {
-                    searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
-                } else {
-                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
-                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
-                        @Override
-                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
-                            GeocodingResponse geocodingResponse = response.body();
-
-                            if (geocodingResponse == null) return;
-
-                            rawSuggestions = geocodingResponse.getFeatures();
-                            newSuggestions = new ArrayList<>();
-
-                            for (Feature feature : rawSuggestions) {
-                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
-                            }
-
-                            searchView.swapSuggestions(newSuggestions);
-                        }
-
-                        @Override
-                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
-                        }
-                    });
-                }
-
-
-            }
-        });
+//        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+//            @Override
+//            public void onSearchTextChanged(String oldQuery, String newQuery) {
+//                if (newQuery.equals("")) {
+//                    searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
+//                } else {
+//                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+//                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+//                        @Override
+//                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+//                            GeocodingResponse geocodingResponse = response.body();
+//
+//                            if (geocodingResponse == null) return;
+//
+//                            rawSuggestions = geocodingResponse.getFeatures();
+//                            newSuggestions = new ArrayList<>();
+//
+//                            for (Feature feature : rawSuggestions) {
+//                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
+//                            }
+//
+//                            searchView.swapSuggestions(newSuggestions);
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+//                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
+//                        }
+//                    });
+//                }
+//
+//
+//            }
+//        });
 
         searchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
             @Override
