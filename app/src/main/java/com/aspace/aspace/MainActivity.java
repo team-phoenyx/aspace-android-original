@@ -152,6 +152,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private boolean isUpdatingSpots;
     private boolean allowAlert;
     private boolean isNavMuted;
+    private boolean alreadyNotifiedOneMile;
+    private boolean alreadyNotifiedHalfMile;
+    private boolean alreadyNotifiedClose;
+    private boolean alreadyNotifiedManeuver;
 
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
@@ -322,29 +326,27 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     return;
                 }
 
-                if (nextStep == null) {
+                //NEW MANEUVER
+                if (lastUpcomingStep == null || !nextStep.getManeuver().getInstruction().equals(lastUpcomingStep.getManeuver().getInstruction())) {
+                    double distance = routeStepProgress.getDistanceRemaining();
 
-                } else {
-                    //NEW MANEUVER
-                    if (lastUpcomingStep == null || !nextStep.getManeuver().getInstruction().equals(lastUpcomingStep.getManeuver().getInstruction())) {
-                        double distance = routeStepProgress.getDistanceRemaining();
+                    if (distance <= 30.5 || (distance >= 150 && distance < 182.9) || (distance >= 800 && distance < 965.6) || (distance >= 1600 && distance < 1649.8)) {
 
-                        if (distance <= 30.5 || (distance >= 150 && distance < 182.9) || (distance >= 800 && distance < 965.6) || (distance >= 1600 && distance < 1649.8)) {
-
-                        } else {
-                            String distanceString = translateDistance(distance);
-                            textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                        }
+                    } else {
+                        String distanceString = translateDistance(distance);
+                        String instruction = nextStep.getManeuver().getInstruction();
+                        if (nextStep.getManeuver().getType().equals("arrive")) instruction = "Your destination is on the " + nextStep.getManeuver().getModifier();
+                        textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                     }
+                    alreadyNotifiedManeuver = false;
+                    alreadyNotifiedOneMile = false;
+                    alreadyNotifiedHalfMile = false;
+                    alreadyNotifiedClose = false;
+                }
 
-                    String maneuverType = nextStep.getManeuver().getType();
-                    if (maneuverType.equalsIgnoreCase("continue")) {
-                        maneuverType += "e";
-                    }
-                    String maneuverModifier = "" + nextStep.getManeuver().getModifier();
-
-                    // Updating main navigation tool bar
-                    if (routeStepProgress.getDistanceRemaining() <= 30.5) {
+                // Updating main navigation tool bar
+                if (routeStepProgress.getDistanceRemaining() <= 30.5) {
+                    if (!alreadyNotifiedManeuver && !nextStep.getManeuver().equals("arrive")) {
                         String directionString;
                         if (nextStep.getManeuver().getType().equalsIgnoreCase("new name")) {
                             directionString = "continue" + " " + nextStep.getManeuver().getModifier();
@@ -353,36 +355,68 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                         navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
                         textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        alreadyNotifiedManeuver = true;
                     }
-                    else {
-                        String distanceString = translateDistance(routeStepProgress.getDistanceRemaining());
-                        navManeuverDistanceLabel.setText("In " + distanceString);
+                }
+                else {
+                    String distanceString = translateDistance(routeStepProgress.getDistanceRemaining());
+                    navManeuverDistanceLabel.setText("In " + distanceString);
 
-                        if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) textToSpeech.speak("In one mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                        if (distanceString.equals("0.5 mi")) textToSpeech.speak("In half a mile, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
-                        if (distanceString.equals("500 ft")) textToSpeech.speak("In 500 feet, " + nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                    String instruction = nextStep.getManeuver().getInstruction();
+
+                    if (nextStep.getManeuver().getType().equals("arrive")) instruction = "Your destination is on the " + nextStep.getManeuver().getModifier();
+
+                    if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) {
+                        if (!alreadyNotifiedOneMile) {
+                            textToSpeech.speak("In one mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            alreadyNotifiedOneMile = true;
+                        }
+
                     }
+                    if (distanceString.equals("0.5 mi")) {
+                        if (!alreadyNotifiedHalfMile) {
+                            textToSpeech.speak("In half a mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            alreadyNotifiedHalfMile = true;
+                        }
+                    }
+                    if (distanceString.equals("500 ft")) {
+                        if (!alreadyNotifiedClose) {
+                            textToSpeech.speak("In 500 feet, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            alreadyNotifiedClose = true;
+                        }
 
+                    }
+                }
+
+                if (nextStep.getManeuver().getType().equals("arrive")) {
+                    navManeuverTargetLabel.setText("Destination is on the " + nextStep.getManeuver().getModifier());
+                } else {
                     if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
                     else navManeuverTargetLabel.setText(nextStep.getName());
+                }
 
-                    String imageName = maneuverType;
-                    if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
-                        imageName += " " + maneuverModifier;
-                        imageName = imageName.replace(' ', '_');
-                    }
-                    int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
-                    navManeuverImageView.setImageResource(id);
+                String maneuverType = nextStep.getManeuver().getType();
+                if (maneuverType.equalsIgnoreCase("continue")) {
+                    maneuverType += "e";
+                }
+                String maneuverModifier = "" + nextStep.getManeuver().getModifier();
 
-                    // Updating lower navigation white bar
-                    navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
-                    navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
-                    navInfoSpotsLabel.setText("10+ spots");
+                String imageName = maneuverType;
+                if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                    imageName += " " + maneuverModifier;
+                    imageName = imageName.replace(' ', '_');
+                }
+                int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
+                navManeuverImageView.setImageResource(id);
 
-                    // Complete directions log
-                    for (LegStep step : steps) {
-                        Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
-                    }
+                // Updating lower navigation white bar
+                navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
+                navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
+                navInfoSpotsLabel.setText("10+ spots");
+
+                // Complete directions log
+                for (LegStep step : steps) {
+                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
                 }
 
                 lastUpcomingStep = nextStep;
