@@ -22,7 +22,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -99,7 +101,7 @@ import static com.mapbox.services.android.navigation.v5.NavigationConstants.LOW_
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.MEDIUM_ALERT_LEVEL;
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.NONE_ALERT_LEVEL;
 
-public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener {
+public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener, GestureDetector.OnGestureListener {
 
     private MapView mMapView;
     private MapboxMap map;
@@ -273,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         break;
                     case DEPART_ALERT_LEVEL:
                         Toast.makeText(MainActivity.this, "DEPART", Toast.LENGTH_LONG).show();
-                        textToSpeech.speak(routeProgress.getCurrentLeg().getSteps().get(0).getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak(routeProgress.getCurrentLeg().getSteps().get(0).getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
                         break;
                 }
             }
@@ -328,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
                     navManeuverTargetLabel.setVisibility(View.INVISIBLE);
                     navMuteButton.setVisibility(View.INVISIBLE);
-                    textToSpeech.speak("You have arrived at your destination", TextToSpeech.QUEUE_ADD, null, null);
+                    if (!isNavMuted) textToSpeech.speak("You have arrived at your destination", TextToSpeech.QUEUE_ADD, null, null);
                     return;
                 }
 
@@ -342,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         String distanceString = translateDistance(distance);
                         String instruction = nextStep.getManeuver().getInstruction();
                         if (nextStep.getManeuver().getType().equals("arrive")) instruction = "Your destination is on the " + nextStep.getManeuver().getModifier();
-                        textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                     }
                     alreadyNotifiedManeuver = false;
                     alreadyNotifiedOneMile = false;
@@ -365,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             directionString = maneuverType + " " + maneuverMod;
                         }
                         navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
-                        textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
                         alreadyNotifiedManeuver = true;
                     }
                 }
@@ -379,20 +381,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                     if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) {
                         if (!alreadyNotifiedOneMile) {
-                            textToSpeech.speak("In one mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In one mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedOneMile = true;
                         }
 
                     }
                     if (distanceString.equals("0.5 mi")) {
                         if (!alreadyNotifiedHalfMile) {
-                            textToSpeech.speak("In half a mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In half a mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedHalfMile = true;
                         }
                     }
                     if (distanceString.equals("500 ft")) {
                         if (!alreadyNotifiedClose) {
-                            textToSpeech.speak("In 500 feet, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In 500 feet, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedClose = true;
                         }
 
@@ -486,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 });
             }
         });
+
 
         //MUTE BUTTON HANDLER
         navMuteButton.setOnClickListener(new View.OnClickListener() {
@@ -1449,5 +1452,39 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     public void onInit(int status) {
         
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (velocityY < -1.0f) {
+            Toast.makeText(this, "Swipe down detected", Toast.LENGTH_SHORT).show();
+        }
+
+        return true;
     }
 }
