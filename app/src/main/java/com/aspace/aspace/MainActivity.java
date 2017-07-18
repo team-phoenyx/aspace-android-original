@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private MapView mMapView;
     private MapboxMap map;
     private FloatingSearchView searchView;
+    private DisplayMetrics displayMetrics;
     private FloatingActionButton startNavigationFAB, cancelNavigationFAB, snapToLocationFAB, cancelRouteFAB;
     private LocationEngine locationEngine;
     private Location currentLocation;
@@ -132,7 +133,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private ConstraintLayout navLowerBar;
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
     private ImageButton navMuteButton;
-    private TextView navManeuverDistanceLabel, navManeuverTargetLabel, navInfoDurationLabel, navInfoDistanceLabel, navInfoSpotsLabel;
+    private TextView navManeuverDistanceLabel, navInfoDurationLabel, navInfoDistanceLabel, navInfoSpotsLabel;
+    private AutoResizeTextView navManeuverTargetLabel;
     private List<String> routeManeuverInstructions;
     private List<String> offRouteManeuverInstructions;
 
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navManeuverImageView = (ImageView) findViewById(R.id.nav_ic_maneuver);
         navMuteButton = (ImageButton) findViewById(R.id.nav_mute_button);
         navManeuverDistanceLabel = (TextView) findViewById(R.id.nav_maneuver_distance);
-        navManeuverTargetLabel = (TextView) findViewById(R.id.nav_maneuver_target);
+        navManeuverTargetLabel = (AutoResizeTextView) findViewById(R.id.nav_maneuver_target);
         // lower white bar views
         navInfoDurationImageView = (ImageView) findViewById(R.id.nav_info_duration_icon);
         navInfoDistanceImageView = (ImageView) findViewById(R.id.nav_info_distance_icon);
@@ -202,6 +204,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         setSupportActionBar(navToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
+
+        displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        navManeuverTargetLabel.setWidth(displayMetrics.widthPixels - dpToPx(32) - navManeuverImageView.getWidth() - navMuteButton.getWidth());
 
         //RETROFIT INIT
         Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
@@ -348,10 +354,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 if (routeStepProgress.getDistanceRemaining() <= 30.5) {
                     if (!alreadyNotifiedManeuver && !nextStep.getManeuver().equals("arrive")) {
                         String directionString;
-                        if (nextStep.getManeuver().getType().equalsIgnoreCase("new name")) {
-                            directionString = "continue" + " " + nextStep.getManeuver().getModifier();
+                        String maneuverType = nextStep.getManeuver().getType();
+                        String maneuverMod = nextStep.getManeuver().getModifier();
+                        if (maneuverType.equalsIgnoreCase("new name")) {
+                            directionString = "continue" + " " + maneuverMod;
+                        } else if (maneuverType.equalsIgnoreCase("on ramp")) {
+                            if (maneuverMod == null || maneuverMod.isEmpty()) directionString = "take the ramp";
+                            else directionString = "take the ramp on the " + maneuverMod;
                         } else {
-                            directionString = nextStep.getManeuver().getType() + " " + nextStep.getManeuver().getModifier();
+                            directionString = maneuverType + " " + maneuverMod;
                         }
                         navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
                         textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
@@ -390,6 +401,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                 if (nextStep.getManeuver().getType().equals("arrive")) {
                     navManeuverTargetLabel.setText("Destination is on the " + nextStep.getManeuver().getModifier());
+                } else if (nextStep.getManeuver().getType().equals("on ramp")) {
+                    navManeuverTargetLabel.setText("Take the ramp");
                 } else {
                     if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
                     else navManeuverTargetLabel.setText(nextStep.getName());
@@ -698,6 +711,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         snapToLocationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                toggleGps(true, false);
+
+                try {
+                    currentLocation = locationEngine.getLastLocation();
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
                 if (map != null && map.isMyLocationEnabled() && currentLocation != null) {
                     Location currentLocation = map.getMyLocation();
                     LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
@@ -827,7 +849,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     public int dpToPx(int dp) {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         return Math.round(dp * ((float) displayMetrics.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT));
     }
 
