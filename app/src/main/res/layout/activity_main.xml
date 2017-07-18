@@ -97,6 +97,18 @@
             app:floatingSearch_showSearchKey="true"
             app:floatingSearch_suggestionsListAnimDuration="250"
             mapbox:floatingSearch_menu="@menu/search_menu" />
+        <ListView
+            android:id="@+id/search_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@android:color/white"
+            android:headerDividersEnabled="false"
+            android:footerDividersEnabled="false"
+            android:visibility="gone">
+        </ListView>
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/nav_subview"

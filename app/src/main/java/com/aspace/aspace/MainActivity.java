@@ -22,11 +22,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -137,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private AutoResizeTextView navManeuverTargetLabel;
     private List<String> routeManeuverInstructions;
     private List<String> offRouteManeuverInstructions;
+    private ListView searchListView;
+    private CustomAdapter customAdapter;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -183,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         cancelNavigationFAB = (FloatingActionButton) findViewById(R.id.cancel_navigation_fab);
         mMapView = (MapView) findViewById(R.id.mapview);
         searchView = (FloatingSearchView) findViewById(R.id.search_view);
+        searchListView = (ListView) findViewById(R.id.search_list_view);
         snapToLocationFAB = (FloatingActionButton) findViewById(R.id.snap_to_location_fab);
         cancelRouteFAB = (FloatingActionButton) findViewById(R.id.cancel_route_fab);
         // toolbar views
@@ -594,13 +604,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 });
             }
         });
-
+        customAdapter = new CustomAdapter();
+        searchListView.setAdapter(customAdapter);
         //********SEARCHVIEW EVENT HANDLERS********
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override
             public void onFocus() {
                 toggleGps(true, false);
-
+                searchListView.setVisibility(View.VISIBLE);
                 try {
                     currentLocation = locationEngine.getLastLocation();
                 } catch (SecurityException e) {
@@ -610,44 +621,47 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             @Override
             public void onFocusCleared() {
-
+                searchListView.setVisibility(View.GONE);
+                customAdapter.notifyDataSetInvalidated();
             }
         });
 
-//        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-//            @Override
-//            public void onSearchTextChanged(String oldQuery, String newQuery) {
-//                if (newQuery.equals("")) {
-//                    searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
-//                } else {
-//                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
-//                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
-//                        @Override
-//                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
-//                            GeocodingResponse geocodingResponse = response.body();
-//
-//                            if (geocodingResponse == null) return;
-//
-//                            rawSuggestions = geocodingResponse.getFeatures();
-//                            newSuggestions = new ArrayList<>();
-//
-//                            for (Feature feature : rawSuggestions) {
-//                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
-//                            }
-//
-//                            searchView.swapSuggestions(newSuggestions);
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-//                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
-//                        }
-//                    });
-//                }
-//
-//
-//            }
-//        });
+        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+            @Override
+            public void onSearchTextChanged(String oldQuery, String newQuery) {
+                if (newQuery.equals("")) {
+                    // TODO UPDATE LIST VIEW HERE
+                    //searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
+                } else {
+                    customAdapter.notifyDataSetChanged();
+                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                        @Override
+                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                            GeocodingResponse geocodingResponse = response.body();
+
+                            if (geocodingResponse == null) return;
+
+                            rawSuggestions = geocodingResponse.getFeatures();
+                            newSuggestions = new ArrayList<>();
+
+                            for (Feature feature : rawSuggestions) {
+                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
+                            }
+                            //TODO UPDATE LIST VIEW HERE
+                            //searchView.swapSuggestions(newSuggestions);
+                        }
+
+                        @Override
+                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
+                        }
+                    });
+                }
+
+
+            }
+        });
 
         searchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
             @Override
@@ -672,6 +686,16 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         searchFailedDB.create().show();
                     }
                 }
+            }
+        });
+
+        searchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Toast.makeText(getApplicationContext(),
+                        "Click ListItem Number " + position, Toast.LENGTH_LONG)
+                        .show();
             }
         });
 
@@ -1449,5 +1473,39 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     public void onInit(int status) {
         
+    }
+
+    class CustomAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            if (newSuggestions != null) {
+                return newSuggestions.size();
+            }
+            return 0;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            if (newSuggestions != null) {
+                return newSuggestions.get(position);
+            }
+            return 0;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getLayoutInflater().inflate(R.layout.custom_list_view_views, null);
+
+            ImageView locationIcon = (ImageView) convertView.findViewById(R.id.location_icon);
+            TextView locationName = (TextView) convertView.findViewById(R.id.location_label);
+            TextView locationAddress = (TextView) convertView.findViewById(R.id.location_address);
+            return convertView;
+        }
     }
 }

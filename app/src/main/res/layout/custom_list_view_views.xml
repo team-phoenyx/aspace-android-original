@@ -5,14 +5,13 @@
     android:padding="6dp" >
 
     <ImageView
-        android:id="@+id/place_icon"
+        android:id="@+id/location_icon"
         android:layout_width="50dp"
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_centerVertical="true"
         android:layout_alignParentTop="true"
         android:layout_marginRight="6dp"
-        android:contentDescription="TODO"
         android:src="@drawable/ic_directions_24dp" />
 
     <TextView
@@ -21,7 +20,7 @@
         android:layout_height="26dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_toRightOf="@id/place_icon"
+        android:layout_toRightOf="@id/location_icon"
         android:ellipsize="marquee"
         android:maxLines="1"
         android:text="Address"
@@ -36,7 +35,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toRightOf="@id/place_icon"
+        android:layout_toRightOf="@id/location_icon"
         android:gravity="center_vertical"
         android:text="Location Label"
         android:textColor="@color/black"
