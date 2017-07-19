@@ -25,6 +25,7 @@ public class DirectionsFragment extends Fragment {
     TextView navDurationTextView, navDistanceTextView, navSpotsTextView;
     ArrayList<String> instructionsList, distancesList, iconNamesList;
     List<NavigationInstruction> instructions;
+    String navTotalTimeLeft, navTotalDistanceLeft, navTotalSpots;
 
     @Nullable
     @Override
@@ -41,6 +42,14 @@ public class DirectionsFragment extends Fragment {
         instructionsList = extras.getStringArrayList("instructions");
         distancesList = extras.getStringArrayList("distances");
         iconNamesList = extras.getStringArrayList("icon_names");
+
+        navTotalTimeLeft = extras.getString("total_time_left");
+        navTotalDistanceLeft = extras.getString("total_distance_left");
+        navTotalSpots = extras.getString("total_spots");
+
+        navDurationTextView.setText(navTotalTimeLeft);
+        navDistanceTextView.setText(navTotalDistanceLeft);
+        navSpotsTextView.setText(navTotalSpots);
 
         for (int i = 0; i < instructionsList.size(); i++) {
             instructions.set(i, new NavigationInstruction(instructionsList.get(i), distancesList.get(i), iconNamesList.get(i)));

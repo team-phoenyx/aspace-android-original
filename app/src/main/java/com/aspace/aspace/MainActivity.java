@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private TextToSpeech textToSpeech;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
-    private String searchedLatString, searchedLngString;
+    private String searchedLatString, searchedLngString, navTotalTimeLeft, navTotalDistanceLeft, navTotalSpots;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
@@ -447,9 +447,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navManeuverImageView.setImageResource(id);
 
                 // Updating lower navigation white bar
-                navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
-                navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
-                navInfoSpotsLabel.setText("10+ spots");
+                navTotalTimeLeft = (int)routeProgress.getDurationRemaining() / 60 + " min";
+                navTotalDistanceLeft = translateDistance(routeProgress.getDistanceRemaining());
+                navTotalSpots = "10+ spots";
+                navInfoDurationLabel.setText(navTotalTimeLeft);
+                navInfoDistanceLabel.setText(navTotalDistanceLeft);
+                navInfoSpotsLabel.setText(navTotalSpots);
 
                 lastUpcomingStep = nextStep;
             }
@@ -1532,6 +1535,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             extras.putStringArrayList("instructions", instructionsList);
             extras.putStringArrayList("distances", distancesList);
             extras.putStringArrayList("icon_names", iconNameList);
+
+            extras.putString("total_time_left", navTotalTimeLeft);
+            extras.putString("total_distance_left", navTotalDistanceLeft);
+            extras.putString("total_spots", navTotalSpots);
 
             directionsFragment.setArguments(extras);
             fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);
