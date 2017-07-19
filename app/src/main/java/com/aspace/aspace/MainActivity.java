@@ -22,7 +22,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +33,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -640,6 +638,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     if (newSuggestions != null) {
                         newSuggestions.clear();
                     }
+
+                    // Update list view
                     customAdapter.notifyDataSetChanged();
                     //searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
@@ -662,8 +662,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             for (Feature feature : rawSuggestions) {
                                 newSuggestions.add(new Suggestion(feature.getPlaceName()));
                             }
-                            //TODO UPDATE LIST VIEW HERE
                             //searchView.swapSuggestions(newSuggestions);
+                            // Update list view
                             customAdapter.notifyDataSetChanged();
                         }
 
@@ -692,7 +692,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     if (rawSuggestions != null && rawSuggestions.size() > 0) {
                         onSearch(0); //automatically search the first suggestion, move the map camera
                         searchView.clearSearchFocus(); //collapses suggestions and search bar
-                        searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
+                        searchView.setSearchText(newSuggestions.get(0).getBody());
+                        //searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
                     } else {
                         AlertDialog.Builder searchFailedDB = new AlertDialog.Builder(MainActivity.this);
                         searchFailedDB.setTitle("Unable to search").setMessage("Either we cannot find anything related to '" + currentQuery + "', or you are disconnected.");
@@ -1489,7 +1490,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         
     }
 
-    class CustomAdapter extends BaseAdapter {
+    private class CustomAdapter extends BaseAdapter {
 
         @Override
         public int getCount() {
@@ -1533,6 +1534,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 locationName.setText(newSuggestions.get(position).getBody());
                 locationAddress.setText(newSuggestions.get(position).getBody());
             }
+
             return convertView;
         }
     }
