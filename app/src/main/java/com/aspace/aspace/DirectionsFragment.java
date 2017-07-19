@@ -9,6 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.mapbox.services.api.directions.v5.models.LegStep;
+import com.mapbox.services.api.directions.v5.models.StepManeuver;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Terrance on 7/12/2017.
  */
@@ -17,6 +23,8 @@ public class DirectionsFragment extends Fragment {
 
     ListView directionsListView;
     TextView navDurationTextView, navDistanceTextView, navSpotsTextView;
+    ArrayList<String> instructionsList, distancesList, iconNamesList;
+    List<NavigationInstruction> instructions;
 
     @Nullable
     @Override
@@ -27,6 +35,20 @@ public class DirectionsFragment extends Fragment {
         navDurationTextView = (TextView) viewGroup.findViewById(R.id.nav_info_duration_label);
         navDistanceTextView = (TextView) viewGroup.findViewById(R.id.nav_info_distance_label);
         navSpotsTextView = (TextView) viewGroup.findViewById(R.id.nav_info_spots_label);
+
+        Bundle extras = getArguments();
+
+        instructionsList = extras.getStringArrayList("instructions");
+        distancesList = extras.getStringArrayList("distances");
+        iconNamesList = extras.getStringArrayList("icon_names");
+
+        for (int i = 0; i < instructionsList.size(); i++) {
+            instructions.set(i, new NavigationInstruction(instructionsList.get(i), distancesList.get(i), iconNamesList.get(i)));
+        }
+
+        DirectionsAdapter adapter = new DirectionsAdapter(instructions, getActivity());
+
+        directionsListView.setAdapter(adapter);
 
         return viewGroup;
     }
