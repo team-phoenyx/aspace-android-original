@@ -22,12 +22,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -631,9 +628,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onSearchTextChanged(String oldQuery, String newQuery) {
                 if (newQuery.equals("")) {
                     // TODO UPDATE LIST VIEW HERE
+                    customAdapter.notifyDataSetChanged();
                     //searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
-                    customAdapter.notifyDataSetChanged();
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
                         @Override
@@ -650,6 +647,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             }
                             //TODO UPDATE LIST VIEW HERE
                             //searchView.swapSuggestions(newSuggestions);
+                            customAdapter.notifyDataSetChanged();
                         }
 
                         @Override
@@ -658,8 +656,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         }
                     });
                 }
-
-
             }
         });
 
@@ -693,9 +689,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Toast.makeText(getApplicationContext(),
-                        "Click ListItem Number " + position, Toast.LENGTH_LONG)
-                        .show();
+                TextView locationAddress = (TextView) view.findViewById(R.id.location_address);
+                onSearch(position);
+                searchView.clearSearchFocus();
+                searchView.setSearchText(locationAddress.getText());
             }
         });
 
@@ -1505,6 +1502,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             ImageView locationIcon = (ImageView) convertView.findViewById(R.id.location_icon);
             TextView locationName = (TextView) convertView.findViewById(R.id.location_label);
             TextView locationAddress = (TextView) convertView.findViewById(R.id.location_address);
+
+            String fullSuggestion = newSuggestions.get(position).getBody();
+            //String fullSuggestion = newSuggestions.get((rawSuggestions.size() - 1 - position)).getBody();
+            int commaIndex = fullSuggestion.indexOf(',');
+            if (commaIndex != -1) {
+                String locationNameText = fullSuggestion.substring(0, commaIndex);
+                String locationAddressText = fullSuggestion.substring(commaIndex + 2);
+
+                locationName.setText(locationNameText);
+                locationAddress.setText(locationAddressText);
+            } else {
+                locationName.setText(newSuggestions.get(position).getBody());
+                locationAddress.setText(newSuggestions.get(position).getBody());
+            }
             return convertView;
         }
     }
