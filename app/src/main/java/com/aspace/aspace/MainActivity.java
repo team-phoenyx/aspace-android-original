@@ -1509,26 +1509,29 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             ArrayList<String> distancesList = new ArrayList<>();
             ArrayList<String> iconNameList = new ArrayList<>();
 
+            distancesList.add("");
+
             for (LegStep step : navSteps) {
                 StepManeuver maneuver = step.getManeuver();
                 String maneuverType = maneuver.getType();
                 Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
 
-                if (!maneuverType.equals("depart")) {
-                    instructionsList.add(maneuver.getInstruction());
+                instructionsList.add(maneuver.getInstruction());
 
-                    if (maneuverType.equalsIgnoreCase("continue")) maneuverType += "e";
+                if (maneuverType.equalsIgnoreCase("continue")) maneuverType += "e";
 
-                    String maneuverModifier = "" + maneuver.getModifier();
+                String maneuverModifier = "" + maneuver.getModifier();
 
-                    String imageName = maneuverType;
-                    if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
-                        imageName += " " + maneuverModifier;
-                        imageName = imageName.replace(' ', '_');
-                    }
-                    iconNameList.add(imageName);
+                String imageName = maneuverType;
+                if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                    imageName += " " + maneuverModifier;
+                    imageName = imageName.replace(' ', '_');
                 }
-                if (!maneuver.getType().equals("arrive")) distancesList.add(translateDistance(step.getDistance()));
+                iconNameList.add(imageName);
+
+                if (!maneuver.getType().equals("arrive")) {
+                    distancesList.add(translateDistance(step.getDistance()));
+                }
             }
 
             Bundle extras = new Bundle();

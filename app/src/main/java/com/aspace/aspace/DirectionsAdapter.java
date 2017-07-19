@@ -43,17 +43,21 @@ public class DirectionsAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = new ViewHolder();
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.direction_list_row, parent, false);
-            holder.instructionIconImageView = (ImageView) convertView.findViewById(R.id.instruction_imageview);
-            holder.instructionTextView = (TextView) convertView.findViewById(R.id.instruction_label);
-            holder.distanceTextView = (TextView) convertView.findViewById(R.id.distance_label);
-        } else holder = (ViewHolder) convertView.getTag();
+
+        convertView = LayoutInflater.from(context).inflate(R.layout.direction_list_row, parent, false);
+        holder.instructionIconImageView = (ImageView) convertView.findViewById(R.id.instruction_imageview);
+        holder.instructionTextView = (TextView) convertView.findViewById(R.id.instruction_label);
+        holder.distanceTextView = (TextView) convertView.findViewById(R.id.distance_label);
 
         NavigationInstruction instruction = instructions.get(position);
 
         holder.instructionTextView.setText(instruction.getInstruction());
         holder.distanceTextView.setText(instruction.getDistanceFromInstruction());
+
+        if (instruction.getDistanceFromInstruction().isEmpty()) holder.distanceTextView.setVisibility(View.GONE);
+
+        int id = context.getResources().getIdentifier(instruction.getIconFileName(), "drawable", context.getPackageName());
+        holder.instructionIconImageView.setImageResource(id);
 
         return convertView;
     }

@@ -51,8 +51,10 @@ public class DirectionsFragment extends Fragment {
         navDistanceTextView.setText(navTotalDistanceLeft);
         navSpotsTextView.setText(navTotalSpots);
 
+        instructions = new ArrayList<>();
+
         for (int i = 0; i < instructionsList.size(); i++) {
-            instructions.set(i, new NavigationInstruction(instructionsList.get(i), distancesList.get(i), iconNamesList.get(i)));
+            instructions.add(i, new NavigationInstruction(instructionsList.get(i), distancesList.get(i), iconNamesList.get(i)));
         }
 
         DirectionsAdapter adapter = new DirectionsAdapter(instructions, getActivity());
