@@ -78,6 +78,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.api.directions.v5.models.LegStep;
+import com.mapbox.services.api.directions.v5.models.StepManeuver;
 import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     private LegStep lastUpcomingStep;
+    private List<LegStep> navSteps;
     private TextToSpeech textToSpeech;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
@@ -305,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
-                List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
+                navSteps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
 
@@ -448,11 +450,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
                 navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
                 navInfoSpotsLabel.setText("10+ spots");
-
-                // Complete directions log
-                for (LegStep step : steps) {
-                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
-                }
 
                 lastUpcomingStep = nextStep;
             }
@@ -1504,6 +1501,39 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         if (finish.getY() > (start.getY() + 400) && velocityY > 2000) {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.setCustomAnimations(R.anim.swipe_down, R.anim.swipe_up);
+
+            ArrayList<String> instructionsList = new ArrayList<>();
+            ArrayList<String> distancesList = new ArrayList<>();
+            ArrayList<String> iconNameList = new ArrayList<>();
+
+            for (LegStep step : navSteps) {
+                StepManeuver maneuver = step.getManeuver();
+                String maneuverType = maneuver.getType();
+                Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
+
+                if (!maneuverType.equals("depart")) {
+                    instructionsList.add(maneuver.getInstruction());
+
+                    if (maneuverType.equalsIgnoreCase("continue")) maneuverType += "e";
+
+                    String maneuverModifier = "" + maneuver.getModifier();
+
+                    String imageName = maneuverType;
+                    if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                        imageName += " " + maneuverModifier;
+                        imageName = imageName.replace(' ', '_');
+                    }
+                    iconNameList.add(imageName);
+                }
+                if (!maneuver.getType().equals("arrive")) distancesList.add(translateDistance(step.getDistance()));
+            }
+
+            Bundle extras = new Bundle();
+            extras.putStringArrayList("instructions", instructionsList);
+            extras.putStringArrayList("distances", distancesList);
+            extras.putStringArrayList("icon_names", iconNameList);
+
+            directionsFragment.setArguments(extras);
             fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);
             fragmentTransaction.commit();
         }
