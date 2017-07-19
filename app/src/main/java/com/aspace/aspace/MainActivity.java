@@ -1503,7 +1503,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     public boolean onFling(MotionEvent start, MotionEvent finish, float velocityX, float velocityY) {
         if (finish.getY() > (start.getY() + 400) && velocityY > 2000) {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            fragmentTransaction.setCustomAnimations(R.anim.swipe_down, R.anim.swipe_up);
             fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);
             fragmentTransaction.commit();
         }
