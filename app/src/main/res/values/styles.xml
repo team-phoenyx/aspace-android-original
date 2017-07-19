@@ -25,7 +25,7 @@
     </style>
     <!--Not being used-
     <style name="PinDialogAnimation" >
-        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowEnterAnimation">@anim/slide_out_up</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
     -Not being used-->

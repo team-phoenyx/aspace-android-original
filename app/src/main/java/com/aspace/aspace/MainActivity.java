@@ -22,15 +22,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -601,13 +605,18 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 });
             }
         });
+
         customAdapter = new CustomAdapter();
         searchListView.setAdapter(customAdapter);
+
         //********SEARCHVIEW EVENT HANDLERS********
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override
             public void onFocus() {
                 toggleGps(true, false);
+                Animation fade_in = AnimationUtils.loadAnimation(getApplicationContext(),
+                        R.anim.fade_in);
+                searchListView.startAnimation(fade_in);
                 searchListView.setVisibility(View.VISIBLE);
                 try {
                     currentLocation = locationEngine.getLastLocation();
@@ -628,9 +637,17 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onSearchTextChanged(String oldQuery, String newQuery) {
                 if (newQuery.equals("")) {
                     // TODO UPDATE LIST VIEW HERE
+                    if (newSuggestions != null) {
+                        newSuggestions.clear();
+                    }
                     customAdapter.notifyDataSetChanged();
                     //searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
+                    if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
+                        Animation fade_in = AnimationUtils.loadAnimation(getApplicationContext(),
+                                R.anim.fade_in);
+                        searchListView.startAnimation(fade_in);
+                    }
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
                         @Override
