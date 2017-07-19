@@ -20,6 +20,4 @@ public class DirectionsFragment extends Fragment {
 
         return viewGroup;
     }
-
-
 }

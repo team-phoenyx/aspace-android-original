@@ -16,6 +16,9 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -139,6 +142,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private AutoResizeTextView navManeuverTargetLabel;
     private List<String> routeManeuverInstructions;
     private List<String> offRouteManeuverInstructions;
+    private GestureDetector gestureDetector;
+    private Fragment directionsFragment;
+    private FragmentManager fragmentManager;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -207,6 +213,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
 
+        navToolbar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+
         displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         navManeuverTargetLabel.setWidth(displayMetrics.widthPixels - dpToPx(32) - navManeuverImageView.getWidth() - navMuteButton.getWidth());
@@ -237,6 +250,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         //BOOLEAN FLAGS INIT
         isUpdatingSpots = true;
         allowAlert = true;
+
+        //GESTURE DETECTOR INIT
+        gestureDetector = new GestureDetector(this);
+
+        //FRAGMENTS INIT
+        fragmentManager = getSupportFragmentManager();
+        directionsFragment = new DirectionsFragment();
 
         //TIMER INIT
         if (timer != null) {
@@ -1480,11 +1500,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (velocityY < -1.0f) {
-            Toast.makeText(this, "Swipe down detected", Toast.LENGTH_SHORT).show();
+    public boolean onFling(MotionEvent start, MotionEvent finish, float velocityX, float velocityY) {
+        if (finish.getY() > (start.getY() + 400) && velocityY > 2000) {
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);
+            fragmentTransaction.commit();
         }
-
         return true;
     }
 }
