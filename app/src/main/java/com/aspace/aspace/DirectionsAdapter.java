@@ -51,13 +51,17 @@ public class DirectionsAdapter extends BaseAdapter {
         holder.instructionIconImageView = (ImageView) convertView.findViewById(R.id.instruction_imageview);
         holder.instructionTextView = (TextView) convertView.findViewById(R.id.instruction_label);
         holder.distanceTextView = (TextView) convertView.findViewById(R.id.distance_label);
+        holder.dividerView = convertView.findViewById(R.id.divider);
 
         NavigationInstruction instruction = instructions.get(position);
 
         holder.instructionTextView.setText(instruction.getInstruction());
         holder.distanceTextView.setText(instruction.getDistanceFromInstruction());
 
-        if (instruction.getDistanceFromInstruction().isEmpty()) holder.distanceTextView.setVisibility(View.GONE);
+        if (instruction.getDistanceFromInstruction().isEmpty()) {
+            holder.distanceTextView.setVisibility(View.GONE);
+            holder.dividerView.setVisibility(View.GONE);
+        }
 
         int id = context.getResources().getIdentifier(instruction.getIconFileName(), "drawable", context.getPackageName());
         holder.instructionIconImageView.setImageResource(id);
@@ -74,5 +78,6 @@ public class DirectionsAdapter extends BaseAdapter {
     class ViewHolder {
         ImageView instructionIconImageView;
         TextView instructionTextView, distanceTextView;
+        View dividerView;
     }
 }
