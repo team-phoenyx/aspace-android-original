@@ -135,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private TextToSpeech textToSpeech;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
-    private String searchedLatString, searchedLngString, navTotalTimeLeft, navTotalDistanceLeft, navTotalSpots;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
@@ -169,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private boolean alreadyNotifiedClose;
     private boolean alreadyNotifiedManeuver;
 
-    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
+    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey, searchedLatString, searchedLngString, navTotalTimeLeft, navTotalDistanceLeft, navTotalSpots;
+    private int stepNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +216,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
 
         navToolbar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+
+        navLowerBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 return gestureDetector.onTouchEvent(event);
@@ -311,28 +318,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
 
-                /*
-                if (nextStep == null) {
-                    navigation.endNavigation();
-                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
-                    cancelRouteFAB.setVisibility(View.VISIBLE);
-                    cancelNavigationFAB.setVisibility(View.GONE);
-                    snapToLocationFAB.setVisibility(View.GONE);
-                    startNavigationFAB.setVisibility(View.VISIBLE);
-                    navLowerBar.setVisibility(View.GONE);
-                    searchView.setVisibility(View.VISIBLE);
-
-                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
-                    layoutParams.height = dpToPx(64);
-                    navToolbar.setLayoutParams(layoutParams);
-
-                    navManeuverImageView.setVisibility(View.INVISIBLE);
-                    navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
-                    navManeuverTargetLabel.setVisibility(View.INVISIBLE);
-                    navMuteButton.setVisibility(View.INVISIBLE);
-                    return;
-                }
-                */
+                stepNumber = navSteps.indexOf(routeProgress.getCurrentLegProgress().getCurrentStep());
 
                 if (routeProgress.getCurrentLegProgress().getCurrentStep().getManeuver().getType().equals("arrive")) {
                     navigation.endNavigation();
@@ -1542,6 +1528,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             extras.putString("total_time_left", navTotalTimeLeft);
             extras.putString("total_distance_left", navTotalDistanceLeft);
             extras.putString("total_spots", navTotalSpots);
+            extras.putInt("current_step", stepNumber);
 
             directionsFragment.setArguments(extras);
             fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);

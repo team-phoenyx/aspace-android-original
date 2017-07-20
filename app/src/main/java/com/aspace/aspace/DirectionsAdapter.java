@@ -1,7 +1,8 @@
 package com.aspace.aspace;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +20,12 @@ public class DirectionsAdapter extends BaseAdapter {
 
     List<NavigationInstruction> instructions;
     Context context;
+    int currentStep;
 
-    public DirectionsAdapter(List<NavigationInstruction> instructions, Context context) {
+    public DirectionsAdapter(List<NavigationInstruction> instructions, Context context, int currentStep) {
         this.instructions = instructions;
         this.context = context;
+        this.currentStep = currentStep;
     }
 
     @Override
@@ -58,6 +61,12 @@ public class DirectionsAdapter extends BaseAdapter {
 
         int id = context.getResources().getIdentifier(instruction.getIconFileName(), "drawable", context.getPackageName());
         holder.instructionIconImageView.setImageResource(id);
+
+        if (position == currentStep) {
+            holder.instructionTextView.setTypeface(null, Typeface.BOLD);
+            holder.distanceTextView.setTypeface(null, Typeface.BOLD);
+            holder.distanceTextView.setTextColor(Color.BLACK);
+        }
 
         return convertView;
     }

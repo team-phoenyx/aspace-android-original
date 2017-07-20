@@ -202,6 +202,15 @@
             </LinearLayout>
         </android.support.constraint.ConstraintLayout>
 
+        <FrameLayout
+            android:id="@+id/directions_fragment_framelayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="80dp"
+            android:elevation="5dp">
+
+        </FrameLayout>
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/navigate_route_fab"
             android:layout_width="wrap_content"
@@ -254,11 +263,4 @@
 
     </com.mapbox.mapboxsdk.maps.MapView>
 
-    <FrameLayout
-        android:id="@+id/directions_fragment_framelayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="5dp">
-
-    </FrameLayout>
 </RelativeLayout>

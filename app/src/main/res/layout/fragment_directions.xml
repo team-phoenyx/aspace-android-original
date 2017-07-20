@@ -10,25 +10,29 @@
         android:id="@+id/directions_listview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginTop="8dp"
         android:divider="@null"
         android:footerDividersEnabled="false"
         android:headerDividersEnabled="false"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/nav_info_header"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nav_info_header" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/nav_info_header"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="#FFFFFF"
+        android:layout_marginBottom="0dp"
+        android:background="@color/colorPrimaryDark"
         android:elevation="4dp"
         android:orientation="horizontal"
         android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintRight_toRightOf="parent">
 
         <LinearLayout
             android:id="@+id/nav_info_duration_layout"
@@ -46,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_alarm_24dp"
+                android:src="@drawable/ic_alarm_white_24dp"
                 app:layout_constraintLeft_toLeftOf="parent" />
 
             <TextView
@@ -56,7 +60,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="4dp"
                 android:text=""
-                android:textColor="@color/colorPrimary"
+                android:textColor="@android:color/white"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -80,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_directions_24dp" />
+                android:src="@drawable/ic_directions_white_24dp" />
 
             <TextView
                 android:id="@+id/nav_info_distance_label"
@@ -89,7 +93,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="4dp"
                 android:text=""
-                android:textColor="@color/colorPrimary"
+                android:textColor="@android:color/white"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -112,7 +116,7 @@
                 android:layout_gravity="center_vertical"
                 android:scaleX="0.90"
                 android:scaleY="0.90"
-                android:src="@drawable/ic_parking_24dp" />
+                android:src="@drawable/ic_parking_white_24dp" />
 
             <TextView
                 android:id="@+id/nav_info_spots_label"
@@ -120,10 +124,11 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="10+ spots"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@android:color/white"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>
+
 </android.support.constraint.ConstraintLayout>
