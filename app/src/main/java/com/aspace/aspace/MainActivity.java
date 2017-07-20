@@ -644,8 +644,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
 
                     // Update list view
-                    searchListView.startAnimation(fadeOut);
-                    searchListView.setVisibility(View.GONE);
+                    //searchListView.startAnimation(fadeOut);
+                    //searchListView.setVisibility(View.GONE);
                     customAdapter.notifyDataSetChanged();
                 } else {
                     if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
