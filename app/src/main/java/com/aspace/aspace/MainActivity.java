@@ -16,13 +16,18 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -73,6 +78,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.api.directions.v5.models.LegStep;
+import com.mapbox.services.api.directions.v5.models.StepManeuver;
 import com.mapbox.services.commons.geojson.LineString;
 import com.mapbox.services.commons.models.Position;
 
@@ -99,7 +105,7 @@ import static com.mapbox.services.android.navigation.v5.NavigationConstants.LOW_
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.MEDIUM_ALERT_LEVEL;
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.NONE_ALERT_LEVEL;
 
-public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener {
+public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener, GestureDetector.OnGestureListener {
 
     private MapView mMapView;
     private MapboxMap map;
@@ -125,10 +131,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
     private LegStep lastUpcomingStep;
+    private List<LegStep> navSteps;
     private TextToSpeech textToSpeech;
     private Position navDestination;
     private Polyline drivingRoutePolyline;
-    private String searchedLatString, searchedLngString;
     private Toolbar navToolbar;
     private ConstraintLayout navLowerBar;
     private ImageView navManeuverImageView, navInfoDurationImageView, navInfoDistanceImageView, navInfoSpotsImageView;
@@ -137,6 +143,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private AutoResizeTextView navManeuverTargetLabel;
     private List<String> routeManeuverInstructions;
     private List<String> offRouteManeuverInstructions;
+    private GestureDetector gestureDetector;
+    private Fragment directionsFragment;
+    private FragmentManager fragmentManager;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -159,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private boolean alreadyNotifiedClose;
     private boolean alreadyNotifiedManeuver;
 
-    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
+    private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey, searchedLatString, searchedLngString, navTotalTimeLeft, navTotalDistanceLeft, navTotalSpots;
+    private int stepNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,6 +215,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         navLowerBar = (ConstraintLayout) findViewById(R.id.nav_subview);
 
+        navToolbar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+
+        navLowerBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+
         displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         navManeuverTargetLabel.setWidth(displayMetrics.widthPixels - dpToPx(32) - navManeuverImageView.getWidth() - navMuteButton.getWidth());
@@ -235,6 +259,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         //BOOLEAN FLAGS INIT
         isUpdatingSpots = true;
         allowAlert = true;
+
+        //GESTURE DETECTOR INIT
+        gestureDetector = new GestureDetector(this);
+
+        //FRAGMENTS INIT
+        fragmentManager = getSupportFragmentManager();
+        directionsFragment = new DirectionsFragment();
 
         //TIMER INIT
         if (timer != null) {
@@ -273,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         break;
                     case DEPART_ALERT_LEVEL:
                         Toast.makeText(MainActivity.this, "DEPART", Toast.LENGTH_LONG).show();
-                        textToSpeech.speak(routeProgress.getCurrentLeg().getSteps().get(0).getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak(routeProgress.getCurrentLeg().getSteps().get(0).getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
                         break;
                 }
             }
@@ -283,32 +314,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onProgressChange(Location location, RouteProgress routeProgress) {
                 // we can do stuff here to update UI using routeProgress object
-                List<LegStep> steps = routeProgress.getCurrentLeg().getSteps();
+                navSteps = routeProgress.getCurrentLeg().getSteps();
                 RouteStepProgress routeStepProgress = routeProgress.getCurrentLegProgress().getCurrentStepProgress();
                 LegStep nextStep = routeProgress.getCurrentLegProgress().getUpComingStep();
 
-                /*
-                if (nextStep == null) {
-                    navigation.endNavigation();
-                    map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_NONE);
-                    cancelRouteFAB.setVisibility(View.VISIBLE);
-                    cancelNavigationFAB.setVisibility(View.GONE);
-                    snapToLocationFAB.setVisibility(View.GONE);
-                    startNavigationFAB.setVisibility(View.VISIBLE);
-                    navLowerBar.setVisibility(View.GONE);
-                    searchView.setVisibility(View.VISIBLE);
-
-                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
-                    layoutParams.height = dpToPx(64);
-                    navToolbar.setLayoutParams(layoutParams);
-
-                    navManeuverImageView.setVisibility(View.INVISIBLE);
-                    navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
-                    navManeuverTargetLabel.setVisibility(View.INVISIBLE);
-                    navMuteButton.setVisibility(View.INVISIBLE);
-                    return;
-                }
-                */
+                stepNumber = navSteps.indexOf(routeProgress.getCurrentLegProgress().getCurrentStep());
 
                 if (routeProgress.getCurrentLegProgress().getCurrentStep().getManeuver().getType().equals("arrive")) {
                     navigation.endNavigation();
@@ -328,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     navManeuverDistanceLabel.setVisibility(View.INVISIBLE);
                     navManeuverTargetLabel.setVisibility(View.INVISIBLE);
                     navMuteButton.setVisibility(View.INVISIBLE);
-                    textToSpeech.speak("You have arrived at your destination", TextToSpeech.QUEUE_ADD, null, null);
+                    if (!isNavMuted) textToSpeech.speak("You have arrived at your destination", TextToSpeech.QUEUE_ADD, null, null);
                     return;
                 }
 
@@ -342,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         String distanceString = translateDistance(distance);
                         String instruction = nextStep.getManeuver().getInstruction();
                         if (nextStep.getManeuver().getType().equals("arrive")) instruction = "Your destination is on the " + nextStep.getManeuver().getModifier();
-                        textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak("In " + distanceString.replace("mi", "miles").replace("ft", "feet") + ", " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                     }
                     alreadyNotifiedManeuver = false;
                     alreadyNotifiedOneMile = false;
@@ -365,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             directionString = maneuverType + " " + maneuverMod;
                         }
                         navManeuverDistanceLabel.setText(Character.toUpperCase(directionString.charAt(0)) + directionString.substring(1));
-                        textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
+                        if (!isNavMuted) textToSpeech.speak(nextStep.getManeuver().getInstruction(), TextToSpeech.QUEUE_ADD, null, null);
                         alreadyNotifiedManeuver = true;
                     }
                 }
@@ -379,20 +389,20 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
                     if (distanceString.equals("1.0 mi") || distanceString.equals("1 mi")) {
                         if (!alreadyNotifiedOneMile) {
-                            textToSpeech.speak("In one mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In one mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedOneMile = true;
                         }
 
                     }
                     if (distanceString.equals("0.5 mi")) {
                         if (!alreadyNotifiedHalfMile) {
-                            textToSpeech.speak("In half a mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In half a mile, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedHalfMile = true;
                         }
                     }
                     if (distanceString.equals("500 ft")) {
                         if (!alreadyNotifiedClose) {
-                            textToSpeech.speak("In 500 feet, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
+                            if (!isNavMuted) textToSpeech.speak("In 500 feet, " + instruction, TextToSpeech.QUEUE_ADD, null, null);
                             alreadyNotifiedClose = true;
                         }
 
@@ -423,14 +433,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 navManeuverImageView.setImageResource(id);
 
                 // Updating lower navigation white bar
-                navInfoDurationLabel.setText((int)routeProgress.getDurationRemaining() / 60 + " min");
-                navInfoDistanceLabel.setText(translateDistance(routeProgress.getDistanceRemaining()));
-                navInfoSpotsLabel.setText("10+ spots");
-
-                // Complete directions log
-                for (LegStep step : steps) {
-                    Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
-                }
+                navTotalTimeLeft = (int)routeProgress.getDurationRemaining() / 60 + " min";
+                navTotalDistanceLeft = translateDistance(routeProgress.getDistanceRemaining());
+                navTotalSpots = "10+ spots";
+                navInfoDurationLabel.setText(navTotalTimeLeft);
+                navInfoDistanceLabel.setText(navTotalDistanceLeft);
+                navInfoSpotsLabel.setText(navTotalSpots);
 
                 lastUpcomingStep = nextStep;
             }
@@ -486,6 +494,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 });
             }
         });
+
 
         //MUTE BUTTON HANDLER
         navMuteButton.setOnClickListener(new View.OnClickListener() {
@@ -1449,5 +1458,82 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     public void onInit(int status) {
         
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent start, MotionEvent finish, float velocityX, float velocityY) {
+        if (finish.getY() > (start.getY() + 400) && velocityY > 2000) {
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(R.anim.swipe_down, R.anim.swipe_up);
+
+            ArrayList<String> instructionsList = new ArrayList<>();
+            ArrayList<String> distancesList = new ArrayList<>();
+            ArrayList<String> iconNameList = new ArrayList<>();
+
+            distancesList.add("");
+
+            for (LegStep step : navSteps) {
+                StepManeuver maneuver = step.getManeuver();
+                String maneuverType = maneuver.getType();
+                Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
+
+                instructionsList.add(maneuver.getInstruction());
+
+                if (maneuverType.equalsIgnoreCase("continue")) maneuverType += "e";
+
+                String maneuverModifier = "" + maneuver.getModifier();
+
+                String imageName = maneuverType;
+                if (!maneuverModifier.isEmpty() && !maneuverModifier.equals("null")) {
+                    imageName += " " + maneuverModifier;
+                    imageName = imageName.replace(' ', '_');
+                }
+                iconNameList.add(imageName);
+
+                if (!maneuver.getType().equals("arrive")) {
+                    distancesList.add(translateDistance(step.getDistance()));
+                }
+            }
+
+            Bundle extras = new Bundle();
+            extras.putStringArrayList("instructions", instructionsList);
+            extras.putStringArrayList("distances", distancesList);
+            extras.putStringArrayList("icon_names", iconNameList);
+
+            extras.putString("total_time_left", navTotalTimeLeft);
+            extras.putString("total_distance_left", navTotalDistanceLeft);
+            extras.putString("total_spots", navTotalSpots);
+            extras.putInt("current_step", stepNumber);
+
+            directionsFragment.setArguments(extras);
+            fragmentTransaction.add(R.id.directions_fragment_framelayout, directionsFragment);
+            fragmentTransaction.commit();
+        }
+        return true;
     }
 }
