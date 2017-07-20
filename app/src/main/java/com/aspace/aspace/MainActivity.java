@@ -1462,7 +1462,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     @Override
     public boolean onDown(MotionEvent e) {
-        return false;
+        return true;
     }
 
     @Override
