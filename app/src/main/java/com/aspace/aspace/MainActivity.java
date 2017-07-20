@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<String> offRouteManeuverInstructions;
     private ListView searchListView;
     private CustomAdapter customAdapter;
+    private Animation fadeOut, fadeIn;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -236,6 +237,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
+
+        //ANIMATIONS INIT
+        fadeIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+        fadeOut = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out);
 
         //TTS INIT
         textToSpeech = new TextToSpeech(this, this);
@@ -612,9 +617,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onFocus() {
                 toggleGps(true, false);
-                Animation fade_in = AnimationUtils.loadAnimation(getApplicationContext(),
-                        R.anim.fade_in);
-                searchListView.startAnimation(fade_in);
+                searchListView.startAnimation(fadeIn);
                 searchListView.setVisibility(View.VISIBLE);
                 try {
                     currentLocation = locationEngine.getLastLocation();
@@ -625,6 +628,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             @Override
             public void onFocusCleared() {
+                searchListView.startAnimation(fadeOut);
                 searchListView.setVisibility(View.GONE);
                 customAdapter.notifyDataSetInvalidated();
             }
@@ -640,13 +644,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     }
 
                     // Update list view
+                    searchListView.startAnimation(fadeOut);
+                    searchListView.setVisibility(View.GONE);
                     customAdapter.notifyDataSetChanged();
-                    //searchView.swapSuggestions(new ArrayList<SearchSuggestion>());
                 } else {
                     if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
-                        Animation fade_in = AnimationUtils.loadAnimation(getApplicationContext(),
-                                R.anim.fade_in);
-                        searchListView.startAnimation(fade_in);
+                        searchListView.startAnimation(fadeIn);
                     }
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
