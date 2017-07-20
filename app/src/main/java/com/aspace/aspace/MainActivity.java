@@ -638,7 +638,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
                 if (newQuery.equals("")) {
-                    // TODO UPDATE LIST VIEW HERE
                     if (newSuggestions != null) {
                         newSuggestions.clear();
                     }
@@ -1518,7 +1517,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = getLayoutInflater().inflate(R.layout.custom_list_view_views, null);
+            convertView = getLayoutInflater().inflate(R.layout.search_list_view_row, null);
 
             ImageView locationIcon = (ImageView) convertView.findViewById(R.id.location_icon);
             TextView locationName = (TextView) convertView.findViewById(R.id.location_label);

@@ -108,7 +108,8 @@
             android:headerDividersEnabled="false"
             android:footerDividersEnabled="false"
             android:visibility="gone"
-            android:elevation="4dp">
+            android:elevation="4dp"
+            android:scrollbars="vertical">
         </ListView>
 
         <android.support.constraint.ConstraintLayout
