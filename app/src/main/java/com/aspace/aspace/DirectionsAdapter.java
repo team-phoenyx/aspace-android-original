@@ -57,6 +57,7 @@ public class DirectionsAdapter extends BaseAdapter {
 
         holder.instructionTextView.setText(instruction.getInstruction());
         holder.distanceTextView.setText(instruction.getDistanceFromInstruction());
+        holder.instructionTextView.setTextColor(Color.BLACK);
 
         if (instruction.getDistanceFromInstruction().isEmpty()) {
             holder.distanceTextView.setVisibility(View.GONE);

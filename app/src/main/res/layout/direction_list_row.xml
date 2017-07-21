@@ -41,8 +41,7 @@
     <LinearLayout
         android:id="@+id/instruction_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.08"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <ImageView

@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<String> routeManeuverInstructions;
     private List<String> offRouteManeuverInstructions;
     private ListView searchListView;
-    private CustomAdapter customAdapter;
+    private SearchListAdapter searchListAdapter;
     private Animation fadeOut, fadeIn;
     private GestureDetector gestureDetector;
     private Fragment directionsFragment;
@@ -618,8 +618,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-        customAdapter = new CustomAdapter();
-        searchListView.setAdapter(customAdapter);
+        searchListAdapter = new SearchListAdapter();
+        searchListView.setAdapter(searchListAdapter);
 
         //********SEARCHVIEW EVENT HANDLERS********
         searchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
@@ -639,7 +639,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onFocusCleared() {
                 searchListView.startAnimation(fadeOut);
                 searchListView.setVisibility(View.GONE);
-                customAdapter.notifyDataSetInvalidated();
+                searchListAdapter.notifyDataSetInvalidated();
             }
         });
 
@@ -654,7 +654,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     // Update list view
                     //searchListView.startAnimation(fadeOut);
                     //searchListView.setVisibility(View.GONE);
-                    customAdapter.notifyDataSetChanged();
+                    searchListAdapter.notifyDataSetChanged();
                 } else {
                     if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
                         searchListView.startAnimation(fadeIn);
@@ -675,7 +675,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             }
                             //searchView.swapSuggestions(newSuggestions);
                             // Update list view
-                            customAdapter.notifyDataSetChanged();
+                            searchListAdapter.notifyDataSetChanged();
                         }
 
                         @Override
@@ -1578,7 +1578,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         return true;
     }
 
-    private class CustomAdapter extends BaseAdapter {
+    private class SearchListAdapter extends BaseAdapter {
 
         @Override
         public int getCount() {
