@@ -271,7 +271,7 @@
             android:layout_marginRight="16dp"
             android:visibility="gone"
             app:backgroundTint="@color/colorAccent"
-            app:srcCompat="@drawable/ic_cancel_route_24dp"
+            app:srcCompat="@drawable/ic_cancel_24dp"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
 
