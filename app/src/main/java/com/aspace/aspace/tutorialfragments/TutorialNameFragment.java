@@ -30,7 +30,7 @@ public class TutorialNameFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.fragment_tutorial_name, container, false);
 
-        nameEditText = (EditText) viewGroup.findViewById(R.id.name_edittext);
+        nameEditText = (EditText) viewGroup.findViewById(R.id.name_textview);
         nextButton = (Button) getActivity().findViewById(R.id.next_button);
 
         parentViewPager = (TutorialViewPager) getActivity().findViewById(R.id.pager);
