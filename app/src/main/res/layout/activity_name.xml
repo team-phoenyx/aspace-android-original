@@ -7,7 +7,7 @@
     tools:context="com.aspace.aspace.NameActivity">
 
     <EditText
-        android:id="@+id/name_edittext"
+        android:id="@+id/name_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -35,7 +35,7 @@
         android:text="Please enter your name"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_edittext" />
+        app:layout_constraintTop_toBottomOf="@+id/name_textview" />
 
     <Button
         android:id="@+id/name_next_button"

@@ -91,7 +91,7 @@ public class TutorialActivity extends FragmentActivity {
                     case NAME_FRAGMENT_TAG:
                         backButton.setVisibility(View.VISIBLE);
 
-                        if (((EditText) findViewById(R.id.name_edittext)).getText().toString().isEmpty()) {
+                        if (((EditText) findViewById(R.id.name_textview)).getText().toString().isEmpty()) {
                             nextButton.setVisibility(View.GONE);
                             viewPager.setAllowedSwipeDirection(SwipeDirection.left);
                         } else {
@@ -104,7 +104,7 @@ public class TutorialActivity extends FragmentActivity {
 
                         View nameFragmentView = ((TutorialNameFragment) pagerAdapter.instantiateItem(viewPager, NAME_FRAGMENT_TAG)).getView();
                         if (nameFragmentView != null) {
-                            EditText nameEditText = (EditText) nameFragmentView.findViewById(R.id.name_edittext);
+                            EditText nameEditText = (EditText) nameFragmentView.findViewById(R.id.name_textview);
                             name = nameEditText.getText().toString();
                         }
                         backButton.setVisibility(View.VISIBLE);
