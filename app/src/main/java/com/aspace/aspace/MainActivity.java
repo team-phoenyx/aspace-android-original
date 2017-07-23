@@ -750,7 +750,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         ProfileDialogFragment profileDialogFragment = new ProfileDialogFragment();
                         profileDialogFragment.setArguments(extras);
                         profileDialogFragment.show(getFragmentManager(), "profiledialog");
-                        searchView.clearSearchFocus();
                         break;
                 }
             }
