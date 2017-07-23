@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main_root"
     tools:context=".MainActivity">
 
     <com.mapbox.mapboxsdk.maps.MapView
@@ -221,8 +222,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="80dp"
-            android:elevation="5dp">
+            android:elevation="4dp">
+        </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/settings_fragment_framelayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:elevation="5dp">
         </FrameLayout>
 
         <android.support.design.widget.FloatingActionButton

@@ -2,42 +2,23 @@ package com.aspace.aspace;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
-import com.aspace.aspace.retrofitmodels.Feature;
-import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.Profile;
-import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -47,10 +28,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
-import static com.aspace.aspace.MainActivity.BASE_URL;
-import static com.aspace.aspace.MainActivity.MAPBOX_BASE_URL;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
@@ -68,6 +46,7 @@ public class ProfileDialogFragment extends DialogFragment {
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
+    private static final String SETTINGS_FRAGMENT_TAG = "SETTINGS_FRAGMENT";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -106,6 +85,15 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
+
+                SettingsFragment settingsFragment= new SettingsFragment();
+                FragmentManager fragmentManager = getActivity().getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.add(R.id.settings_fragment_framelayout, settingsFragment);
+                fragmentTransaction.commit();
+//                fragmentTransaction.replace(R.id.settings_fragment_framelayout, settingsFragment,SETTINGS_FRAGMENT_TAG);
+//                fragmentTransaction.addToBackStack(null);
+//                fragmentTransaction.commit();
             }
         });
 

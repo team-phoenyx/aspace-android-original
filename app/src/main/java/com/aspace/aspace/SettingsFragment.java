@@ -1,8 +1,10 @@
 package com.aspace.aspace;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +40,16 @@ public class SettingsFragment extends Fragment {
         addVehicleButton = (Button) viewGroup.findViewById(R.id.settings_add_vehicle_button);
         deleteAccountButton = (Button) viewGroup.findViewById(R.id.settings_delete_account_button);
 
-        return super.onCreateView(inflater, container, savedInstanceState);
+        toolbar.setTitleTextColor(Color.WHITE);
+        toolbar.setTitle("Settings");
+
+        toolbarExitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().getFragmentManager().beginTransaction().remove(SettingsFragment.this).commit();
+            }
+        });
+
+        return viewGroup;
     }
 }
