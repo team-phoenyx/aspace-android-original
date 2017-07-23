@@ -8,7 +8,7 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/settings_toolbar"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@color/colorPrimary"
         android:elevation="4dp"
@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@color/transparent"
             android:src="@drawable/ic_cancel_24dp"
             android:tint="@android:color/white" />
@@ -45,8 +45,6 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
         android:layout_marginStart="40dp"
         android:layout_marginTop="12dp"
         android:background="#90909090"
@@ -59,7 +57,6 @@
         android:id="@+id/settings_name_edit_text"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="40dp"
         android:layout_marginStart="40dp"
         android:layout_marginTop="18dp"
         android:background="@color/transparent"
@@ -77,7 +74,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="40dp"
-        android:layout_marginRight="40dp"
         android:layout_marginTop="13dp"
         android:background="@color/transparent"
         android:src="@drawable/ic_mode_edit_white_24dp"
@@ -89,7 +85,6 @@
         android:id="@+id/settings_my_vehicles_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="40dp"
         android:layout_marginStart="40dp"
         android:layout_marginTop="32dp"
         android:text="My Vehicles"
@@ -103,8 +98,6 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
         android:layout_marginStart="40dp"
         android:layout_marginTop="12dp"
         android:background="#90909090"
@@ -139,9 +132,8 @@
         android:textSize="10sp"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicle_list"
-        android:layout_marginLeft="40dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="40dp" />
+        android:layout_marginStart="40dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
         android:id="@+id/settings_delete_account_label"
@@ -152,7 +144,7 @@
         android:textSize="14sp"
         android:layout_marginTop="32dp"
         app:layout_constraintTop_toBottomOf="@+id/settings_add_vehicle_button"
-        android:layout_marginLeft="40dp"
+        android:layout_marginStart="40dp"
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <View
@@ -160,8 +152,6 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
         android:layout_marginStart="40dp"
         android:background="#90909090"
         app:layout_constraintHorizontal_bias="0.0"
@@ -181,7 +171,7 @@
         android:textAllCaps="false"
         android:layout_marginTop="12dp"
         app:layout_constraintTop_toBottomOf="@+id/settings_delete_account_divider"
-        android:layout_marginLeft="40dp"
+        android:layout_marginStart="40dp"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:layout_editor_absoluteY="423dp" />
 </android.support.constraint.ConstraintLayout>
