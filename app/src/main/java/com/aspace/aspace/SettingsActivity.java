@@ -56,6 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        Log.i("SETTINGS", userPhoneNumber.toString());
 
         // get profile to retrieve the keys needed for the update profile callback
         parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
