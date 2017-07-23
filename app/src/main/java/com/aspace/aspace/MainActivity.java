@@ -509,7 +509,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-
         //MUTE BUTTON HANDLER
         navMuteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -529,7 +528,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
-
                 toggleGps(true, true);
 
                 setCurrentScreenBounds();
@@ -1241,8 +1239,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     // if the current marker's position is different than the "closest spot"
                     if (!closestSpotMarkerOptions.getMarker().getPosition().equals(closestSpotLatLng)) {
                         // removing and readding here makes the marker blink. is this necessary? *******
-                        map.removeMarker(closestMarker);
-                        closestMarker = map.addMarker(closestSpotMarkerOptions);
+                        //map.removeMarker(closestMarker);
+                        //closestMarker = map.addMarker(closestSpotMarkerOptions);
                         // ^^^^^
                         closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
                     }

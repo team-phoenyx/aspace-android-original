@@ -222,7 +222,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="80dp"
-            android:elevation="4dp">
+            android:elevation="5dp">
         </FrameLayout>
 
         <FrameLayout
