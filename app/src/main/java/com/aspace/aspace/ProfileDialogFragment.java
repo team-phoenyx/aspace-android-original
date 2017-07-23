@@ -85,15 +85,15 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
-
+                Intent startSettingsIntent = new Intent(getActivity(), SettingsActivity.class);
+                getActivity().startActivity(startSettingsIntent);
+                /* Old Fragment Stuff
                 SettingsFragment settingsFragment= new SettingsFragment();
                 FragmentManager fragmentManager = getActivity().getFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.add(R.id.settings_fragment_framelayout, settingsFragment);
                 fragmentTransaction.commit();
-//                fragmentTransaction.replace(R.id.settings_fragment_framelayout, settingsFragment,SETTINGS_FRAGMENT_TAG);
-//                fragmentTransaction.addToBackStack(null);
-//                fragmentTransaction.commit();
+                */
             }
         });
 

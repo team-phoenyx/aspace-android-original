@@ -63,6 +63,7 @@
         android:background="@color/transparent"
         android:inputType="none"
         android:text="Zula Li"
+        android:focusable="false"
         android:maxLines="1"
         android:textSize="15sp"
         android:scrollHorizontally="true"
