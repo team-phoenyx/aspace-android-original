@@ -62,7 +62,6 @@
         android:layout_marginTop="18dp"
         android:background="@color/transparent"
         android:inputType="none"
-        android:text=""
         android:hint="Your Name"
         android:focusable="false"
         android:maxLines="1"

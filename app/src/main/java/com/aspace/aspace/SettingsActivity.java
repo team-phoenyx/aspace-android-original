@@ -57,7 +57,6 @@ public class SettingsActivity extends AppCompatActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
-        Log.i("SETTINGS", userPhoneNumber.toString());
 
         toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
@@ -83,10 +82,11 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!nameEditText.isFocusableInTouchMode()) {
-                    nameEditText.setSelection(nameEditText.getText().length());
                     nameEditText.setCursorVisible(true);
                     nameEditText.setFocusableInTouchMode(true);
-                    nameEditText.setInputType(InputType.TYPE_CLASS_TEXT);
+                    nameEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+                    // place the cursor at the end.
+                    nameEditText.setSelection(nameEditText.getText().length());
                     nameEditText.requestFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
@@ -113,12 +113,13 @@ public class SettingsActivity extends AppCompatActivity {
                 homeAddress = userProfile.getHomeAddress();
                 homeLocId = userProfile.getHomeLocId();
                 workLocId = userProfile.getWorkLocId();
+                // update the profile with paramaters retrieved from getprofile
                 parcareService.updateProfile(userName, workAddress, homeAddress, homeLocId,
                         workLocId, userID, userPhoneNumber, userAccessToken)
                         .enqueue(new Callback<UpdateProfileResponse>() {
                             @Override
                             public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
-                                Log.i("SETTINGS", response.raw().toString());
+
                             }
 
                             @Override
