@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.aspace.aspace.retrofitmodels.Profile;
+import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,22 +59,6 @@ public class SettingsActivity extends AppCompatActivity {
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         Log.i("SETTINGS", userPhoneNumber.toString());
 
-        // get profile to retrieve the keys needed for the update profile callback
-        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
-            @Override
-            public void onResponse(Call<Profile> call, Response<Profile> response) {
-                Profile userProfile = response.body();
-                //TODO check resp code 7, otherwise snackbar
-                // TODO INITIALIZE FIELDS. If can't change fields from inside callback, nest the update profiel callback in here.
-            }
-
-            @Override
-            public void onFailure(Call<Profile> call, Throwable t) {
-                //TODO as of July 10, a failed getProfile will go here :/
-                Log.d("GET_PROFILE_FAIL", t.getMessage());
-            }
-        });
-
         toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
         nameEditText = (EditText) findViewById(R.id.settings_name_edit_text);
@@ -98,6 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!nameEditText.isFocusableInTouchMode()) {
+                    nameEditText.setSelection(nameEditText.getText().length());
                     nameEditText.setCursorVisible(true);
                     nameEditText.setFocusableInTouchMode(true);
                     nameEditText.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -105,6 +91,7 @@ public class SettingsActivity extends AppCompatActivity {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
                 } else {
+                    getAndUpdateProfile();
                     nameEditText.setFocusableInTouchMode(false);
                     nameEditText.clearFocus();
                     nameEditText.setInputType(InputType.TYPE_NULL);
@@ -115,7 +102,37 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void updateProfile() {
+    private void getAndUpdateProfile() {
+        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+            @Override
+            public void onResponse(Call<Profile> call, Response<Profile> response) {
+                //TODO check resp code 7, otherwise snackbar
+                Profile userProfile = response.body();
+                userName = nameEditText.getText().toString();
+                workAddress = userProfile.getWorkAddress();
+                homeAddress = userProfile.getHomeAddress();
+                homeLocId = userProfile.getHomeLocId();
+                workLocId = userProfile.getWorkLocId();
+                parcareService.updateProfile(userName, workAddress, homeAddress, homeLocId,
+                        workLocId, userID, userPhoneNumber, userAccessToken)
+                        .enqueue(new Callback<UpdateProfileResponse>() {
+                            @Override
+                            public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
+                                Log.i("SETTINGS", response.raw().toString());
+                            }
 
+                            @Override
+                            public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
+
+                            }
+                        });
+            }
+
+            @Override
+            public void onFailure(Call<Profile> call, Throwable t) {
+                //TODO as of July 10, a failed getProfile will go here :/
+                Log.d("GET_PROFILE_FAIL", t.getMessage());
+            }
+        });
     }
 }

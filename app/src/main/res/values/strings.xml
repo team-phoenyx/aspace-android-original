@@ -10,5 +10,9 @@
     <string name="user_id_tag">user_id</string>
     <string name="user_access_token_tag">user_access_token</string>
     <string name="user_phone_number_tag">user_phone_number</string>
+    <string name="user_home_address_tag">user_home_address</string>
+    <string name="user_work_address_tag">user_work_address</string>
+    <string name="user_home_loc_id_tag">user_home_loc_id</string>
+    <string name="user_work_loc_id_tag">user_work_loc_id</string>
     <string name="country_code_explanation">The "1" you see in front of the phone number represents the country code for the US. Having this prefix ensures we are able to reach your phone!</string>
 </resources>

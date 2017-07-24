@@ -46,7 +46,6 @@ public class ProfileDialogFragment extends DialogFragment {
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
-    private static final String SETTINGS_FRAGMENT_TAG = "SETTINGS_FRAGMENT";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -79,6 +78,23 @@ public class ProfileDialogFragment extends DialogFragment {
         builder.setView(dialogView).setCancelable(false);
 
         nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
+
+        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+            @Override
+            public void onResponse(Call<Profile> call, Response<Profile> response) {
+                Profile userProfile = response.body();
+                //TODO check resp code 7, otherwise snackbar
+                nameTextView.setText(userProfile.getName());
+                //TODO when profile endpoint is updated, populate listview and if is empty, do something
+            }
+
+            @Override
+            public void onFailure(Call<Profile> call, Throwable t) {
+                //TODO as of July 10, a failed getProfile will go here :/
+                Log.d("GET_PROFILE_FAIL", t.getMessage());
+            }
+        });
+
         settingsButton = (ImageButton) dialogView.findViewById(R.id.settings_button);
 
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -98,22 +114,6 @@ public class ProfileDialogFragment extends DialogFragment {
                 fragmentTransaction.add(R.id.settings_fragment_framelayout, settingsFragment);
                 fragmentTransaction.commit();
                 */
-            }
-        });
-
-        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
-            @Override
-            public void onResponse(Call<Profile> call, Response<Profile> response) {
-                Profile userProfile = response.body();
-                //TODO check resp code 7, otherwise snackbar
-                nameTextView.setText(userProfile.getName());
-                //TODO when profile endpoint is updated, populate listview and if is empty, do something
-            }
-
-            @Override
-            public void onFailure(Call<Profile> call, Throwable t) {
-                //TODO as of July 10, a failed getProfile will go here :/
-                Log.d("GET_PROFILE_FAIL", t.getMessage());
             }
         });
 
