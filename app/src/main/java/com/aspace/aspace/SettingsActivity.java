@@ -8,11 +8,15 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
@@ -40,6 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
     private String userID;
     private String userPhoneNumber;
     private String userAccessToken;
+    private VehicleListAdapter vehicleListAdapter;
 
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
@@ -65,6 +70,9 @@ public class SettingsActivity extends AppCompatActivity {
         myVehiclesList = (ListView) findViewById(R.id.settings_my_vehicle_list);
         addVehicleButton = (Button) findViewById(R.id.settings_add_vehicle_button);
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
+
+        vehicleListAdapter = new VehicleListAdapter();
+        myVehiclesList.setAdapter(vehicleListAdapter);
 
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Settings");
@@ -135,5 +143,32 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
             }
         });
+    }
+
+    private class VehicleListAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getLayoutInflater().inflate(R.layout.vehicle_list_row, parent, false);
+            ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
+            TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
+            RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
+            return convertView;
+        }
     }
 }
