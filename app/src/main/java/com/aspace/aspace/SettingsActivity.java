@@ -2,6 +2,7 @@ package com.aspace.aspace;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -96,10 +97,12 @@ public class SettingsActivity extends AppCompatActivity {
                     // place the cursor at the end.
                     nameEditText.setSelection(nameEditText.getText().length());
                     nameEditText.requestFocus();
+                    nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.colorPrimary));
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
                 } else {
                     getAndUpdateProfile();
+                    nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
                     nameEditText.setFocusableInTouchMode(false);
                     nameEditText.clearFocus();
                     nameEditText.setInputType(InputType.TYPE_NULL);

@@ -8,4 +8,5 @@
     <color name="foreground_material_light">#ffffff</color>
     <color name="primary_text_default_material_light">#deffffff</color>
     <color name="login_theme_text_color">#deffffff</color>
+    <color name="greyed_out">#90909090</color>
 </resources>
