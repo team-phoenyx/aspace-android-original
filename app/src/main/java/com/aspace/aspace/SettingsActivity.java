@@ -111,6 +111,14 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
         });
+
+        addVehicleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddVehicleDialogFragment addVehicleDialogFragment = new AddVehicleDialogFragment();
+                addVehicleDialogFragment.show(getFragmentManager(), "addVehicleDialogFragment");
+            }
+        });
     }
 
     private void getAndUpdateProfile() {
