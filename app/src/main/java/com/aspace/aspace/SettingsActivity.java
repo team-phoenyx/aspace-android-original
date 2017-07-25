@@ -203,6 +203,21 @@ public class SettingsActivity extends AppCompatActivity {
             ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
             TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
             RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
+
+            removeVehicleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // do stuff here to delete the vehicle and update profile
+                }
+            });
+
+            selectVehicleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // do stuff here or in setOnFocusChangeListener to set the label to black, check through all of the other
+                    // vehicles in list and reset their focus/text color
+                }
+            });
             return convertView;
         }
     }

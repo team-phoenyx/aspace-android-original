@@ -44,7 +44,7 @@
     <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="This can be found in front of your dashboard, in the driver-side doorpost, or in the vehicle manual"
+        android:text="This can be found in either the front of your dashboard, in the driver-side doorpost, or in the vehicle manual"
         android:textSize="12sp"
         android:textColor="@color/greyed_out"
         android:layout_marginLeft="8dp"
