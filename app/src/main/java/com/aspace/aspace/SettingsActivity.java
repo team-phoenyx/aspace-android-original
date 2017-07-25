@@ -1,8 +1,10 @@
 package com.aspace.aspace;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -117,6 +119,28 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 AddVehicleDialogFragment addVehicleDialogFragment = new AddVehicleDialogFragment();
                 addVehicleDialogFragment.show(getFragmentManager(), "addVehicleDialogFragment");
+            }
+        });
+
+        deleteAccountButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this, R.style.DeleteAccountDialogTheme);
+                builder.setCancelable(false);
+                builder.setTitle("Delete Account?")
+                        .setMessage("Deleting your account is a permanent action and cannot be reversed. Continue?")
+                        .setPositiveButton("Yep", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton("No Thanks", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
             }
         });
     }
