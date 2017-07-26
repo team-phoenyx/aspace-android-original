@@ -34,6 +34,7 @@ public class TutorialNameFragment extends Fragment {
         nextButton = (Button) getActivity().findViewById(R.id.next_button);
 
         parentViewPager = (TutorialViewPager) getActivity().findViewById(R.id.pager);
+        parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
 
         nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -43,13 +44,13 @@ public class TutorialNameFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
-                    nextButton.setVisibility(View.VISIBLE);
-                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
-                } else {
-                    nextButton.setVisibility(View.GONE);
-                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.left);
-                }
+//                if (s.length() > 0) {
+//                    nextButton.setVisibility(View.VISIBLE);
+//                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
+//                } else {
+//                    nextButton.setVisibility(View.GONE);
+//                    parentViewPager.setAllowedSwipeDirection(SwipeDirection.left);
+//                }
             }
 
             @Override

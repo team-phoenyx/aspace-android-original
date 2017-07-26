@@ -2,7 +2,9 @@ package com.aspace.aspace;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -48,6 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
     private String userPhoneNumber;
     private String userAccessToken;
     private VehicleListAdapter vehicleListAdapter;
+    private int selectedVehicleButtonPosition;
 
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
@@ -74,6 +77,11 @@ public class SettingsActivity extends AppCompatActivity {
         addVehicleButton = (Button) findViewById(R.id.settings_add_vehicle_button);
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
 
+        myVehiclesList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        // selected position of button set to the very first in the listview. This will need to change to the position
+        // of the user's selected vehicle in the listview that will be saved
+        // (server will keep track of it? add a vehicle retrofit w/ boolean selected?)
+        selectedVehicleButtonPosition = 0;
         vehicleListAdapter = new VehicleListAdapter();
         myVehiclesList.setAdapter(vehicleListAdapter);
 
@@ -204,20 +212,33 @@ public class SettingsActivity extends AppCompatActivity {
             TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
             RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
 
+            selectVehicleButton.setChecked(position == selectedVehicleButtonPosition);
+            if (position == selectedVehicleButtonPosition) {
+                selectVehicleButton.setButtonTintList(ColorStateList.valueOf(Color.BLACK));
+                vehicleNameLabel.setTextColor(Color.BLACK);
+                vehicleNameLabel.setTypeface(vehicleNameLabel.getTypeface(), Typeface.BOLD);
+            } else {
+                selectVehicleButton.setButtonTintList(ColorStateList.valueOf(getColor(R.color.greyed_out)));
+                vehicleNameLabel.setTextColor(getColor(R.color.greyed_out));
+                vehicleNameLabel.setTypeface(vehicleNameLabel.getTypeface(), Typeface.NORMAL);
+            }
+            selectVehicleButton.setTag(position);
+            selectVehicleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedVehicleButtonPosition = (Integer)view.getTag();
+                    notifyDataSetChanged();
+                }
+            });
+
             removeVehicleButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // do stuff here to delete the vehicle and update profile
+                    // selectVehicleButtonPosition = -1;
                 }
             });
 
-            selectVehicleButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // do stuff here or in setOnFocusChangeListener to set the label to black, check through all of the other
-                    // vehicles in list and reset their focus/text color
-                }
-            });
             return convertView;
         }
     }

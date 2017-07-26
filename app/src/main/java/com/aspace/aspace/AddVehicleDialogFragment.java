@@ -35,9 +35,10 @@ public class AddVehicleDialogFragment extends DialogFragment {
             }
         });
 
-        builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                // do stuff in here to update list and server with new vehicle
                 dialog.dismiss();
             }
         });
