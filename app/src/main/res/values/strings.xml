@@ -14,5 +14,6 @@
     <string name="user_work_address_tag">user_work_address</string>
     <string name="user_home_loc_id_tag">user_home_loc_id</string>
     <string name="user_work_loc_id_tag">user_work_loc_id</string>
+    <string name="user_vin_list_tag">user_vin_list</string>
     <string name="country_code_explanation">The "1" you see in front of the phone number represents the country code for the US. Having this prefix ensures we are able to reach your phone!</string>
 </resources>

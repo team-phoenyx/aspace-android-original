@@ -2,6 +2,7 @@ package com.aspace.aspace;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -25,6 +26,11 @@ import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
+import com.securepreferences.SecurePreferences;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -51,6 +57,8 @@ public class SettingsActivity extends AppCompatActivity {
     private String userAccessToken;
     private VehicleListAdapter vehicleListAdapter;
     private int selectedVehicleButtonPosition;
+    private Set<String> userVINList;
+
 
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
 
@@ -68,6 +76,21 @@ public class SettingsActivity extends AppCompatActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+
+        SharedPreferences securePreferences = new SecurePreferences(this);
+        if (securePreferences.contains(getString(R.string.user_vin_list_tag))) {
+            userVINList = securePreferences.getStringSet(getString(R.string.user_vin_list_tag), new HashSet<String>());
+            if (!userVINList.isEmpty()) {
+                // do stuff here if there's stuff inside
+            } else {
+                // do stuff here if it's empty
+            }
+        } else {
+            userVINList = new HashSet<String>();
+            SharedPreferences.Editor editor = new SecurePreferences(this).edit();
+            editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList);
+            editor.apply();
+        }
 
         toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
@@ -192,7 +215,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 3;
+            return userVINList.size();
         }
 
         @Override
@@ -209,8 +232,17 @@ public class SettingsActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.vehicle_list_row, parent, false);
             ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
-            TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
+            final TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
             RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
+
+            // currently iterating through vin list to populate vehicle name since we don't have VIN API yet
+            Iterator<String> iterator = userVINList.iterator();
+            String vin = "VIN Number";
+            for (int i = 0; i <= position; i++) {
+                vin = iterator.next();
+            }
+
+            vehicleNameLabel.setText(vin);
 
             selectVehicleButton.setChecked(position == selectedVehicleButtonPosition);
             if (position == selectedVehicleButtonPosition) {
@@ -234,6 +266,7 @@ public class SettingsActivity extends AppCompatActivity {
             removeVehicleButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // Need to wait for endpoint
                     // do stuff here to delete the vehicle and update profile
                     // selectVehicleButtonPosition = -1;
                 }
@@ -241,5 +274,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             return convertView;
         }
+    }
+
+    protected Set<String> getUserVINList() {
+        return userVINList;
+    }
+
+    protected void updateVehicleListAdapter() {
+        vehicleListAdapter.notifyDataSetChanged();
     }
 }
