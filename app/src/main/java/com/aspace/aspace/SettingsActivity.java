@@ -230,6 +230,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            final int pos = position;
             convertView = getLayoutInflater().inflate(R.layout.vehicle_list_row, parent, false);
             ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
             final TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
@@ -268,7 +269,16 @@ public class SettingsActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     // Need to wait for endpoint
                     // do stuff here to delete the vehicle and update profile
-                    // selectVehicleButtonPosition = -1;
+                    // selectVehicleButtonPosition = -1; ?
+                    Iterator<String> iterator = userVINList.iterator();
+                    for (int i = 0; i <= pos; i++) {
+                        iterator.next();
+                    }
+                    iterator.remove();
+                    SharedPreferences.Editor editor = new SecurePreferences(SettingsActivity.this).edit();
+                    editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList);
+                    editor.apply();
+                    notifyDataSetChanged();
                 }
             });
 
