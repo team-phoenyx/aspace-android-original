@@ -101,9 +101,9 @@ public class SplashActivity extends AppCompatActivity {
                                         if (response.body().getRespCode().equals("101") || response.body().getRespCode().equals("102")) {
                                             Intent intent;
                                             Log.d("REAUTH_RESPONSE", response.body().getRespCode());
-                                            if (response.body().getRespCode().equals("102")) intent = new Intent(getApplicationContext(), MainActivity.class);
-                                            else intent = new Intent(getApplicationContext(), TutorialActivity.class);
-
+                                            //if (response.body().getRespCode().equals("102")) intent = new Intent(getApplicationContext(), MainActivity.class);
+                                            //else intent = new Intent(getApplicationContext(), TutorialActivity.class);
+                                            intent = new Intent(getApplicationContext(), MainActivity.class); // since everything is optional, just go to the map
                                             intent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                                             intent.putExtra(getString(R.string.user_id_tag), userID);
                                             intent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
