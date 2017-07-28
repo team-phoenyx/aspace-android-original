@@ -92,8 +92,8 @@ public class TutorialActivity extends FragmentActivity {
                         backButton.setVisibility(View.VISIBLE);
 
                         if (((EditText) findViewById(R.id.name_textview)).getText().toString().isEmpty()) {
-                            nextButton.setVisibility(View.GONE);
-                            viewPager.setAllowedSwipeDirection(SwipeDirection.left);
+                            nextButton.setVisibility(View.VISIBLE);
+                            viewPager.setAllowedSwipeDirection(SwipeDirection.all);
                         } else {
                             nextButton.setVisibility(View.VISIBLE);
                             viewPager.setAllowedSwipeDirection(SwipeDirection.all);

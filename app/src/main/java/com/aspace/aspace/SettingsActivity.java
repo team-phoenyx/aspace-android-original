@@ -43,7 +43,7 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageButton toolbarExitButton;
     private EditText nameEditText;
     private ImageButton nameEditButton;
-    private ListView myVehiclesList;
+    private NonScrollListView myVehiclesList;
     private Button addVehicleButton;
     private Button deleteAccountButton;
     private PCRetrofitInterface parcareService;
@@ -96,7 +96,7 @@ public class SettingsActivity extends AppCompatActivity {
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
         nameEditText = (EditText) findViewById(R.id.settings_name_edit_text);
         nameEditButton = (ImageButton) findViewById(R.id.settings_name_edit_button);
-        myVehiclesList = (ListView) findViewById(R.id.settings_my_vehicle_list);
+        myVehiclesList = (NonScrollListView) findViewById(R.id.settings_my_vehicle_list);
         addVehicleButton = (Button) findViewById(R.id.settings_add_vehicle_button);
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
 
