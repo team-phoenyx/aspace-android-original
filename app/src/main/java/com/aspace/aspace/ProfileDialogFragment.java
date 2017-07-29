@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,6 +43,7 @@ public class ProfileDialogFragment extends DialogFragment {
     ImageButton settingsButton;
     PCRetrofitInterface parcareService;
     Realm realm;
+    ProfileDialogListAdapter profileDialogListAdapter;
 
     private static final String BASE_URL = "http://192.241.224.224:3000/api/";
     private double lat, lng;
@@ -76,6 +78,10 @@ public class ProfileDialogFragment extends DialogFragment {
         View dialogView = inflater.inflate(R.layout.profile_dialog, null);
 
         builder.setView(dialogView).setCancelable(false);
+
+        profileDialogListAdapter = new ProfileDialogListAdapter();
+        locationsListView = (ListView) dialogView.findViewById(R.id.locations_listview);
+        locationsListView.setAdapter(profileDialogListAdapter);
 
         nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
 
@@ -148,6 +154,31 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
         return builder.create();
+    }
+
+    private class ProfileDialogListAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            // static rows set to 3 since we don't have saved locations yet.
+            return 3;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getActivity().getLayoutInflater().inflate(R.layout.search_list_view_row, parent, false);
+            return convertView;
+        }
     }
 
 }
