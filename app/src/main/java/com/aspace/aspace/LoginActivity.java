@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
 
     String realmEncryptionKey;
 
-    public static final String BASE_URL = "http://165.227.7.211:3000/api/";
+    public static final String BASE_URL = "http://138.68.54.46:3000/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
