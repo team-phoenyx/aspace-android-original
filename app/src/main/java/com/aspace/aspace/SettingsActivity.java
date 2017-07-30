@@ -13,8 +13,10 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -142,6 +144,24 @@ public class SettingsActivity extends AppCompatActivity {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
                 }
+            }
+        });
+
+        nameEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE && nameEditText.isFocusableInTouchMode()) {
+                    // do your stuff here
+                    getAndUpdateProfile();
+                    nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
+                    nameEditText.setFocusableInTouchMode(false);
+                    nameEditText.clearFocus();
+                    nameEditText.setInputType(InputType.TYPE_NULL);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                    return true;
+                }
+                return false;
             }
         });
 
