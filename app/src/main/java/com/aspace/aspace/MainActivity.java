@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
-    public static final String BASE_URL = "http://138.68.54.46:3000/api/";
+    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int SPOT_UPDATE_RATE = 2000; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
@@ -509,7 +509,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
 
-
         //MUTE BUTTON HANDLER
         navMuteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -529,7 +528,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
-
                 toggleGps(true, true);
 
                 setCurrentScreenBounds();
@@ -1240,8 +1238,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     // if the current marker's position is different than the "closest spot"
                     if (!closestSpotMarkerOptions.getMarker().getPosition().equals(closestSpotLatLng)) {
                         // removing and readding here makes the marker blink. is this necessary? *******
-                        map.removeMarker(closestMarker);
-                        closestMarker = map.addMarker(closestSpotMarkerOptions);
+                        //map.removeMarker(closestMarker);
+                        //closestMarker = map.addMarker(closestSpotMarkerOptions);
                         // ^^^^^
                         closestSpotMarkerOptions.getMarker().setPosition(closestSpotLatLng);
                     }

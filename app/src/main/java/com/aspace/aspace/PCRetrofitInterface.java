@@ -57,7 +57,8 @@ public interface PCRetrofitInterface {
     @POST("users/profile/update/")
     Call<UpdateProfileResponse> updateProfile(@Field("name") String name, @Field("work_address") String work_address,
                                               @Field("home_address") String home_address, @Field("home_loc_id") String home_loc_id,
-                                              @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token);
+                                              @Field("work_loc_id") String work_loc_id, @Field("user_id") String user_id,
+                                              @Field("phone") String user_phone_number, @Field("access_token") String user_access_token);
 
     @FormUrlEncoded
     @POST("users/profile/get/")

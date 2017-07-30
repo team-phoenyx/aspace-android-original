@@ -13,7 +13,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="32dp"
         android:layout_marginTop="8dp"
-        android:text="What's your name?"
+        android:text="What's your name? (Optional)"
         android:textAppearance="@style/TextAppearance.AppCompat"
         android:textSize="16sp"
         android:textStyle="bold"

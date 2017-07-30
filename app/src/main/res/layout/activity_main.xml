@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main_root"
     tools:context=".MainActivity">
 
     <com.mapbox.mapboxsdk.maps.MapView
@@ -222,7 +223,6 @@
             android:layout_height="match_parent"
             android:layout_marginTop="80dp"
             android:elevation="5dp">
-
         </FrameLayout>
 
         <android.support.design.widget.FloatingActionButton
@@ -271,7 +271,7 @@
             android:layout_marginRight="16dp"
             android:visibility="gone"
             app:backgroundTint="@color/colorAccent"
-            app:srcCompat="@drawable/ic_cancel_route_24dp"
+            app:srcCompat="@drawable/ic_cancel_24dp"
             mapbox:elevation="4dp"
             tools:ignore="VectorDrawableCompat" />
 

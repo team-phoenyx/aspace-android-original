@@ -23,6 +23,19 @@
         <item name="android:background">@color/colorPrimary</item>
         <item name="colorAccent">@android:color/white</item>
     </style>
+
+    <style name="DeleteAccountDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:colorAccent">@color/colorPrimary</item>
+        <item name="android:textColorPrimary">@color/greyed_out</item>
+        <item name="android:windowTitleStyle">@style/DeleteAccountDialogTitleTheme</item>
+    </style>
+
+    <style name="DeleteAccountDialogTitleTheme" parent="@android:style/TextAppearance.Material.DialogWindowTitle">
+        <item name="android:textColor">@android:color/black</item>
+
+    </style>
     <!--Not being used-
     <style name="PinDialogAnimation" >
         <item name="android:windowEnterAnimation">@anim/slide_out_up</item>

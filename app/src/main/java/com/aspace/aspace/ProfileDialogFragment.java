@@ -2,42 +2,24 @@ package com.aspace.aspace;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
-import com.aspace.aspace.retrofitmodels.Feature;
-import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.Profile;
-import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -47,10 +29,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
-import static com.aspace.aspace.MainActivity.BASE_URL;
-import static com.aspace.aspace.MainActivity.MAPBOX_BASE_URL;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
@@ -64,8 +43,9 @@ public class ProfileDialogFragment extends DialogFragment {
     ImageButton settingsButton;
     PCRetrofitInterface parcareService;
     Realm realm;
+    ProfileDialogListAdapter profileDialogListAdapter;
 
-    private static final String BASE_URL = "http://138.68.54.46:3000/api/";
+    private static final String BASE_URL = "http://138.68.241.101:3000/api/";
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
@@ -99,15 +79,11 @@ public class ProfileDialogFragment extends DialogFragment {
 
         builder.setView(dialogView).setCancelable(false);
 
-        nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
-        settingsButton = (ImageButton) dialogView.findViewById(R.id.settings_button);
+        profileDialogListAdapter = new ProfileDialogListAdapter();
+        locationsListView = (ListView) dialogView.findViewById(R.id.locations_listview);
+        locationsListView.setAdapter(profileDialogListAdapter);
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getDialog().dismiss();
-            }
-        });
+        nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
 
         parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
@@ -122,6 +98,28 @@ public class ProfileDialogFragment extends DialogFragment {
             public void onFailure(Call<Profile> call, Throwable t) {
                 //TODO as of July 10, a failed getProfile will go here :/
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
+            }
+        });
+
+        settingsButton = (ImageButton) dialogView.findViewById(R.id.settings_button);
+
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getDialog().dismiss();
+                Intent startSettingsIntent = new Intent(getActivity(), SettingsActivity.class);
+                startSettingsIntent.putExtra("profileName", nameTextView.getText().toString());
+                startSettingsIntent.putExtra(getString(R.string.user_id_tag), userID);
+                startSettingsIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
+                startSettingsIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                getActivity().startActivity(startSettingsIntent);
+                /* Old Fragment Stuff
+                SettingsFragment settingsFragment= new SettingsFragment();
+                FragmentManager fragmentManager = getActivity().getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.add(R.id.settings_fragment_framelayout, settingsFragment);
+                fragmentTransaction.commit();
+                */
             }
         });
 
@@ -156,6 +154,31 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
         return builder.create();
+    }
+
+    private class ProfileDialogListAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            // static rows set to 7 since we don't have saved locations yet.
+            return 7;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getActivity().getLayoutInflater().inflate(R.layout.profile_dialog_saved_locations_row, parent, false);
+            return convertView;
+        }
     }
 
 }
