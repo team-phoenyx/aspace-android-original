@@ -45,7 +45,7 @@ public class ProfileDialogFragment extends DialogFragment {
     Realm realm;
     ProfileDialogListAdapter profileDialogListAdapter;
 
-    private static final String BASE_URL = "http://138.68.54.46:3000/api/";
+    private static final String BASE_URL = "http://138.68.241.101:3000/api/";
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 

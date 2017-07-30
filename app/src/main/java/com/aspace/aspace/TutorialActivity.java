@@ -47,7 +47,7 @@ public class TutorialActivity extends FragmentActivity {
     private static final int LOCATIONS_FRAGMENT_TAG = 3;
     private static final int WELCOME_FRAGMENT_TAG = 4;
 
-    public static final String BASE_URL = "http://138.68.54.46:3000/api/";
+    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

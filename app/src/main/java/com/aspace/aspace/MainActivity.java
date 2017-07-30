@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
-    public static final String BASE_URL = "http://138.68.54.46:3000/api/";
+    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int SPOT_UPDATE_RATE = 2000; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
