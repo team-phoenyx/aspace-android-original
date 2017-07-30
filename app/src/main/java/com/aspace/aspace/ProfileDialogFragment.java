@@ -160,8 +160,8 @@ public class ProfileDialogFragment extends DialogFragment {
 
         @Override
         public int getCount() {
-            // static rows set to 3 since we don't have saved locations yet.
-            return 3;
+            // static rows set to 7 since we don't have saved locations yet.
+            return 7;
         }
 
         @Override
@@ -176,7 +176,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = getActivity().getLayoutInflater().inflate(R.layout.search_list_view_row, parent, false);
+            convertView = getActivity().getLayoutInflater().inflate(R.layout.profile_dialog_saved_locations_row, parent, false);
             return convertView;
         }
     }
