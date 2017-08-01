@@ -153,7 +153,7 @@ public class SettingsActivity extends AppCompatActivity {
         nameEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((event.getKeyCode() == KeyEvent.KEYCODE_ENTER || actionId == EditorInfo.IME_ACTION_DONE) && nameEditText.isFocusableInTouchMode()) {
+                if (((event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) || actionId == EditorInfo.IME_ACTION_DONE) && nameEditText.isFocusableInTouchMode()) {
                     getAndUpdateProfile();
                     nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
                     nameEditText.setFocusableInTouchMode(false);
