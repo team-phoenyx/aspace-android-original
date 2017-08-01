@@ -4,7 +4,7 @@
     <string name="access_token">pk.eyJ1IjoicGFyY2FyZSIsImEiOiJjajN2cXA5NmwwMDdwMnJtd3F6MGp4N253In0.xsQBiYMlip8D0SZt1CoaIA</string>
 
     <string name="parcare_base_url">http://138.68.241.101</string>
-
+    <string name="aspace_base_url_api">http://138.68.241.101:3000/api/</string>
     <string name="realm_encryption_key_tag">realm_encryption_key</string>
     <string name="user_name_tag">user_name</string>
     <string name="user_id_tag">user_id</string>
@@ -16,4 +16,10 @@
     <string name="user_work_loc_id_tag">user_work_loc_id</string>
     <string name="user_vin_list_tag">user_vin_list</string>
     <string name="country_code_explanation">The "1" you see in front of the phone number represents the country code for the US. Having this prefix ensures we are able to reach your phone!</string>
+    <!-- SETTINGS ACTIVITY -->
+    <string name="settings_toolbar_title">Settings</string>
+    <string name="settings_delete_account_dialog_title">Delete Account?</string>
+    <string name="settings_delete_account_dialog_message">Deleting your account is a permanent action and cannot be reversed. Continue?</string>
+    <string name="settings_delete_account_dialog_positive">Yep</string>
+    <string name="settings_delete_account_dialog_negative">No Thanks</string>
 </resources>

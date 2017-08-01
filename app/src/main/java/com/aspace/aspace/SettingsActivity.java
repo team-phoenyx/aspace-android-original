@@ -62,14 +62,14 @@ public class SettingsActivity extends AppCompatActivity {
     private Set<String> userVINList;
 
 
-    private static final String BASE_URL = "http://138.68.241.101:3000/api/";
+    //private static final String BASE_URL = "http://138.68.241.101:3000/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         parcareService = retrofit.create(PCRetrofitInterface.class);
 
         Bundle extras = getIntent().getExtras();
@@ -107,11 +107,13 @@ public class SettingsActivity extends AppCompatActivity {
         // of the user's selected vehicle in the listview that will be saved
         // (server will keep track of it? add a vehicle retrofit w/ boolean selected?)
         selectedVehicleButtonPosition = 0;
+
+        // Configure the vehicle list's adapter
         vehicleListAdapter = new VehicleListAdapter();
         myVehiclesList.setAdapter(vehicleListAdapter);
 
         toolbar.setTitleTextColor(Color.WHITE);
-        toolbar.setTitle("Settings");
+        toolbar.setTitle(getString(R.string.settings_toolbar_title));
 
         nameEditText.setText(profileName);
 
@@ -125,7 +127,7 @@ public class SettingsActivity extends AppCompatActivity {
         nameEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!nameEditText.isFocusableInTouchMode()) {
+                if (!nameEditText.isFocusableInTouchMode()) { // user taps to start edit
                     nameEditText.setCursorVisible(true);
                     nameEditText.setFocusableInTouchMode(true);
                     nameEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -135,7 +137,7 @@ public class SettingsActivity extends AppCompatActivity {
                     nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.colorPrimary));
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
-                } else {
+                } else { // user taps to end edit
                     getAndUpdateProfile();
                     nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
                     nameEditText.setFocusableInTouchMode(false);
@@ -147,11 +149,11 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // Action listener to handle saving upon done or enter key input.
         nameEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((event.getKeyCode() == KeyEvent.KEYCODE_ENTER || actionId == EditorInfo.IME_ACTION_DONE) && nameEditText.isFocusableInTouchMode()) {
-                    // do your stuff here
                     getAndUpdateProfile();
                     nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
                     nameEditText.setFocusableInTouchMode(false);
@@ -178,15 +180,15 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this, R.style.DeleteAccountDialogTheme);
                 builder.setCancelable(false);
-                builder.setTitle("Delete Account?")
-                        .setMessage("Deleting your account is a permanent action and cannot be reversed. Continue?")
-                        .setPositiveButton("Yep", new DialogInterface.OnClickListener() {
+                builder.setTitle(getString(R.string.settings_delete_account_dialog_title))
+                        .setMessage(getString(R.string.settings_delete_account_dialog_message))
+                        .setPositiveButton(getString(R.string.settings_delete_account_dialog_positive), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         })
-                        .setNegativeButton("No Thanks", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(getString(R.string.settings_delete_account_dialog_negative), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -196,6 +198,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    // Retrieves the user's profile and uses the information retrieved to update with the new NAME
     private void getAndUpdateProfile() {
         parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
@@ -207,7 +210,7 @@ public class SettingsActivity extends AppCompatActivity {
                 homeAddress = userProfile.getHomeAddress();
                 homeLocId = userProfile.getHomeLocId();
                 workLocId = userProfile.getWorkLocId();
-                // update the profile with paramaters retrieved from getprofile
+                // update the profile with parameters retrieved from getprofile and the user's new name
                 parcareService.updateProfile(userName, workAddress, homeAddress, homeLocId,
                         workLocId, userID, userPhoneNumber, userAccessToken)
                         .enqueue(new Callback<UpdateProfileResponse>() {
@@ -265,8 +268,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             vehicleNameLabel.setText(vin);
 
+            // if the row is selected, check the radio button.
             selectVehicleButton.setChecked(position == selectedVehicleButtonPosition);
-            if (position == selectedVehicleButtonPosition) {
+            if (position == selectedVehicleButtonPosition) { // if this row is the selected one
                 selectVehicleButton.setButtonTintList(ColorStateList.valueOf(Color.BLACK));
                 vehicleNameLabel.setTextColor(Color.BLACK);
                 vehicleNameLabel.setTypeface(vehicleNameLabel.getTypeface(), Typeface.BOLD);
@@ -294,9 +298,9 @@ public class SettingsActivity extends AppCompatActivity {
                     for (int i = 0; i <= pos; i++) {
                         iterator.next();
                     }
-                    iterator.remove();
+                    iterator.remove(); // removes the vehicle's VIN from the user's VIN list.
                     SharedPreferences.Editor editor = new SecurePreferences(SettingsActivity.this).edit();
-                    editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList);
+                    editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList); // update user's saved vin list.
                     editor.apply();
                     notifyDataSetChanged();
                 }
@@ -306,10 +310,12 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    // Returns a list of the user's saved VINs
     protected Set<String> getUserVINList() {
         return userVINList;
     }
 
+    // Updates the list of vehicles, non-private for use in add vehicle fragment
     protected void updateVehicleListAdapter() {
         vehicleListAdapter.notifyDataSetChanged();
     }
