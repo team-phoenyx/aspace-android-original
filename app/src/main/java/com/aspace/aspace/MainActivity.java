@@ -394,7 +394,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
                 else {
                     String distanceString = translateDistance(routeStepProgress.getDistanceRemaining());
-                    navManeuverDistanceLabel.setText("In " + distanceString);
+                    navManeuverDistanceLabel.setText(getString(R.string.navigation_maneuver_distance, distanceString));
+                    //navManeuverDistanceLabel.setText("In " + distanceString);
 
                     String instruction = nextStep.getManeuver().getInstruction();
 
@@ -423,9 +424,10 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 }
 
                 if (nextStep.getManeuver().getType().equals("arrive")) {
-                    navManeuverTargetLabel.setText("Destination is on the " + nextStep.getManeuver().getModifier());
+                    navManeuverTargetLabel.setText(getString(R.string.navigation_maneuver_target_destination, nextStep.getManeuver().getModifier()));
+                    //navManeuverTargetLabel.setText("Destination is on the " + nextStep.getManeuver().getModifier());
                 } else if (nextStep.getManeuver().getType().equals("on ramp")) {
-                    navManeuverTargetLabel.setText("Take the ramp");
+                    navManeuverTargetLabel.setText(getString(R.string.navigation_maneuver_target_ramp));
                 } else {
                     if (nextStep.getName().isEmpty()) navManeuverTargetLabel.setText(nextStep.getManeuver().getInstruction());
                     else navManeuverTargetLabel.setText(nextStep.getName());
@@ -592,7 +594,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     public void run() {
                         if (isUpdatingSpots) {
                             setCurrentScreenBounds();
-                            Log.i(TAG + "Call", "ON MAP CHANGE");
 
                             String lowerLat = Double.toString(Math.min(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
                             String upperLat = Double.toString(Math.max(currentDisplayTopLeft.getLatitude(), currentDisplayBottomRight.getLatitude()));
@@ -670,7 +671,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             for (Feature feature : rawSuggestions) {
                                 newSuggestions.add(new Suggestion(feature.getPlaceName()));
                             }
-                            //searchView.swapSuggestions(newSuggestions);
                             // Update list view
                             searchListAdapter.notifyDataSetChanged();
                         }
@@ -852,15 +852,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             navManeuverTargetLabel.setVisibility(View.VISIBLE);
                             navMuteButton.setVisibility(View.VISIBLE);
 
-                            Log.i(TAG + "nav", "Response success: " + response.raw().toString());
+                            Log.i(TAG + "nav", "Get route response successful: " + response.raw().toString());
                         } else {
-                            Log.i(TAG + "nav", "Response unsuccessful: " + response.raw().toString());
+                            Log.i(TAG + "nav", "Get route response unsuccessful: " + response.raw().toString());
                         }
                     }
 
                     @Override
                     public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
-                        Log.i(TAG + "nav", "Response failed: ", t);
+                        Log.i(TAG + "nav", "Get route response failed: ", t);
                     }
                 });
             }
@@ -971,8 +971,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         searchedLatString = lat + "";
         searchedLngString = lng + "";
-        // Removal of this
-        //getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
     }
 
     @Override
@@ -1041,7 +1039,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             locationEngine.removeLocationEngineListener(locationEngineListener);
         }
         // make sure to remove all navigation listeners being used
-        navigation.onDestroy(); // *
+        navigation.onDestroy();
         navigation.endNavigation();
     }
 
@@ -1209,15 +1207,15 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 if (response.isSuccessful()) {
                     List<ParkingSpot> spots = response.body();
                     drawSpots(spots);
-                    Log.i(TAG + "2", "Response Successful");
+                    Log.i(TAG + "2", "Get nearby spots response successful");
                 } else {
-                    Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
+                    Log.i(TAG + "2", "Get nearby spots response unsuccessful: " + response.raw().toString());
                 }
             }
 
             @Override
             public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
-                Log.i(TAG + "2", "Failed to connect: " + t.toString());
+                Log.i(TAG + "2", "Get nearby spots response failure " + t.toString());
             }
         });
         //}
@@ -1538,7 +1536,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             for (LegStep step : navSteps) {
                 StepManeuver maneuver = step.getManeuver();
                 String maneuverType = maneuver.getType();
-                Log.i(TAG + "Directions", "LEGSTEP: " + step.getName() + ", Maneuver: " + step.getManeuver().getInstruction() + ", Step distance: " + step.getDistance() + " Type: "+ step.getManeuver().getType() + " Modifier: " + step.getManeuver().getModifier());
 
                 instructionsList.add(maneuver.getInstruction());
 

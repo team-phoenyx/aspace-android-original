@@ -15,6 +15,12 @@
     <string name="user_work_loc_id_tag">user_work_loc_id</string>
     <string name="user_vin_list_tag">user_vin_list</string>
     <string name="country_code_explanation">The "1" you see in front of the phone number represents the country code for the US. Having this prefix ensures we are able to reach your phone!</string>
+
+    <!-- MAIN ACTIVITY -->
+    <string name="navigation_maneuver_target_ramp">Take the ramp</string>
+    <string name="navigation_maneuver_target_destination">Destination is on the %1$s</string>
+    <string name="navigation_maneuver_distance">In %1$s</string>
+
     <!-- SETTINGS ACTIVITY -->
     <string name="settings_toolbar_title">Settings</string>
     <string name="settings_delete_account_dialog_title">Delete Account?</string>
