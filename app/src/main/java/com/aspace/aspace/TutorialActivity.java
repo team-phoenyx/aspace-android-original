@@ -47,8 +47,6 @@ public class TutorialActivity extends FragmentActivity {
     private static final int LOCATIONS_FRAGMENT_TAG = 3;
     private static final int WELCOME_FRAGMENT_TAG = 4;
 
-    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +67,7 @@ public class TutorialActivity extends FragmentActivity {
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
 
         aspaceService = retrofit.create(PCRetrofitInterface.class);
 

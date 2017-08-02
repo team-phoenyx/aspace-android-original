@@ -40,8 +40,6 @@ public class SplashActivity extends AppCompatActivity {
 
     byte[] key;
 
-    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +54,7 @@ public class SplashActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                isConnected = isConnectedToServer(getString(R.string.parcare_base_url), 5000);
+                isConnected = isConnectedToServer(getString(R.string.aspace_base_url_api), 5000);
 
                 //Check if client is connected to server
                 if (isConnected) {
@@ -90,7 +88,7 @@ public class SplashActivity extends AppCompatActivity {
                             if (userPhoneNumber.equals("") || userID.equals("") || userAccessToken.equals("")) {
                                 startLoginActivity();
                             } else {
-                                Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+                                Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
 
                                 parcareService = retrofit.create(PCRetrofitInterface.class);
 

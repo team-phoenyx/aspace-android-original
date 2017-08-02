@@ -3,7 +3,6 @@
     <string name="profile_label">Profile</string>
     <string name="access_token">pk.eyJ1IjoicGFyY2FyZSIsImEiOiJjajN2cXA5NmwwMDdwMnJtd3F6MGp4N253In0.xsQBiYMlip8D0SZt1CoaIA</string>
 
-    <string name="parcare_base_url">http://138.68.241.101</string>
     <string name="aspace_base_url_api">http://138.68.241.101:3000/api/</string>
     <string name="realm_encryption_key_tag">realm_encryption_key</string>
     <string name="user_name_tag">user_name</string>

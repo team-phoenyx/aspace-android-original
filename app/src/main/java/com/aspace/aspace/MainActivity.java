@@ -159,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
     private static final String TAG = "MainActivity";
-    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
     public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int SPOT_UPDATE_RATE = 2000; // milliseconds
     private static final String SPOT_AVAILABLE = "F";
@@ -244,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         navManeuverTargetLabel.setWidth(displayMetrics.widthPixels - dpToPx(32) - navManeuverImageView.getWidth() - navMuteButton.getWidth());
 
         //RETROFIT INIT
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
         parCareService = retrofit.create(PCRetrofitInterface.class);
         retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
         mapboxService = retrofit.create(PCRetrofitInterface.class);

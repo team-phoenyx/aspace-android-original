@@ -1,12 +1,10 @@
 package com.aspace.aspace;
 
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +17,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -46,8 +43,6 @@ public class LoginActivity extends AppCompatActivity {
     PCRetrofitInterface parcareService;
 
     String realmEncryptionKey;
-
-    public static final String BASE_URL = "http://138.68.241.101:3000/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }, 15000);
 
-                            Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL)
+                            Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api))
                                     .addConverterFactory(GsonConverterFactory.create()).build();
 
                             parcareService = retrofit.create(PCRetrofitInterface.class);
@@ -267,6 +262,7 @@ public class LoginActivity extends AppCompatActivity {
                                     nextButton.setText("Resend");
                                     nextButton.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
                                     Snackbar.make(findViewById(android.R.id.content), "Request failed", Snackbar.LENGTH_SHORT).show();
+                                    phoneProgressCircle.setVisibility(View.INVISIBLE);
                                 }
                             });
 

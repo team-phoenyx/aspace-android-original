@@ -61,9 +61,6 @@ public class SettingsActivity extends AppCompatActivity {
     private int selectedVehicleButtonPosition;
     private Set<String> userVINList;
 
-
-    //private static final String BASE_URL = "http://138.68.241.101:3000/api/";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

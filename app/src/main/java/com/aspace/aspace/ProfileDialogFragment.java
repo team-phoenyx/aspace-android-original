@@ -2,8 +2,6 @@ package com.aspace.aspace;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -45,7 +43,6 @@ public class ProfileDialogFragment extends DialogFragment {
     Realm realm;
     ProfileDialogListAdapter profileDialogListAdapter;
 
-    private static final String BASE_URL = "http://138.68.241.101:3000/api/";
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
 
@@ -69,7 +66,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
         realm = Realm.getInstance(config);
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         parcareService = retrofit.create(PCRetrofitInterface.class);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
