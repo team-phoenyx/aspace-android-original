@@ -1,1 +1,1 @@
-ParCare
+Android application by aspace, Inc.
