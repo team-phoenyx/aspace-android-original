@@ -203,10 +203,10 @@ public class SettingsActivity extends AppCompatActivity {
                 //TODO check resp code 7, otherwise snackbar
                 Profile userProfile = response.body();
                 userName = nameEditText.getText().toString();
-                workAddress = userProfile.getWorkAddress();
-                homeAddress = userProfile.getHomeAddress();
-                homeLocId = userProfile.getHomeLocId();
-                workLocId = userProfile.getWorkLocId();
+                //workAddress = userProfile.getWorkAddress();
+                //homeAddress = userProfile.getHomeAddress();
+                //homeLocId = userProfile.getHomeLocId();
+                //workLocId = userProfile.getWorkLocId();
                 // update the profile with parameters retrieved from getprofile and the user's new name
                 aspaceService.updateProfile(userName, userID, userPhoneNumber, userAccessToken).enqueue(new Callback<ResponseCode>() {
                     @Override
