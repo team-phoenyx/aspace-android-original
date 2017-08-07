@@ -1,9 +1,10 @@
 
 package com.aspace.aspace.retrofitmodels;
 
-import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 public class Feature {
 
@@ -19,9 +20,6 @@ public class Feature {
     @SerializedName("relevance")
     @Expose
     private Double relevance;
-    @SerializedName("properties")
-    @Expose
-    private Properties properties;
     @SerializedName("text")
     @Expose
     private String text;
@@ -37,9 +35,6 @@ public class Feature {
     @SerializedName("geometry")
     @Expose
     private Geometry geometry;
-    @SerializedName("context")
-    @Expose
-    private List<Context> context = null;
 
     public String getId() {
         return id;
@@ -71,14 +66,6 @@ public class Feature {
 
     public void setRelevance(Double relevance) {
         this.relevance = relevance;
-    }
-
-    public Properties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Properties properties) {
-        this.properties = properties;
     }
 
     public String getText() {
@@ -119,14 +106,6 @@ public class Feature {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
-    }
-
-    public List<Context> getContext() {
-        return context;
-    }
-
-    public void setContext(List<Context> context) {
-        this.context = context;
     }
 
 }

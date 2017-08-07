@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.aspace.aspace.PCRetrofitInterface;
+import com.aspace.aspace.AspaceRetrofitService;
 import com.aspace.aspace.R;
 
 import retrofit2.Retrofit;
@@ -28,7 +28,7 @@ public class TutorialCarFragment extends Fragment {
     Button helpButton;
     TextView infoTextView;
     EditText vinEditText;
-    PCRetrofitInterface vinDecodeService;
+    AspaceRetrofitService vinDecodeService;
 
     @Nullable
     @Override
@@ -36,7 +36,7 @@ public class TutorialCarFragment extends Fragment {
         ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.fragment_tutorial_car, container, false);
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl("https://api.edmunds.com/").addConverterFactory(GsonConverterFactory.create()).build();
-        vinDecodeService = retrofit.create(PCRetrofitInterface.class);
+        vinDecodeService = retrofit.create(AspaceRetrofitService.class);
 
         helpButton = (Button) viewGroup.findViewById(R.id.help_button);
         infoTextView = (TextView) viewGroup.findViewById(R.id.tutorial_car_info_label);

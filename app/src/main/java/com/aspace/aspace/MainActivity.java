@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<Feature> rawSuggestions;
     private List<ParkingSpot> previousParkingSpots;
     private HashMap<Integer, Integer> redrawSpotIDs;
-    private PCRetrofitInterface parCareService, mapboxService;
+    private AspaceRetrofitService aspaceService, mapboxService;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
     private com.mapbox.services.api.directions.v5.models.DirectionsRoute route;
@@ -244,9 +244,9 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         //RETROFIT INIT
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(GsonConverterFactory.create()).build();
-        parCareService = retrofit.create(PCRetrofitInterface.class);
+        aspaceService = retrofit.create(AspaceRetrofitService.class);
         retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-        mapboxService = retrofit.create(PCRetrofitInterface.class);
+        mapboxService = retrofit.create(AspaceRetrofitService.class);
 
         //ICONS INIT
         IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
@@ -600,7 +600,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                             String lowerLon = Double.toString(Math.min(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
                             String upperLon = Double.toString(Math.max(currentDisplayTopLeft.getLongitude(), currentDisplayBottomRight.getLongitude()));
 
-                            getParkingSpotsNearby(parCareService, lowerLat, lowerLon, upperLat, upperLon);
+                            getParkingSpotsNearby(aspaceService, lowerLat, lowerLon, upperLat, upperLon);
                         }
                     }
                 };
@@ -1175,7 +1175,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Retrieves the info for a specific parking spot given by the spotId, returns
     // a List of spots with the given id and their respective information.
-    private void getParkingSpotInfo(PCRetrofitInterface parCareService, String spotId) {
+    private void getParkingSpotInfo(AspaceRetrofitService parCareService, String spotId) {
         Call<List<ParkingSpot>> call = parCareService.getSpotInfo(spotId);
         call.enqueue(new Callback<List<ParkingSpot>>() {
             @Override
@@ -1197,7 +1197,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Retrieves all of the spots in a bound area given by upper and lower latitudes/longitudes,
     // returns a list of the spots in the area.
-    private void getParkingSpotsNearby(PCRetrofitInterface parCareService, String lowerLat, String lowerLon, String upperLat, String upperLon) {
+    private void getParkingSpotsNearby(AspaceRetrofitService parCareService, String lowerLat, String lowerLon, String upperLat, String upperLon) {
         //if (isUpdatingSpots) {
         Call<List<ParkingSpot>> call = parCareService.getNearbySpots(lowerLat, lowerLon, upperLat, upperLon);
         call.enqueue(new Callback<List<ParkingSpot>>() {
@@ -1222,7 +1222,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
-    private void getClosestParkingSpot(PCRetrofitInterface parCareService, String lat, String lon) {
+    private void getClosestParkingSpot(AspaceRetrofitService parCareService, String lat, String lon) {
         Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
 
         call.enqueue(new Callback<ParkingSpot>() {
@@ -1368,7 +1368,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         //draw the closest spot marker
         if (searchedLatString != null && searchedLngString != null && !searchedLatString.equals("") && !searchedLngString.equals("")) {
-            getClosestParkingSpot(parCareService, searchedLatString, searchedLngString);
+            getClosestParkingSpot(aspaceService, searchedLatString, searchedLngString);
         }
         Log.d("MARKERS", map.getMarkers().size() + " markers total");
     }

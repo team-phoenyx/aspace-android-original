@@ -26,7 +26,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.aspace.aspace.PCRetrofitInterface;
+import com.aspace.aspace.AspaceRetrofitService;
 import com.aspace.aspace.R;
 import com.aspace.aspace.SwipeDirection;
 import com.aspace.aspace.TutorialViewPager;
@@ -55,7 +55,7 @@ public class TutorialLocationsFragment extends Fragment {
     AutoCompleteTextView homeAddressEditText, workAddressEditText;
     TextView errorTextView;
     ArrayAdapter<String> autocompleteAdapter;
-    PCRetrofitInterface mapboxService;
+    AspaceRetrofitService mapboxService;
     List<Feature> rawSuggestions;
     LocationEngineListener locationEngineListener;
     LocationEngine locationEngine;
@@ -122,7 +122,7 @@ public class TutorialLocationsFragment extends Fragment {
         workAddressEditText.setLines(1);
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-        mapboxService = retrofit.create(PCRetrofitInterface.class);
+        mapboxService = retrofit.create(AspaceRetrofitService.class);
 
         homeAddressEditText.addTextChangedListener(new TextWatcher() {
             @Override

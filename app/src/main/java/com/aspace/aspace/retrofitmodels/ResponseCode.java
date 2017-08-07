@@ -4,7 +4,7 @@ package com.aspace.aspace.retrofitmodels;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class UpdateProfileResponse {
+public class ResponseCode {
 
     @SerializedName("resp_code")
     @Expose

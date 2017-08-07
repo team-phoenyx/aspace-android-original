@@ -27,7 +27,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Profile;
-import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 import com.securepreferences.SecurePreferences;
 
 import java.util.HashSet;
@@ -48,7 +48,7 @@ public class SettingsActivity extends AppCompatActivity {
     private NonScrollListView myVehiclesList;
     private Button addVehicleButton;
     private Button deleteAccountButton;
-    private PCRetrofitInterface parcareService;
+    private AspaceRetrofitService aspaceService;
     private String userName;
     private String workAddress;
     private String homeAddress;
@@ -67,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
-        parcareService = retrofit.create(PCRetrofitInterface.class);
+        aspaceService = retrofit.create(AspaceRetrofitService.class);
 
         Bundle extras = getIntent().getExtras();
 
@@ -197,7 +197,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     // Retrieves the user's profile and uses the information retrieved to update with the new NAME
     private void getAndUpdateProfile() {
-        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+        aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 //TODO check resp code 7, otherwise snackbar
@@ -208,19 +208,17 @@ public class SettingsActivity extends AppCompatActivity {
                 homeLocId = userProfile.getHomeLocId();
                 workLocId = userProfile.getWorkLocId();
                 // update the profile with parameters retrieved from getprofile and the user's new name
-                parcareService.updateProfile(userName, workAddress, homeAddress, homeLocId,
-                        workLocId, userID, userPhoneNumber, userAccessToken)
-                        .enqueue(new Callback<UpdateProfileResponse>() {
-                            @Override
-                            public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
+                aspaceService.updateProfile(userName, userID, userPhoneNumber, userAccessToken).enqueue(new Callback<ResponseCode>() {
+                    @Override
+                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
 
-                            }
+                    }
 
-                            @Override
-                            public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
+                    @Override
+                    public void onFailure(Call<ResponseCode> call, Throwable t) {
 
-                            }
-                        });
+                    }
+                });
             }
 
             @Override

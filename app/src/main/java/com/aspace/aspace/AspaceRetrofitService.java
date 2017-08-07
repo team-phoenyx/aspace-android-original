@@ -1,0 +1,66 @@
+package com.aspace.aspace;
+
+import com.aspace.aspace.retrofitmodels.GeocodingResponse;
+import com.aspace.aspace.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.Profile;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
+import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
+/**
+ * Created by Zula on 6/18/17.
+ */
+
+public interface AspaceRetrofitService {
+
+    //********SPOT ENDPOINTS********
+    @FormUrlEncoded
+    @POST("spots/single/")
+    Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spot_id);
+
+    @FormUrlEncoded
+    @POST("spots/onscreen/")
+    Call<List<ParkingSpot>> getNearbySpots(@Field("lower_lat") String lower_lat, @Field("lower_lon") String lower_lon,
+                                           @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
+
+    @FormUrlEncoded
+    @POST("spots/closest/")
+    Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
+
+    //********AUTH ENDPOINTS********
+    @FormUrlEncoded
+    @POST("users/auth/pin/")
+    Call<ResponseCode> requestPIN(@Field("phone") String phone);
+
+    @FormUrlEncoded
+    @POST("users/auth/verify/")
+    Call<VerifyPINResponse> verifyPIN(@Field("phone") String phone, @Field("pin") String pin);
+
+    @FormUrlEncoded
+    @POST("users/auth/reauth/")
+    Call<ResponseCode> reauthenticate(@Field("access_token") String accessToken, @Field("phone") String phone, @Field("user_id") String userID);
+
+    //********PROFILE ENDPOINTS********
+    @FormUrlEncoded
+    @POST("users/profile/update/")
+    Call<ResponseCode> updateProfile(@Field("name") String name, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token, @Field("user_id") String userID);
+
+    @FormUrlEncoded
+    @POST("users/profile/get/")
+    Call<Profile> getProfile(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+
+    //********GEOCODING ENDPOINT********
+    @GET("geocoding/v5/mapbox.places/{query}.json")
+    Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
+
+    //********VIN DECODING ENDPOINT********
+}

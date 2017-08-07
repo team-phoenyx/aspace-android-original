@@ -11,7 +11,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
-import com.aspace.aspace.retrofitmodels.ReauthenticateResponse;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 import com.securepreferences.SecurePreferences;
 
 import java.net.HttpURLConnection;
@@ -36,7 +36,7 @@ public class SplashActivity extends AppCompatActivity {
     boolean isConnected;
     String realmEncryptionKey;
     Realm realm;
-    PCRetrofitInterface parcareService;
+    AspaceRetrofitService aspaceService;
 
     byte[] key;
 
@@ -90,11 +90,11 @@ public class SplashActivity extends AppCompatActivity {
                             } else {
                                 Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
 
-                                parcareService = retrofit.create(PCRetrofitInterface.class);
+                                aspaceService = retrofit.create(AspaceRetrofitService.class);
 
-                                parcareService.reauthenticate(userAccessToken, userPhoneNumber, userID).enqueue(new Callback<ReauthenticateResponse>() {
+                                aspaceService.reauthenticate(userAccessToken, userPhoneNumber, userID).enqueue(new Callback<ResponseCode>() {
                                     @Override
-                                    public void onResponse(Call<ReauthenticateResponse> call, Response<ReauthenticateResponse> response) {
+                                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                                         //If success...
                                         if (response.body().getRespCode().equals("101") || response.body().getRespCode().equals("102")) {
                                             Intent intent;
@@ -115,7 +115,7 @@ public class SplashActivity extends AppCompatActivity {
                                     }
 
                                     @Override
-                                    public void onFailure(Call<ReauthenticateResponse> call, Throwable t) {
+                                    public void onFailure(Call<ResponseCode> call, Throwable t) {
                                         Log.d("REAUTHENTICATE_FAIL", t.getMessage());
                                     }
                                 });

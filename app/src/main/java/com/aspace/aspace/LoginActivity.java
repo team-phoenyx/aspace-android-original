@@ -21,7 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
-import com.aspace.aspace.retrofitmodels.RequestPINResponse;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
 
 import java.util.Timer;
@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText phoneNumberEditText, CCEditText;
     Button nextButton;
     ProgressBar phoneProgressCircle;
-    PCRetrofitInterface parcareService;
+    AspaceRetrofitService aspaceService;
 
     String realmEncryptionKey;
 
@@ -113,11 +113,11 @@ public class LoginActivity extends AppCompatActivity {
                             Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api))
                                     .addConverterFactory(GsonConverterFactory.create()).build();
 
-                            parcareService = retrofit.create(PCRetrofitInterface.class);
+                            aspaceService = retrofit.create(AspaceRetrofitService.class);
 
-                            parcareService.requestPIN(rawCCInput + rawPhoneInput).enqueue(new Callback<RequestPINResponse>() {
+                            aspaceService.requestPIN(rawCCInput + rawPhoneInput).enqueue(new Callback<ResponseCode>() {
                                 @Override
-                                public void onResponse(Call<RequestPINResponse> call, Response<RequestPINResponse> response) {
+                                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
 
                                     //TODO put this dialog creation in a method and call in onCreate, and just call .create and .show
                                     //Create the dialog for PIN input
@@ -173,7 +173,7 @@ public class LoginActivity extends AppCompatActivity {
                                                             String inputPIN = pinEditText.getText().toString();
 
 
-                                                            parcareService.verifyPIN(userCC + userPhoneNumber, inputPIN).enqueue(new Callback<VerifyPINResponse>() {
+                                                            aspaceService.verifyPIN(userCC + userPhoneNumber, inputPIN).enqueue(new Callback<VerifyPINResponse>() {
                                                                 @Override
                                                                 public void onResponse(Call<VerifyPINResponse> call, Response<VerifyPINResponse> response) {
                                                                     if (response.body().getRespCode().equals("101") || response.body().getRespCode().equals("102")) {
@@ -257,7 +257,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
 
                                 @Override
-                                public void onFailure(Call<RequestPINResponse> call, Throwable t) {
+                                public void onFailure(Call<ResponseCode> call, Throwable t) {
                                     nextButton.setEnabled(true);
                                     nextButton.setText("Resend");
                                     nextButton.setTextColor(getResources().getColor(R.color.colorPrimaryDark));

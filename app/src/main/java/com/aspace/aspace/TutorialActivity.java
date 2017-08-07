@@ -16,7 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.aspace.aspace.retrofitmodels.UpdateProfileResponse;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 import com.aspace.aspace.tutorialfragments.TutorialCarFragment;
 import com.aspace.aspace.tutorialfragments.TutorialLocationsFragment;
 import com.aspace.aspace.tutorialfragments.TutorialNameFragment;
@@ -37,7 +37,7 @@ public class TutorialActivity extends FragmentActivity {
     String userID, userPhoneNumber, userAccessToken, realmEncryptionKey;
     String name;
 
-    PCRetrofitInterface aspaceService;
+    AspaceRetrofitService aspaceService;
 
     private static final int NUM_PAGES = 5;
 
@@ -69,7 +69,7 @@ public class TutorialActivity extends FragmentActivity {
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
 
-        aspaceService = retrofit.create(PCRetrofitInterface.class);
+        aspaceService = retrofit.create(AspaceRetrofitService.class);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -130,13 +130,10 @@ public class TutorialActivity extends FragmentActivity {
 
                         String[] locationIDs = locationsFragment.getLocationIDs();
                         aspaceService.updateProfile(
-                                name,
-                                workAddressEditText.getText().toString(),
-                                homeAddressEditText.getText().toString(),
-                                locationIDs[0], locationIDs[1], userID, userPhoneNumber, userAccessToken)
-                                .enqueue(new Callback<UpdateProfileResponse>() {
+                                name, userID, userPhoneNumber, userAccessToken)
+                                .enqueue(new Callback<ResponseCode>() {
                                     @Override
-                                    public void onResponse(Call<UpdateProfileResponse> call, Response<UpdateProfileResponse> response) {
+                                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                                         if (response.body().getRespCode().equals("100")) {
                                             nextButton.setVisibility(View.VISIBLE);
                                             nextButton.setText("Start");
@@ -151,7 +148,7 @@ public class TutorialActivity extends FragmentActivity {
                                     }
 
                                     @Override
-                                    public void onFailure(Call<UpdateProfileResponse> call, Throwable t) {
+                                    public void onFailure(Call<ResponseCode> call, Throwable t) {
                                         View view = TutorialActivity.this.getCurrentFocus();
                                         if (view != null) {
                                             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);

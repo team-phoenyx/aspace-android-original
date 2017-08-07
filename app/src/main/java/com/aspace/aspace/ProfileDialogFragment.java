@@ -39,7 +39,7 @@ public class ProfileDialogFragment extends DialogFragment {
     TextView nameTextView;
     ListView locationsListView;
     ImageButton settingsButton;
-    PCRetrofitInterface parcareService;
+    AspaceRetrofitService aspaceService;
     Realm realm;
     ProfileDialogListAdapter profileDialogListAdapter;
 
@@ -67,7 +67,7 @@ public class ProfileDialogFragment extends DialogFragment {
         realm = Realm.getInstance(config);
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
-        parcareService = retrofit.create(PCRetrofitInterface.class);
+        aspaceService = retrofit.create(AspaceRetrofitService.class);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
@@ -82,7 +82,7 @@ public class ProfileDialogFragment extends DialogFragment {
 
         nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
 
-        parcareService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+        aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
