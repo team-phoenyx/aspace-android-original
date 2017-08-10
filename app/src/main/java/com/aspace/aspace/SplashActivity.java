@@ -54,7 +54,7 @@ public class SplashActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                isConnected = isConnectedToServer(getString(R.string.aspace_base_url_api), 5000);
+                isConnected = isConnectedToServer(getString(R.string.aspace_base_url_api) + "ping/", 5000);
 
                 //Check if client is connected to server
                 if (isConnected) {

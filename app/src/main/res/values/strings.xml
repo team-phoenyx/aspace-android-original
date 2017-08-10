@@ -3,7 +3,7 @@
     <string name="profile_label">Profile</string>
     <string name="access_token">pk.eyJ1IjoicGFyY2FyZSIsImEiOiJjajN2cXA5NmwwMDdwMnJtd3F6MGp4N253In0.xsQBiYMlip8D0SZt1CoaIA</string>
 
-    <string name="aspace_base_url_api">http://138.68.241.101:3000/api/</string>
+    <string name="aspace_base_url_api">http://138.68.241.101:3001/api/</string>
     <string name="realm_encryption_key_tag">realm_encryption_key</string>
     <string name="user_name_tag">user_name</string>
     <string name="user_id_tag">user_id</string>
@@ -23,6 +23,11 @@
 
     <!-- SETTINGS ACTIVITY -->
     <string name="settings_toolbar_title">Settings</string>
+    <string name="settings_my_name_text_label">My Name</string>
+    <string name="settings_my_vehicles_text_label">My Vehicles</string>
+    <string name="settings_my_locations_text_label">My Locations</string>
+    <string name="settings_add_vehicle_button_label">+ Add a vehicle</string>
+    <string name="settings_add_location_button_label">+ Add a location</string>
     <string name="settings_delete_account_dialog_title">Delete Account?</string>
     <string name="settings_delete_account_dialog_message">Deleting your account is a permanent action and cannot be reversed. Continue?</string>
     <string name="settings_delete_account_dialog_positive">Yep</string>

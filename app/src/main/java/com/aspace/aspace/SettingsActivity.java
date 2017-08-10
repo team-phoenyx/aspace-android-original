@@ -48,6 +48,8 @@ public class SettingsActivity extends AppCompatActivity {
     private NonScrollListView myVehiclesList;
     private Button addVehicleButton;
     private Button deleteAccountButton;
+    private NonScrollListView myLocationsList;
+    private Button addLocationButton;
     private AspaceRetrofitService aspaceService;
     private String userName;
     private String workAddress;
@@ -97,6 +99,8 @@ public class SettingsActivity extends AppCompatActivity {
         nameEditButton = (ImageButton) findViewById(R.id.settings_name_edit_button);
         myVehiclesList = (NonScrollListView) findViewById(R.id.settings_my_vehicle_list);
         addVehicleButton = (Button) findViewById(R.id.settings_add_vehicle_button);
+        myLocationsList = (NonScrollListView) findViewById(R.id.settings_my_locations_list);
+        addLocationButton = (Button) findViewById(R.id.settings_add_location_button);
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
 
         myVehiclesList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -108,6 +112,10 @@ public class SettingsActivity extends AppCompatActivity {
         // Configure the vehicle list's adapter
         vehicleListAdapter = new VehicleListAdapter();
         myVehiclesList.setAdapter(vehicleListAdapter);
+
+        // TODO: Configure the location list's adapter
+        // locationListAdapter = new LocationListAdapter();
+        // myLocationsList.setAdapter(locationListAdapter);
 
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle(getString(R.string.settings_toolbar_title));
@@ -169,6 +177,13 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 AddVehicleDialogFragment addVehicleDialogFragment = new AddVehicleDialogFragment();
                 addVehicleDialogFragment.show(getFragmentManager(), "addVehicleDialogFragment");
+            }
+        });
+
+        addLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: add pretty much same functionality as add vehicle button here
             }
         });
 
