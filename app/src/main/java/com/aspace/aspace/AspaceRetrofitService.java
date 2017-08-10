@@ -1,9 +1,11 @@
 package com.aspace.aspace;
 
+import com.aspace.aspace.retrofitmodels.Car;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.ParkingSpot;
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
+import com.aspace.aspace.retrofitmodels.SavedLocation;
 import com.aspace.aspace.retrofitmodels.VerifyPINResponse;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public interface AspaceRetrofitService {
     //********SPOT ENDPOINTS********
     @FormUrlEncoded
     @POST("spots/single/")
-    Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spot_id);
+    Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spotID);
 
     @FormUrlEncoded
     @POST("spots/onscreen/")
@@ -52,11 +54,49 @@ public interface AspaceRetrofitService {
     //********PROFILE ENDPOINTS********
     @FormUrlEncoded
     @POST("users/profile/update/")
-    Call<ResponseCode> updateProfile(@Field("name") String name, @Field("phone") String user_phone_number, @Field("access_token") String user_access_token, @Field("user_id") String userID);
+    Call<ResponseCode> updateProfile(@Field("name") String name, @Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
 
     @FormUrlEncoded
     @POST("users/profile/get/")
     Call<Profile> getProfile(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+
+    //Cars
+    @FormUrlEncoded
+    @POST("users/profile/cars/get")
+    Call<List<Car>> getCars(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+
+    @FormUrlEncoded
+    @POST("users/profile/cars/add")
+    Call<ResponseCode> addCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
+                              @Field("car_name") String carName, @Field("car_name") String carVIN, @Field("car_name") String carMake, @Field("car_name") String carModel, @Field("car_name") String carYear, @Field("car_name") String carLength);
+
+    @FormUrlEncoded
+    @POST("users/profile/cars/remove")
+    Call<ResponseCode> removeCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("car_vin") String carVIN);
+
+    @FormUrlEncoded
+    @POST("users/profile/cars/update")
+    Call<ResponseCode> updateCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
+                              @Field("car_name") String carName, @Field("car_name") String carVIN, @Field("car_name") String carMake, @Field("car_name") String carModel, @Field("car_name") String carYear, @Field("car_name") String carLength);
+
+    //Locations
+    @FormUrlEncoded
+    @POST("users/profile/locs/get")
+    Call<List<SavedLocation>> getSavedLocations(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
+
+    @FormUrlEncoded
+    @POST("users/profile/locs/add")
+    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
+                                        @Field("address") String locationAddress, @Field("location_name") String locationName, @Field("location_id") String locationID);
+
+    @FormUrlEncoded
+    @POST("users/profile/locs/remove")
+    Call<ResponseCode> removeSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("location_id") String locationID);
+
+    @FormUrlEncoded
+    @POST("users/profile/locs/update")
+    Call<ResponseCode> updateSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
+                                        @Field("address") String locationAddress, @Field("location_name") String locationName, @Field("location_id") String locationID);
 
     //********GEOCODING ENDPOINT********
     @GET("geocoding/v5/mapbox.places/{query}.json")
