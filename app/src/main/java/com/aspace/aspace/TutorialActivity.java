@@ -130,7 +130,7 @@ public class TutorialActivity extends FragmentActivity {
 
                         String[] locationIDs = locationsFragment.getLocationIDs();
                         aspaceService.updateProfile(
-                                name, userID, userPhoneNumber, userAccessToken)
+                                name, userPhoneNumber, userAccessToken, userID)
                                 .enqueue(new Callback<ResponseCode>() {
                                     @Override
                                     public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {

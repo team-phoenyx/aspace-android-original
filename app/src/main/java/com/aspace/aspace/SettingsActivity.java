@@ -223,7 +223,7 @@ public class SettingsActivity extends AppCompatActivity {
                 //homeLocId = userProfile.getHomeLocId();
                 //workLocId = userProfile.getWorkLocId();
                 // update the profile with parameters retrieved from getprofile and the user's new name
-                aspaceService.updateProfile(userName, userID, userPhoneNumber, userAccessToken).enqueue(new Callback<ResponseCode>() {
+                aspaceService.updateProfile(userName, userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
                     @Override
                     public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
 
