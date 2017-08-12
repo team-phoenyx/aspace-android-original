@@ -22,6 +22,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -184,7 +185,7 @@ public class SettingsActivity extends AppCompatActivity {
         addLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: add pretty much same functionality as add vehicle button here
+                // TODO: add pretty much same functionality as add vehicle button here to open up a fragment
             }
         });
 
@@ -325,7 +326,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 3;
+            return 3; // placeholder
         }
 
         @Override
@@ -340,7 +341,25 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            convertView = getLayoutInflater().inflate(R.layout.profile_dialog_saved_locations_row, parent, false);
+            convertView = getLayoutInflater().inflate(R.layout.settings_saved_locations_row, parent, false);
+
+            ImageButton removeLocationButton = (ImageButton) convertView.findViewById(R.id.settings_my_locations_list_remove_button);
+            ImageView locationIcon = (ImageView) convertView.findViewById(R.id.settings_location_icon);
+            TextView locationLabel = (TextView) convertView.findViewById(R.id.settings_my_locations_label);
+            TextView locationAddress = (TextView) convertView.findViewById(R.id.settings_saved_location_address);
+
+            removeLocationButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // remove the clicked row from the user's list, notifydatasetchanged.
+                    // update profile
+                }
+            });
+
+            // set the icon
+            // set the label
+            // set the address
+
             return convertView;
         }
     }
