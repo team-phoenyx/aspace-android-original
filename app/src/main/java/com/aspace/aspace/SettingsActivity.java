@@ -60,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
     private String userPhoneNumber;
     private String userAccessToken;
     private VehicleListAdapter vehicleListAdapter;
+    private LocationListAdapter locationListAdapter;
     private int selectedVehicleButtonPosition;
     private Set<String> userVINList;
 
@@ -114,8 +115,8 @@ public class SettingsActivity extends AppCompatActivity {
         myVehiclesList.setAdapter(vehicleListAdapter);
 
         // TODO: Configure the location list's adapter
-        // locationListAdapter = new LocationListAdapter();
-        // myLocationsList.setAdapter(locationListAdapter);
+        locationListAdapter = new LocationListAdapter();
+        myLocationsList.setAdapter(locationListAdapter);
 
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle(getString(R.string.settings_toolbar_title));
@@ -316,6 +317,30 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
+            return convertView;
+        }
+    }
+
+    private class LocationListAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getLayoutInflater().inflate(R.layout.profile_dialog_saved_locations_row, parent, false);
             return convertView;
         }
     }
