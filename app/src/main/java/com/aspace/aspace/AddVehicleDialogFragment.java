@@ -11,10 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.aspace.aspace.chromedatamodels.AccountInfo;
 import com.securepreferences.SecurePreferences;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.PropertyInfo;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +29,7 @@ import java.util.Set;
 
 public class AddVehicleDialogFragment extends DialogFragment {
     private EditText vinNumberEditText;
+
     private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
     private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
     private static String ACCOUNT_NUMBER = "310699";
@@ -45,11 +51,41 @@ public class AddVehicleDialogFragment extends DialogFragment {
         builder.setView(dialogView).setCancelable(false);
         final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
         SharedPreferences securePreferences = new SecurePreferences(getActivity());
+        /*
         if (securePreferences.contains(getString(R.string.user_vin_list_tag))) {
 
         } else {
 
-        }
+        } */
+
+        /* CHROMEDATA CONNECTION ATTEMPT FAILED, UNKNOWN HOST EXCEPTION ******
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SoapObject request = new SoapObject(TARGET_NAMESPACE, "accountInfo");
+                AccountInfo accountInfo = new AccountInfo(ACCOUNT_NUMBER, SECRET, COUNTRY, LANGUAGE);
+                PropertyInfo propertyInfo = new PropertyInfo();
+                propertyInfo.setType(accountInfo.getClass());
+                propertyInfo.setName("accountInfo");
+                propertyInfo.setValue(accountInfo);
+                propertyInfo.setType(accountInfo.getClass());
+                request.addProperty(propertyInfo);
+
+                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+                envelope.dotNet = true;
+                envelope.setOutputSoapObject(request);
+                envelope.addMapping(TARGET_NAMESPACE, "AccountInfo", new AccountInfo().getClass());
+                HttpTransportSE httpTransport = new HttpTransportSE(URL);
+                try {
+                    httpTransport.call("", envelope);
+                    //SoapObject response = (SoapObject) envelope.getResponse();
+                    Log.i("SETTINGS", "ASDA" + envelope.getResponse().toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start(); */
+
 
 
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
