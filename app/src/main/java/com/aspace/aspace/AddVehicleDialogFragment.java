@@ -13,6 +13,8 @@ import android.widget.EditText;
 
 import com.securepreferences.SecurePreferences;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +24,14 @@ import java.util.Set;
 
 public class AddVehicleDialogFragment extends DialogFragment {
     private EditText vinNumberEditText;
+    private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
+    private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
+    private static String ACCOUNT_NUMBER = "310699";
+    private static String SECRET = "4277c6d3e66646b7";
+    private static String COUNTRY = "US";
+    private static String LANGUAGE ="en";
+
+    private static String METHOD_NAME = "describeVehicle";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
