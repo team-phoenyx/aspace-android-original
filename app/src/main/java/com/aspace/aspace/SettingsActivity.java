@@ -106,6 +106,7 @@ public class SettingsActivity extends AppCompatActivity {
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
 
         myVehiclesList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        myLocationsList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         // selected position of button set to the very first in the listview. This will need to change to the position
         // of the user's selected vehicle in the listview that will be saved
         // (server will keep track of it? add a vehicle retrofit w/ boolean selected?)

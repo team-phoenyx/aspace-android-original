@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.aspace.aspace.chromedatamodels.AccountInfo;
 import com.securepreferences.SecurePreferences;
@@ -17,6 +18,7 @@ import com.securepreferences.SecurePreferences;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
@@ -58,33 +60,59 @@ public class AddVehicleDialogFragment extends DialogFragment {
 
         } */
 
-        /* CHROMEDATA CONNECTION ATTEMPT FAILED, UNKNOWN HOST EXCEPTION ******
+        /* NOT TESTED YET *********
         new Thread(new Runnable() {
             @Override
             public void run() {
-                SoapObject request = new SoapObject(TARGET_NAMESPACE, "accountInfo");
+                // description7b.services.chrome.com might be namespace instead
+                SoapObject request = new SoapObject(TARGET_NAMESPACE, "describeVehicle");
                 AccountInfo accountInfo = new AccountInfo(ACCOUNT_NUMBER, SECRET, COUNTRY, LANGUAGE);
-                PropertyInfo propertyInfo = new PropertyInfo();
-                propertyInfo.setType(accountInfo.getClass());
-                propertyInfo.setName("accountInfo");
-                propertyInfo.setValue(accountInfo);
-                propertyInfo.setType(accountInfo.getClass());
-                request.addProperty(propertyInfo);
+                PropertyInfo numberProp = new PropertyInfo();
+                numberProp.setName("number");
+                numberProp.setValue(ACCOUNT_NUMBER);
+                numberProp.setType(String.class);
+                request.addProperty(numberProp);
+
+                PropertyInfo secretProp = new PropertyInfo();
+                secretProp.setName("secret");
+                secretProp.setValue(ACCOUNT_NUMBER);
+                secretProp.setType(String.class);
+                request.addProperty(secretProp);
+
+                PropertyInfo countryProp = new PropertyInfo();
+                countryProp.setName("country");
+                countryProp.setValue(COUNTRY);
+                countryProp.setType(String.class);
+                request.addProperty(countryProp);
+
+                PropertyInfo languageProp = new PropertyInfo();
+                languageProp.setName("language");
+                languageProp.setValue(LANGUAGE);
+                languageProp.setType(String.class);
+                request.addProperty(languageProp);
+
+                PropertyInfo vinProp = new PropertyInfo();
+                vinProp.setName("vin");
+                vinProp.setValue("JTEHT05J542053195");
+                vinProp.setType(String.class);
+                request.addProperty(vinProp);
 
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                 envelope.dotNet = true;
                 envelope.setOutputSoapObject(request);
-                envelope.addMapping(TARGET_NAMESPACE, "AccountInfo", new AccountInfo().getClass());
+                //envelope.addMapping(TARGET_NAMESPACE, "AccountInfo", new AccountInfo().getClass());
                 HttpTransportSE httpTransport = new HttpTransportSE(URL);
                 try {
                     httpTransport.call("", envelope);
-                    //SoapObject response = (SoapObject) envelope.getResponse();
-                    Log.i("SETTINGS", "ASDA" + envelope.getResponse().toString());
+                    SoapPrimitive response = (SoapPrimitive) envelope.getResponse();
+                    Log.i("SETTINGS", "AIFOFIWA" + response.toString());
                 } catch (Exception e) {
+                    Toast.makeText(getActivity().getApplicationContext(), "ERROR " + e.getMessage(), Toast.LENGTH_LONG);
                     e.printStackTrace();
                 }
             }
-        }).start(); */
+        }).start();
+        */
 
 
 
