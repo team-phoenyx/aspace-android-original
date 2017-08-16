@@ -6,82 +6,81 @@ import com.google.gson.annotations.SerializedName;
 
 public class Car {
 
-    @SerializedName("user_id")
+    @SerializedName("_id")
     @Expose
-    private Integer userId;
-    @SerializedName("car_name")
+    private String id;
+    @SerializedName("model")
     @Expose
-    private String carName;
-    @SerializedName("car_vin")
+    private String model;
+    @SerializedName("make")
     @Expose
-    private String carVin;
-    @SerializedName("car_make")
+    private String make;
+    @SerializedName("year")
     @Expose
-    private String carMake;
-    @SerializedName("car_model")
+    private Integer year;
+    @SerializedName("vin")
     @Expose
-    private String carModel;
-    @SerializedName("car_year")
+    private String vin;
+    @SerializedName("name")
     @Expose
-    private Integer carYear;
-    @SerializedName("car_length")
+    private String name;
+    @SerializedName("length")
     @Expose
-    private Integer carLength;
+    private Integer length;
 
-    public Integer getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getCarName() {
-        return carName;
+    public String getModel() {
+        return model;
     }
 
-    public void setCarName(String carName) {
-        this.carName = carName;
+    public void setModel(String model) {
+        this.model = model;
     }
 
-    public String getCarVin() {
-        return carVin;
+    public String getMake() {
+        return make;
     }
 
-    public void setCarVin(String carVin) {
-        this.carVin = carVin;
+    public void setMake(String make) {
+        this.make = make;
     }
 
-    public String getCarMake() {
-        return carMake;
+    public Integer getYear() {
+        return year;
     }
 
-    public void setCarMake(String carMake) {
-        this.carMake = carMake;
+    public void setYear(Integer year) {
+        this.year = year;
     }
 
-    public String getCarModel() {
-        return carModel;
+    public String getVin() {
+        return vin;
     }
 
-    public void setCarModel(String carModel) {
-        this.carModel = carModel;
+    public void setVin(String vin) {
+        this.vin = vin;
     }
 
-    public Integer getCarYear() {
-        return carYear;
+    public String getName() {
+        return name;
     }
 
-    public void setCarYear(Integer carYear) {
-        this.carYear = carYear;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Integer getCarLength() {
-        return carLength;
+    public Integer getLength() {
+        return length;
     }
 
-    public void setCarLength(Integer carLength) {
-        this.carLength = carLength;
+    public void setLength(Integer length) {
+        this.length = length;
     }
-
 }

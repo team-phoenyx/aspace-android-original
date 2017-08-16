@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private List<SearchSuggestion> newSuggestions;
     private List<Feature> rawSuggestions;
     private List<ParkingSpot> previousParkingSpots;
-    private HashMap<Integer, Integer> redrawSpotIDs;
+    private HashMap<String, Integer> redrawSpotIDs;
     private AspaceRetrofitService aspaceService, mapboxService;
     private MapboxNavigation navigation;
     private LatLng clickedSpotLatLng;
@@ -1175,13 +1175,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     // Retrieves the info for a specific parking spot given by the spotId, returns
     // a List of spots with the given id and their respective information.
+    /*
     private void getParkingSpotInfo(AspaceRetrofitService parCareService, String spotId) {
-        Call<List<ParkingSpot>> call = parCareService.getSpotInfo(spotId);
-        call.enqueue(new Callback<List<ParkingSpot>>() {
+        Call<ParkingSpot> call = parCareService.getSpotInfo(spotId);
+        call.enqueue(new Callback<ParkingSpot>() {
             @Override
-            public void onResponse(Call<List<ParkingSpot>> call, Response<List<ParkingSpot>> response) {
+            public void onResponse(Call<ParkingSpot> call, Response<ParkingSpot> response) {
                 if (response.isSuccessful()) {
-                    List<ParkingSpot> spots = response.body();
+                    ParkingSpot spot = response.body();
                     Log.i(TAG + "2", "Response Successful");
                 } else {
                     Log.i(TAG + "2", "Response Unsuccessful: " + response.raw().toString());
@@ -1189,11 +1190,12 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
 
             @Override
-            public void onFailure(Call<List<ParkingSpot>> call, Throwable t) {
+            public void onFailure(Call<ParkingSpot> call, Throwable t) {
                 Log.i(TAG + "2", "Failed to connect: " + t.toString());
             }
         });
     }
+    */
 
     // Retrieves all of the spots in a bound area given by upper and lower latitudes/longitudes,
     // returns a list of the spots in the area.
@@ -1267,13 +1269,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
             for (int i = 0; i < previousParkingSpots.size(); i++) {
                 ParkingSpot previousCheckSpot = previousParkingSpots.get(i);
-                if (checkSpot.getSpotId() == previousCheckSpot.getSpotId()) {
+                if (checkSpot.getId().equals(previousCheckSpot.getId())) {
                     spotExists = true;
                     if (checkSpot.getLat() != previousCheckSpot.getLat() ||
                             checkSpot.getLon() != previousCheckSpot.getLon() ||
                             !checkSpot.getStatus().equals(previousCheckSpot.getStatus())) {
                         deltas.add(checkSpot);
-                        redrawSpotIDs.put(checkSpot.getSpotId(), i);
+                        redrawSpotIDs.put(checkSpot.getId(), i);
                     } else {
                         nonDeltas.add(previousCheckSpot);
                     }
@@ -1287,17 +1289,17 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         for (int i = 0; i < previousParkingSpots.size(); i++) {
             ParkingSpot checkStillExistsSpot = previousParkingSpots.get(i);
 
-            int oldSpotID = checkStillExistsSpot.getSpotId();
+            String oldSpotID = checkStillExistsSpot.getId();
             boolean spotStillExists = false;
             for (ParkingSpot newSpot : newParkingSpots) {
-                if (newSpot.getSpotId() == oldSpotID) {
+                if (newSpot.getId().equals(oldSpotID)) {
                     spotStillExists = true;
                     break;
                 }
             }
 
             if (!spotStillExists) {
-                redrawSpotIDs.put(checkStillExistsSpot.getSpotId(), i);
+                redrawSpotIDs.put(checkStillExistsSpot.getId(), i);
                 removes.add(checkStillExistsSpot);
             }
         }
@@ -1334,8 +1336,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             ParkingSpot spot = deltaParkingSpots.get(i);
 
             //remove the previous marker, if there is one
-            if (redrawSpotIDs.containsKey(spot.getSpotId())) {
-                map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(spot.getSpotId())).getMarker());
+            if (redrawSpotIDs.containsKey(spot.getId())) {
+                map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(spot.getId())).getMarker());
             }
 
             LatLng spotLatLng = new LatLng(spot.getLat(), spot.getLon());
@@ -1355,7 +1357,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         }
 
         for (ParkingSpot removeSpot : removedParkingSpots) {
-            map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(removeSpot.getSpotId())).getMarker());
+            map.removeMarker(previousParkingSpots.get(redrawSpotIDs.get(removeSpot.getId())).getMarker());
         }
 
         //Store the updated parkingspots into previousParkingSpots for the next update round (must make sure all spots have markers)
@@ -1468,8 +1470,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     // Returns the translated distance concatenated with its respective measure.
     private static String translateDistance(double meters) {
         if (meters < 305) { // 305 meters is approximately 1000 feet
-            String feet = metersToFeet(meters) + " ft";
-            return feet;
+            return metersToFeet(meters) + " ft";
         } else {
             double miles = metersToMiles(meters);
             return miles + " mi";

@@ -3,18 +3,19 @@ package com.aspace.aspace.retrofitmodels;
 /**
  * Created by Zula on 6/18/17.
  */
+
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.mapbox.mapboxsdk.annotations.Marker;
-import com.google.gson.annotations.Expose;
 
 public class ParkingSpot {
 
-    @SerializedName("block_id")
+    @SerializedName("_id")
     @Expose
-    private String blockId;
-    @SerializedName("spot_id")
+    private String id;
+    @SerializedName("sector_id")
     @Expose
-    private int spotId;
+    private String sectorId;
     @SerializedName("lat")
     @Expose
     private double lat;
@@ -35,35 +36,35 @@ public class ParkingSpot {
         this.marker = marker;
     }
 
-    public String getBlockId() {
-        return blockId;
+    public String getId() {
+        return id;
     }
 
-    public void setBlockId(String blockId) {
-        this.blockId = blockId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public int getSpotId() {
-        return spotId;
+    public String getSectorId() {
+        return sectorId;
     }
 
-    public void setSpotId(int spotId) {
-        this.spotId = spotId;
+    public void setSectorId(String sectorId) {
+        this.sectorId = sectorId;
     }
 
-    public double getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLat(Double lat) {
         this.lat = lat;
     }
 
-    public double getLon() {
+    public Double getLon() {
         return lon;
     }
 
-    public void setLon(double lon) {
+    public void setLon(Double lon) {
         this.lon = lon;
     }
 

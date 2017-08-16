@@ -27,13 +27,14 @@ public interface AspaceRetrofitService {
     //********SPOT ENDPOINTS********
     @FormUrlEncoded
     @POST("spots/single/")
-    Call<List<ParkingSpot>> getSpotInfo(@Field("spot_id") String spotID);
+    Call<ParkingSpot> getSpotInfo(@Field("spot_id") String spotID);
 
     @FormUrlEncoded
     @POST("spots/onscreen/")
     Call<List<ParkingSpot>> getNearbySpots(@Field("lower_lat") String lower_lat, @Field("lower_lon") String lower_lon,
                                            @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
 
+    //TODO: DEPRECATED, REMOVE AFTER NAV ALGORITHM IMPLEMENTED
     @FormUrlEncoded
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);

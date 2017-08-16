@@ -9,25 +9,33 @@ import com.google.gson.annotations.SerializedName;
 
 public class SavedLocation {
 
-    @SerializedName("user_id")
+    @SerializedName("_id")
     @Expose
-    private Integer userId;
+    private String id;
+    @SerializedName("loc_id")
+    @Expose
+    private String locId;
     @SerializedName("address")
     @Expose
     private String address;
-    @SerializedName("location_id")
+    @SerializedName("name")
     @Expose
-    private String locationId;
-    @SerializedName("location_name")
-    @Expose
-    private String locationName;
+    private String name;
 
-    public Integer getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getLocId() {
+        return locId;
+    }
+
+    public void setLocId(String locId) {
+        this.locId = locId;
     }
 
     public String getAddress() {
@@ -38,20 +46,12 @@ public class SavedLocation {
         this.address = address;
     }
 
-    public String getLocationId() {
-        return locationId;
+    public String getName() {
+        return name;
     }
 
-    public void setLocationId(String locationId) {
-        this.locationId = locationId;
-    }
-
-    public String getLocationName() {
-        return locationName;
-    }
-
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
+    public void setName(String name) {
+        this.name = name;
     }
 
 }
