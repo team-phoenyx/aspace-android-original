@@ -4,17 +4,19 @@ package com.aspace.aspace.retrofitmodels;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Profile {
 
     @SerializedName("name")
     @Expose
     private String name;
-    @SerializedName("user_id")
+    @SerializedName("cars")
     @Expose
-    private Integer userId;
-    @SerializedName("access_token")
+    private List<Car> cars;
+    @SerializedName("locs")
     @Expose
-    private String accessToken;
+    private List<SavedLocation> locations;
 
     public String getName() {
         return name;
@@ -24,20 +26,19 @@ public class Profile {
         this.name = name;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public List<Car> getCars() {
+        return cars;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
     }
 
-    public String getAccessToken() {
-        return accessToken;
+    public List<SavedLocation> getLocations() {
+        return locations;
     }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
+    public void setLocations(List<SavedLocation> locations) {
+        this.locations = locations;
     }
-
 }
