@@ -104,4 +104,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_settings_24dp" />
 
+    <TextView
+        android:id="@+id/no_locations_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Go to Settings to save a couple locations :)"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="@+id/locations_listview"
+        app:layout_constraintRight_toRightOf="@+id/locations_listview"
+        app:layout_constraintTop_toTopOf="@+id/locations_listview" />
+
 </android.support.constraint.ConstraintLayout>

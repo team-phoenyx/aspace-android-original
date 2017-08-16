@@ -18,6 +18,10 @@ import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
 import com.aspace.aspace.retrofitmodels.Profile;
+import com.aspace.aspace.retrofitmodels.SavedLocation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -36,7 +40,7 @@ import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 public class ProfileDialogFragment extends DialogFragment {
 
-    TextView nameTextView;
+    TextView nameTextView, noLocationsLabel;
     ListView locationsListView;
     ImageButton settingsButton;
     AspaceRetrofitService aspaceService;
@@ -76,24 +80,32 @@ public class ProfileDialogFragment extends DialogFragment {
 
         builder.setView(dialogView).setCancelable(false);
 
-        profileDialogListAdapter = new ProfileDialogListAdapter();
+        profileDialogListAdapter = new ProfileDialogListAdapter(new ArrayList<SavedLocation>());
         locationsListView = (ListView) dialogView.findViewById(R.id.locations_listview);
         locationsListView.setAdapter(profileDialogListAdapter);
 
         nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
+        noLocationsLabel = (TextView) dialogView.findViewById(R.id.no_locations_label);
 
         aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
-                //TODO check resp code 7, otherwise snackbar
-                nameTextView.setText(userProfile.getName());
-                //TODO when profile endpoint is updated, populate listview and if is empty, do something
+                if (!userProfile.getResponseCode().equals("7")) {
+                    nameTextView.setText(userProfile.getName());
+                    List<SavedLocation> locations = userProfile.getLocations();
+
+                    profileDialogListAdapter = new ProfileDialogListAdapter(locations);
+                    locationsListView.setAdapter(profileDialogListAdapter);
+
+                    if (locations.size() == 0) {
+                        noLocationsLabel.setVisibility(View.VISIBLE);
+                    }
+                }
             }
 
             @Override
             public void onFailure(Call<Profile> call, Throwable t) {
-                //TODO as of July 10, a failed getProfile will go here :/
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
             }
         });
@@ -155,15 +167,20 @@ public class ProfileDialogFragment extends DialogFragment {
 
     private class ProfileDialogListAdapter extends BaseAdapter {
 
+        List<SavedLocation> locations;
+
+        public ProfileDialogListAdapter(List<SavedLocation> locations) {
+            this.locations = locations;
+        }
+
         @Override
         public int getCount() {
-            // static rows set to 7 since we don't have saved locations yet.
-            return 7;
+            return locations.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return null;
+            return locations.get(position);
         }
 
         @Override
@@ -174,6 +191,12 @@ public class ProfileDialogFragment extends DialogFragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getActivity().getLayoutInflater().inflate(R.layout.profile_dialog_saved_locations_row, parent, false);
+            TextView addresssTextView = (TextView) convertView.findViewById(R.id.saved_location_address);
+            TextView nameTextView = (TextView) convertView.findViewById(R.id.saved_location_label);
+
+            addresssTextView.setText(locations.get(position).getAddress());
+            nameTextView.setText(locations.get(position).getName());
+
             return convertView;
         }
     }
