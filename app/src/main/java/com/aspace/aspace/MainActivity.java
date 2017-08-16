@@ -561,12 +561,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                                 if (navigation != null) {
                                                     navigation.endNavigation();
                                                 }
-                                                drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
-                                                drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
-                                                startNavigationFAB.setVisibility(View.VISIBLE);
-                                                cancelRouteFAB.setVisibility(View.VISIBLE);
-                                                snapToLocationFAB.setVisibility(View.GONE);
-                                                allowAlert = true;
+                                                if (currentLocation != null) {
+                                                    drawRouteToSpot(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), clickedSpotLatLngF, ROUTE_TYPE_DRIVING);
+                                                    drawRouteToSpot(clickedSpotLatLngF, destinationMarker.getPosition(), ROUTE_TYPE_WALKING);
+                                                    startNavigationFAB.setVisibility(View.VISIBLE);
+                                                    cancelRouteFAB.setVisibility(View.VISIBLE);
+                                                    snapToLocationFAB.setVisibility(View.GONE);
+                                                    allowAlert = true;
+                                                }
                                             }
                                         })
                                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -627,7 +629,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 searchListView.startAnimation(fadeIn);
                 searchListView.setVisibility(View.VISIBLE);
                 try {
-                    currentLocation = locationEngine.getLastLocation();
+                    //currentLocation = locationEngine.getLastLocation();
+                    currentLocation = map.getMyLocation();
                 } catch (SecurityException e) {
                     e.printStackTrace();
                 }
@@ -657,29 +660,31 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                     if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
                         searchListView.startAnimation(fadeIn);
                     }
-                    String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
-                    mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
-                        @Override
-                        public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
-                            GeocodingResponse geocodingResponse = response.body();
+                    if (currentLocation != null) {
+                        String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
+                        mapboxService.getGeocodingSuggestions(newQuery, proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                            @Override
+                            public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                                GeocodingResponse geocodingResponse = response.body();
 
-                            if (geocodingResponse == null) return;
+                                if (geocodingResponse == null) return;
 
-                            rawSuggestions = geocodingResponse.getFeatures();
-                            newSuggestions = new ArrayList<>();
+                                rawSuggestions = geocodingResponse.getFeatures();
+                                newSuggestions = new ArrayList<>();
 
-                            for (Feature feature : rawSuggestions) {
-                                newSuggestions.add(new Suggestion(feature.getPlaceName()));
+                                for (Feature feature : rawSuggestions) {
+                                    newSuggestions.add(new Suggestion(feature.getPlaceName()));
+                                }
+                                // Update list view
+                                searchListAdapter.notifyDataSetChanged();
                             }
-                            // Update list view
-                            searchListAdapter.notifyDataSetChanged();
-                        }
 
-                        @Override
-                        public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-                            Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
-                        }
-                    });
+                            @Override
+                            public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+                                Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -733,7 +738,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) return;
 
                         try {
-                            currentLocation = locationEngine.getLastLocation();
+                            //currentLocation = locationEngine.getLastLocation();
+                            currentLocation = map.getMyLocation();
                         } catch (SecurityException e) {
                             e.printStackTrace();
                             return;
@@ -761,7 +767,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 toggleGps(true, false);
 
                 try {
-                    currentLocation = locationEngine.getLastLocation();
+                    //currentLocation = locationEngine.getLastLocation();
+                    currentLocation = map.getMyLocation();
                 } catch (SecurityException e) {
                     e.printStackTrace();
                     return;
@@ -800,69 +807,71 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         startNavigationFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
-                navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
-                navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
-                        if (response.isSuccessful()) {
-                            com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
-                            MainActivity.this.route = route;
-                            drawNavRoute(route);
+                if (currentLocation != null) {
+                    Position origin = Position.fromLngLat(currentLocation.getLongitude(), currentLocation.getLatitude());
+                    navDestination = Position.fromLngLat(clickedSpotLatLng.getLongitude(), clickedSpotLatLng.getLatitude());
+                    navigation.getRoute(origin, navDestination, new Callback<com.mapbox.services.api.directions.v5.models.DirectionsResponse>() {
+                        @Override
+                        public void onResponse(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Response<com.mapbox.services.api.directions.v5.models.DirectionsResponse> response) {
+                            if (response.isSuccessful()) {
+                                com.mapbox.services.api.directions.v5.models.DirectionsRoute route = response.body().getRoutes().get(0);
+                                MainActivity.this.route = route;
+                                drawNavRoute(route);
 
-                            // if this is the first navigation session, then create the instructions list used to compare
-                            // with the offroute's instructions list.
-                            // isEmpty check also for when the user cancels the first nav session and restarts immediately
-                            if (routeManeuverInstructions == null) {
-                                routeManeuverInstructions = new ArrayList<String>();
-                            } else if (!routeManeuverInstructions.isEmpty()) {
-                                routeManeuverInstructions.clear();
+                                // if this is the first navigation session, then create the instructions list used to compare
+                                // with the offroute's instructions list.
+                                // isEmpty check also for when the user cancels the first nav session and restarts immediately
+                                if (routeManeuverInstructions == null) {
+                                    routeManeuverInstructions = new ArrayList<String>();
+                                } else if (!routeManeuverInstructions.isEmpty()) {
+                                    routeManeuverInstructions.clear();
+                                }
+
+                                // fill in the list with the route's instructions.
+                                for (LegStep ls : route.getLegs().get(0).getSteps()) {
+                                    routeManeuverInstructions.add(ls.getManeuver().getInstruction());
+                                }
+
+                                navigation.startNavigation(route);
+                                // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
+                                Location myCurrentLocation = map.getMyLocation();
+                                LatLng myCurrentLocationLatLng = new LatLng(myCurrentLocation.getLatitude(), myCurrentLocation.getLongitude());
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(myCurrentLocationLatLng, DEFAULT_SNAP_ZOOM));
+
+                                map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
+                                map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
+                                map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
+
+                                startNavigationFAB.setVisibility(View.GONE);
+                                cancelRouteFAB.setVisibility(View.GONE);
+                                cancelNavigationFAB.setVisibility(View.VISIBLE);
+                                snapToLocationFAB.setVisibility(View.VISIBLE);
+
+                                //TODO maybe animate the search bar out and the nav directions toolbar in?
+                                searchView.setVisibility(View.GONE);
+
+                                navLowerBar.setVisibility(View.VISIBLE);
+                                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
+                                layoutParams.height = dpToPx(80);
+                                navToolbar.setLayoutParams(layoutParams);
+
+                                navManeuverImageView.setVisibility(View.VISIBLE);
+                                navManeuverDistanceLabel.setVisibility(View.VISIBLE);
+                                navManeuverTargetLabel.setVisibility(View.VISIBLE);
+                                navMuteButton.setVisibility(View.VISIBLE);
+
+                                Log.i(TAG + "nav", "Get route response successful: " + response.raw().toString());
+                            } else {
+                                Log.i(TAG + "nav", "Get route response unsuccessful: " + response.raw().toString());
                             }
-
-                            // fill in the list with the route's instructions.
-                            for (LegStep ls : route.getLegs().get(0).getSteps()) {
-                                routeManeuverInstructions.add(ls.getManeuver().getInstruction());
-                            }
-
-                            navigation.startNavigation(route);
-                            // not sure if it makes a difference if I use map.getMyLocation vs the currentLocation field here
-                            Location myCurrentLocation = map.getMyLocation();
-                            LatLng myCurrentLocationLatLng = new LatLng(myCurrentLocation.getLatitude(), myCurrentLocation.getLongitude());
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(myCurrentLocationLatLng, DEFAULT_SNAP_ZOOM));
-
-                            map.getTrackingSettings().setMyLocationTrackingMode(MyLocationTracking.TRACKING_FOLLOW);
-                            map.getTrackingSettings().setMyBearingTrackingMode(MyBearingTracking.COMPASS);
-                            map.getTrackingSettings().setDismissAllTrackingOnGesture(false);
-
-                            startNavigationFAB.setVisibility(View.GONE);
-                            cancelRouteFAB.setVisibility(View.GONE);
-                            cancelNavigationFAB.setVisibility(View.VISIBLE);
-                            snapToLocationFAB.setVisibility(View.VISIBLE);
-
-                            //TODO maybe animate the search bar out and the nav directions toolbar in?
-                            searchView.setVisibility(View.GONE);
-
-                            navLowerBar.setVisibility(View.VISIBLE);
-                            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) navToolbar.getLayoutParams();
-                            layoutParams.height = dpToPx(80);
-                            navToolbar.setLayoutParams(layoutParams);
-
-                            navManeuverImageView.setVisibility(View.VISIBLE);
-                            navManeuverDistanceLabel.setVisibility(View.VISIBLE);
-                            navManeuverTargetLabel.setVisibility(View.VISIBLE);
-                            navMuteButton.setVisibility(View.VISIBLE);
-
-                            Log.i(TAG + "nav", "Get route response successful: " + response.raw().toString());
-                        } else {
-                            Log.i(TAG + "nav", "Get route response unsuccessful: " + response.raw().toString());
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
-                        Log.i(TAG + "nav", "Get route response failed: ", t);
-                    }
-                });
+                        @Override
+                        public void onFailure(Call<com.mapbox.services.api.directions.v5.models.DirectionsResponse> call, Throwable t) {
+                            Log.i(TAG + "nav", "Get route response failed: ", t);
+                        }
+                    });
+                }
             }
         });
 
