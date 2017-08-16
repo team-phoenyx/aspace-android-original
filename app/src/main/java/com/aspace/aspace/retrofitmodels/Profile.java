@@ -17,6 +17,9 @@ public class Profile {
     @SerializedName("locs")
     @Expose
     private List<SavedLocation> locations;
+    @SerializedName("resp_code")
+    @Expose
+    private String responseCode;
 
     public String getName() {
         return name;
@@ -40,5 +43,13 @@ public class Profile {
 
     public void setLocations(List<SavedLocation> locations) {
         this.locations = locations;
+    }
+
+    public String getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(String responseCode) {
+        this.responseCode = responseCode;
     }
 }
