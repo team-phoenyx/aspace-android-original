@@ -91,8 +91,8 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
-                if (!userProfile.getResponseCode().equals("7")) {
-                    nameTextView.setText(userProfile.getName());
+                if (userProfile.getResponseCode() == null) {
+                    nameTextView.setText(userProfile.getName().isEmpty() ? "Your Profile" : userProfile.getName());
                     List<SavedLocation> locations = userProfile.getLocations();
 
                     profileDialogListAdapter = new ProfileDialogListAdapter(locations);
@@ -117,10 +117,10 @@ public class ProfileDialogFragment extends DialogFragment {
             public void onClick(View v) {
                 getDialog().dismiss();
                 Intent startSettingsIntent = new Intent(getActivity(), SettingsActivity.class);
-                startSettingsIntent.putExtra("profileName", nameTextView.getText().toString());
                 startSettingsIntent.putExtra(getString(R.string.user_id_tag), userID);
                 startSettingsIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
                 startSettingsIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                startSettingsIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                 getActivity().startActivity(startSettingsIntent);
                 /* Old Fragment Stuff
                 SettingsFragment settingsFragment= new SettingsFragment();

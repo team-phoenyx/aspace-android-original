@@ -1233,6 +1233,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     // Gets the closest parking spot to the given lat lon input, draws a marker at that spot
+    /* Method deprecated
     private void getClosestParkingSpot(AspaceRetrofitService parCareService, String lat, String lon) {
         Call<ParkingSpot> call = parCareService.getClosestSpot(lat, lon);
 
@@ -1267,6 +1268,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             }
         });
     }
+    */
 
     private List<List<ParkingSpot>> getDeltaParkingSpots(List<ParkingSpot> newParkingSpots, List<ParkingSpot> previousParkingSpots) {
         List<ParkingSpot> deltas = new ArrayList<>();
@@ -1378,9 +1380,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         previousParkingSpots.addAll(nonDeltaParkingSpots);
 
         //draw the closest spot marker
+        /*
         if (searchedLatString != null && searchedLngString != null && !searchedLatString.equals("") && !searchedLngString.equals("")) {
             getClosestParkingSpot(aspaceService, searchedLatString, searchedLngString);
         }
+        */
         Log.d("MARKERS", map.getMarkers().size() + " markers total");
     }
 

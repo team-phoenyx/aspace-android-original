@@ -11,47 +11,48 @@
     android:paddingEnd="8dp">
 
     <TextView
+        android:id="@+id/enter_address_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:text="Enter VIN (Vehicle Identification Number)"
+        android:layout_marginTop="49dp"
+        android:text="Enter the address of the location"
         android:textColor="@color/greyed_out"
         android:textSize="14sp"
+        app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.504"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="49dp"
-        android:id="@+id/enter_vin_label" />
-    
-    <EditText
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <AutoCompleteTextView
+        android:id="@+id/add_location_edittext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="e.g. 1HGBH41JXMN109186"
-        android:textColorHint="@color/greyed_out"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:inputType="textNoSuggestions|textCapCharacters"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="8dp"
         android:layout_marginTop="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/enter_vin_label"
-        android:id="@+id/add_vin_edittext" />
+        android:ellipsize="end"
+        android:hint="e.g. 123 Maple Street"
+        android:inputType="textCapWords|textNoSuggestions"
+        android:maxLines="1"
+        android:textColorHint="@color/greyed_out"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/enter_address_label" />
 
     <TextView
-        android:id="@+id/add_vehicle_find_vin_label"
+        android:id="@+id/add_location_note_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
-        android:text="This can be found in either the front of your dashboard, in the driver-side doorpost, or in the vehicle manual"
+        android:text="Please select an item from the dropdown to save the location :)"
+        android:textAlignment="center"
         android:textColor="@color/greyed_out"
         android:textSize="12sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/add_vin_edittext" />
+        app:layout_constraintTop_toBottomOf="@+id/add_location_edittext" />
 </android.support.constraint.ConstraintLayout>

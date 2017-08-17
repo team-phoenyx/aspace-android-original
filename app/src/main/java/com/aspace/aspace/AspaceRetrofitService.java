@@ -35,9 +35,11 @@ public interface AspaceRetrofitService {
                                            @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
 
     //TODO: DEPRECATED, REMOVE AFTER NAV ALGORITHM IMPLEMENTED
+    /*
     @FormUrlEncoded
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
+    */
 
     //********AUTH ENDPOINTS********
     @FormUrlEncoded
@@ -87,17 +89,21 @@ public interface AspaceRetrofitService {
 
     @FormUrlEncoded
     @POST("users/profile/locs/add")
-    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
-                                        @Field("address") String locationAddress, @Field("location_name") String locationName, @Field("location_id") String locationID);
+    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("loc_id") String locationID);
 
     @FormUrlEncoded
     @POST("users/profile/locs/remove")
-    Call<ResponseCode> removeSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("location_id") String locationID);
+    Call<ResponseCode> removeSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_id") String locationID);
 
     @FormUrlEncoded
     @POST("users/profile/locs/update")
     Call<ResponseCode> updateSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
                                         @Field("address") String locationAddress, @Field("location_name") String locationName, @Field("location_id") String locationID);
+
+    //ACCOUNT TERMINATION
+    @FormUrlEncoded
+    @POST("users/delete")
+    Call<ResponseCode> deleteAccount(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID);
 
     //********GEOCODING ENDPOINT********
     @GET("geocoding/v5/mapbox.places/{query}.json")

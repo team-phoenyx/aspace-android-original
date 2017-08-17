@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.aspace.aspace.chromedatamodels.AccountInfo;
 import com.aspace.aspace.chromedatamodels.BaseRequest;
@@ -66,9 +65,9 @@ public class AddVehicleDialogFragment extends DialogFragment {
         View dialogView = inflater.inflate(R.layout.add_vehicle_dialog, null);
         dialogView.requestFocus();
 
-        vinNumberEditText = (EditText) dialogView.findViewById(R.id.add_vehicle_dialog_vin_edit_text);
+        vinNumberEditText = (EditText) dialogView.findViewById(R.id.add_vin_edittext);
         builder.setView(dialogView).setCancelable(false);
-        final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
+        //final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
         SharedPreferences securePreferences = new SecurePreferences(getActivity());
         /*
         if (securePreferences.contains(getString(R.string.user_vin_list_tag))) {
@@ -189,6 +188,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // do stuff in here to update list and server with new vehicle
+                /*
                 String vin = vinNumberEditText.getText().toString();
                 userVINList.add(vin);
                 SharedPreferences.Editor editor = new SecurePreferences(getActivity()).edit();
@@ -200,6 +200,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                     Log.i("SETTINGS", vinNum + "");
                 }
                 dialog.dismiss();
+                */
             }
         });
         return builder.create();
