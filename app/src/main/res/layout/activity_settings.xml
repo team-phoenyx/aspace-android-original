@@ -1,252 +1,263 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:background="@android:color/white"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android" >
-    <android.support.constraint.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/settings_toolbar_exit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:background="@color/transparent"
+            android:src="@drawable/ic_cancel_24dp"
+            android:tint="@android:color/white" />
+    </android.support.v7.widget.Toolbar>
+
+    <ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:background="@android:color/white"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android" >
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/settings_toolbar"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:background="@color/colorPrimary"
-            android:elevation="4dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <ImageButton
-                android:id="@+id/settings_toolbar_exit_button"
+            <TextView
+                android:id="@+id/settings_my_name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/settings_my_name_text_label"
+                android:textSize="14sp"
+                android:textColor="#90909090"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/settings_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="12dp"
+                android:background="#90909090"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_name_label" />
+
+            <EditText
+                android:id="@+id/settings_name_edit_text"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="18dp"
                 android:background="@color/transparent"
-                android:src="@drawable/ic_cancel_24dp"
-                android:tint="@android:color/white" />
-        </android.support.v7.widget.Toolbar>
+                android:ellipsize="end"
+                android:focusable="false"
+                android:hint="Your Name"
+                android:inputType="none"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:textSize="18sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_divider" />
 
-        <TextView
-            android:id="@+id/settings_my_name_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/settings_my_name_text_label"
-            android:textSize="14sp"
-            android:textColor="#90909090"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_toolbar" />
+            <ImageButton
+                android:id="@+id/settings_name_edit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="40dp"
+                android:background="@color/transparent"
+                android:src="@drawable/ic_mode_edit_white_24dp"
+                android:tint="#90909090"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginRight="40dp"
+                app:layout_constraintTop_toTopOf="@+id/settings_name_edit_text"
+                android:layout_marginTop="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/settings_name_edit_text"
+                android:layout_marginBottom="0dp" />
 
-        <View
-            android:id="@+id/settings_divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="12dp"
-            android:background="#90909090"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_name_label" />
+            <TextView
+                android:id="@+id/settings_my_vehicles_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/settings_my_vehicles_text_label"
+                android:textColor="#90909090"
+                android:textSize="14sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_name_edit_text" />
 
-        <EditText
-            android:id="@+id/settings_name_edit_text"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="18dp"
-            android:background="@color/transparent"
-            android:inputType="none"
-            android:hint="Your Name"
-            android:focusable="false"
-            android:maxLines="1"
-            android:textSize="15sp"
-            android:scrollHorizontally="true"
-            android:ellipsize="end"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_divider" />
+            <View
+                android:id="@+id/settings_my_vehicles_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="12dp"
+                android:background="#90909090"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicles_label" />
 
-        <ImageButton
-            android:id="@+id/settings_name_edit_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="13dp"
-            android:background="@color/transparent"
-            android:src="@drawable/ic_mode_edit_white_24dp"
-            android:tint="#90909090"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_divider" />
+            <com.aspace.aspace.NonScrollListView
+                android:id="@+id/settings_my_vehicle_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:background="@color/transparent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicles_divider"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:dividerHeight="0dp"
+                android:divider="@null">
+            </com.aspace.aspace.NonScrollListView>
 
-        <TextView
-            android:id="@+id/settings_my_vehicles_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/settings_my_vehicles_text_label"
-            android:textColor="#90909090"
-            android:textSize="14sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_name_edit_text" />
+            <Button
+                android:id="@+id/settings_add_vehicle_button"
+                android:layout_width="90dp"
+                android:layout_height="25dp"
+                android:minWidth="90dp"
+                android:minHeight="25dp"
+                android:background="@color/transparent"
+                android:text="@string/settings_add_vehicle_button_label"
+                android:textColor="@color/colorPrimary"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicle_list"
+                android:layout_marginStart="40dp"
+                app:layout_constraintLeft_toLeftOf="parent" />
 
-        <View
-            android:id="@+id/settings_my_vehicles_divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="12dp"
-            android:background="#90909090"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicles_label" />
+            <TextView
+                android:id="@+id/settings_my_locations_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_my_locations_text_label"
+                android:textColor="#90909090"
+                android:textSize="14sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/settings_add_vehicle_button" />
 
-        <com.aspace.aspace.NonScrollListView
-            android:id="@+id/settings_my_vehicle_list"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:background="@color/transparent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicles_divider"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:dividerHeight="0dp"
-            android:divider="@null">
-        </com.aspace.aspace.NonScrollListView>
+            <View
+                android:id="@+id/settings_my_locations_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="12dp"
+                android:background="#90909090"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_label" />
 
-        <Button
-            android:id="@+id/settings_add_vehicle_button"
-            android:layout_width="90dp"
-            android:layout_height="25dp"
-            android:minWidth="90dp"
-            android:minHeight="25dp"
-            android:background="@color/transparent"
-            android:text="@string/settings_add_vehicle_button_label"
-            android:textColor="@color/colorPrimary"
-            android:textAllCaps="false"
-            android:textSize="12sp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_vehicle_list"
-            android:layout_marginStart="40dp"
-            app:layout_constraintLeft_toLeftOf="parent" />
+            <com.aspace.aspace.NonScrollListView
+                android:id="@+id/settings_my_locations_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:background="@color/transparent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_divider"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:dividerHeight="0dp"
+                android:divider="@null">
+            </com.aspace.aspace.NonScrollListView>
 
-        <TextView
-            android:id="@+id/settings_my_locations_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_my_locations_text_label"
-            android:textColor="#90909090"
-            android:textSize="14sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_add_vehicle_button" />
+            <Button
+                android:id="@+id/settings_add_location_button"
+                android:layout_width="90dp"
+                android:layout_height="25dp"
+                android:minWidth="90dp"
+                android:minHeight="25dp"
+                android:background="@color/transparent"
+                android:text="@string/settings_add_location_button_label"
+                android:textColor="@color/colorPrimary"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_list"
+                android:layout_marginStart="40dp"
+                app:layout_constraintLeft_toLeftOf="parent" />
 
-        <View
-            android:id="@+id/settings_my_locations_divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="12dp"
-            android:background="#90909090"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_label" />
+            <TextView
+                android:id="@+id/settings_delete_account_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="32dp"
+                android:text="My Account"
+                android:textColor="#90909090"
+                android:textSize="14sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_add_location_button" />
 
-        <com.aspace.aspace.NonScrollListView
-            android:id="@+id/settings_my_locations_list"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:background="@color/transparent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_divider"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:dividerHeight="0dp"
-            android:divider="@null">
-        </com.aspace.aspace.NonScrollListView>
+            <View
+                android:id="@+id/settings_delete_account_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginStart="40dp"
+                android:background="#90909090"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="12dp"
+                app:layout_constraintTop_toBottomOf="@+id/settings_delete_account_label" />
 
-        <Button
-            android:id="@+id/settings_add_location_button"
-            android:layout_width="90dp"
-            android:layout_height="25dp"
-            android:minWidth="90dp"
-            android:minHeight="25dp"
-            android:background="@color/transparent"
-            android:text="@string/settings_add_location_button_label"
-            android:textColor="@color/colorPrimary"
-            android:textAllCaps="false"
-            android:textSize="12sp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_my_locations_list"
-            android:layout_marginStart="40dp"
-            app:layout_constraintLeft_toLeftOf="parent" />
+            <Button
+                android:id="@+id/settings_delete_account_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginBottom="24dp"
+                android:layout_marginStart="42dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/transparent"
+                android:text="Delete Account"
+                android:textAllCaps="false"
+                android:textColor="@color/red_button_color"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/settings_delete_account_divider" />
 
-        <TextView
-            android:id="@+id/settings_delete_account_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete Account"
-            android:textColor="#90909090"
-            android:textSize="14sp"
-            android:layout_marginStart="40dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginLeft="40dp"
-            android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_add_location_button" />
+        </android.support.constraint.ConstraintLayout>
 
-        <View
-            android:id="@+id/settings_delete_account_divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginStart="40dp"
-            android:background="#90909090"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_delete_account_label" />
+    </ScrollView>
 
-        <Button
-            android:id="@+id/settings_delete_account_button"
-            android:layout_width="60dp"
-            android:layout_height="25dp"
-            android:minWidth="60dp"
-            android:minHeight="25dp"
-            android:text="Delete"
-            android:textColor="@color/colorPrimary"
-            android:textSize="14sp"
-            android:background="@color/transparent"
-            android:textAllCaps="false"
-            android:layout_marginTop="13dp"
-            app:layout_constraintTop_toBottomOf="@+id/settings_delete_account_divider"
-            android:layout_marginStart="35dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginLeft="35dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp" />
-    </android.support.constraint.ConstraintLayout>
-</ScrollView>
+
+</LinearLayout>

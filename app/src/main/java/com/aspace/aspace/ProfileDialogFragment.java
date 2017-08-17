@@ -117,10 +117,10 @@ public class ProfileDialogFragment extends DialogFragment {
             public void onClick(View v) {
                 getDialog().dismiss();
                 Intent startSettingsIntent = new Intent(getActivity(), SettingsActivity.class);
-                startSettingsIntent.putExtra("profileName", nameTextView.getText().toString());
                 startSettingsIntent.putExtra(getString(R.string.user_id_tag), userID);
                 startSettingsIntent.putExtra(getString(R.string.user_access_token_tag), userAccessToken);
                 startSettingsIntent.putExtra(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                startSettingsIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
                 getActivity().startActivity(startSettingsIntent);
                 /* Old Fragment Stuff
                 SettingsFragment settingsFragment= new SettingsFragment();

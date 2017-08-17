@@ -2,15 +2,18 @@ package com.aspace.aspace;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -26,6 +29,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.aspace.aspace.realmmodels.UserCredentials;
 import com.aspace.aspace.retrofitmodels.Car;
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
@@ -33,6 +37,9 @@ import com.aspace.aspace.retrofitmodels.SavedLocation;
 
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,6 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
     String userID;
     String userPhoneNumber;
     String userAccessToken;
+    String realmEncryptionKey;
     VehicleListAdapter vehicleListAdapter;
     LocationListAdapter locationListAdapter;
     int selectedVehicleButtonPosition;
@@ -74,6 +82,8 @@ public class SettingsActivity extends AppCompatActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        realmEncryptionKey = extras.getString(getString(R.string.realm_encryption_key_tag));
+
 
         toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
@@ -192,6 +202,45 @@ public class SettingsActivity extends AppCompatActivity {
                         .setPositiveButton(getString(R.string.settings_delete_account_dialog_positive), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                aspaceService.deleteAccount(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                                        if ("100".equals(response.body().getRespCode())) {
+                                            Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+                                            loginIntent.putExtra(getString(R.string.realm_encryption_key_tag), realmEncryptionKey);
+
+                                            //Clear usercredential objects from realm
+                                            byte[] key = Base64.decode(realmEncryptionKey, Base64.DEFAULT);
+                                            RealmConfiguration config = new RealmConfiguration.Builder()
+                                                    .encryptionKey(key)
+                                                    .build();
+
+                                            Realm realm = Realm.getInstance(config);
+
+                                            if (!realmEncryptionKey.equals("") && realm != null) {
+                                                final RealmResults<UserCredentials> credentialResults = realm.where(UserCredentials.class).findAll();
+
+                                                realm.executeTransaction(new Realm.Transaction() {
+                                                    @Override
+                                                    public void execute(Realm realm) {
+                                                        credentialResults.deleteAllFromRealm();
+                                                    }
+                                                });
+
+                                                realm.close();
+                                            }
+
+                                            //start the intent
+                                            startActivity(loginIntent);
+                                            finish();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseCode> call, Throwable t) {
+                                        Snackbar.make(findViewById(android.R.id.content), "Something happened, please try again", Snackbar.LENGTH_LONG).show();
+                                    }
+                                });
                                 dialog.dismiss();
                             }
                         })
