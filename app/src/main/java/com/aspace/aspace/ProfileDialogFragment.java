@@ -92,7 +92,7 @@ public class ProfileDialogFragment extends DialogFragment {
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
                 if (userProfile.getResponseCode() == null) {
-                    nameTextView.setText(userProfile.getName());
+                    nameTextView.setText(userProfile.getName().isEmpty() ? "Your Profile" : userProfile.getName());
                     List<SavedLocation> locations = userProfile.getLocations();
 
                     profileDialogListAdapter = new ProfileDialogListAdapter(locations);

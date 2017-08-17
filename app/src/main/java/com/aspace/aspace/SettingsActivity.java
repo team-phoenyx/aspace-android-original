@@ -46,7 +46,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements DialogInterface.OnDismissListener{
     Toolbar toolbar;
     ImageButton toolbarExitButton;
     EditText nameEditText;
@@ -188,7 +188,13 @@ public class SettingsActivity extends AppCompatActivity {
         addLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: add pretty much same functionality as add vehicle button here to open up a fragment
+                AddLocationDialogFragment locationDialogFragment = new AddLocationDialogFragment();
+                Bundle args = new Bundle();
+                args.putString(getString(R.string.user_id_tag), userID);
+                args.putString(getString(R.string.user_access_token_tag), userAccessToken);
+                args.putString(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                locationDialogFragment.setArguments(args);
+                locationDialogFragment.show(getFragmentManager(), "addLocationDialogFragment");
             }
         });
 
@@ -277,6 +283,11 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        getProfile();
     }
 
     private class VehicleListAdapter extends BaseAdapter {
@@ -399,8 +410,8 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if (response.body().getRespCode().equals("100")) {
-                                userLocations.remove(position);
-                                locationList.remove(position);
+                                if (position < userLocations.size()) userLocations.remove(position);
+                                //if (position < locationList.size()) locationList.remove(position);
                                 notifyDataSetChanged();
                             }
                         }

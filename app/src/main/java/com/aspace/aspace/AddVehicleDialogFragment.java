@@ -36,7 +36,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
         View dialogView = inflater.inflate(R.layout.add_vehicle_dialog, null);
         dialogView.requestFocus();
 
-        vinNumberEditText = (EditText) dialogView.findViewById(R.id.add_vehicle_dialog_vin_edit_text);
+        vinNumberEditText = (EditText) dialogView.findViewById(R.id.add_vin_edittext);
         builder.setView(dialogView).setCancelable(false);
         //final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
         SharedPreferences securePreferences = new SecurePreferences(getActivity());

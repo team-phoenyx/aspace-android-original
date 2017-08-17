@@ -26,6 +26,9 @@ public class Feature {
     @SerializedName("place_name")
     @Expose
     private String placeName;
+    @SerializedName("address")
+    @Expose
+    private String address;
     @SerializedName("bbox")
     @Expose
     private List<Double> bbox = null;
@@ -82,6 +85,14 @@ public class Feature {
 
     public void setPlaceName(String placeName) {
         this.placeName = placeName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public List<Double> getBbox() {

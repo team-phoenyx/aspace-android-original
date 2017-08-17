@@ -64,7 +64,7 @@ public class TutorialLocationsFragment extends Fragment {
     Button nextButton, backButton;
 
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
-    public static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
+    private static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
 
     @Nullable
     @Override
