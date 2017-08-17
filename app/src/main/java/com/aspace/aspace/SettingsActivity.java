@@ -2,14 +2,13 @@ package com.aspace.aspace;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
@@ -27,13 +26,12 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.aspace.aspace.retrofitmodels.Car;
 import com.aspace.aspace.retrofitmodels.Profile;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
-import com.securepreferences.SecurePreferences;
+import com.aspace.aspace.retrofitmodels.SavedLocation;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,28 +40,25 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SettingsActivity extends AppCompatActivity {
-    private Toolbar toolbar;
-    private ImageButton toolbarExitButton;
-    private EditText nameEditText;
-    private ImageButton nameEditButton;
-    private NonScrollListView myVehiclesList;
-    private Button addVehicleButton;
-    private Button deleteAccountButton;
-    private NonScrollListView myLocationsList;
-    private Button addLocationButton;
-    private AspaceRetrofitService aspaceService;
-    private String userName;
-    private String workAddress;
-    private String homeAddress;
-    private String homeLocId;
-    private String workLocId;
-    private String userID;
-    private String userPhoneNumber;
-    private String userAccessToken;
-    private VehicleListAdapter vehicleListAdapter;
-    private LocationListAdapter locationListAdapter;
-    private int selectedVehicleButtonPosition;
-    private Set<String> userVINList;
+    Toolbar toolbar;
+    ImageButton toolbarExitButton;
+    EditText nameEditText;
+    ImageButton nameEditButton;
+    NonScrollListView myVehiclesList;
+    Button addVehicleButton;
+    Button deleteAccountButton;
+    NonScrollListView myLocationsList;
+    Button addLocationButton;
+    AspaceRetrofitService aspaceService;
+    String userName;
+    List<Car> userCars;
+    List<SavedLocation> userLocations;
+    String userID;
+    String userPhoneNumber;
+    String userAccessToken;
+    VehicleListAdapter vehicleListAdapter;
+    LocationListAdapter locationListAdapter;
+    int selectedVehicleButtonPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,21 +74,6 @@ public class SettingsActivity extends AppCompatActivity {
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
-
-        SharedPreferences securePreferences = new SecurePreferences(this);
-        if (securePreferences.contains(getString(R.string.user_vin_list_tag))) {
-            userVINList = securePreferences.getStringSet(getString(R.string.user_vin_list_tag), new HashSet<String>());
-            if (!userVINList.isEmpty()) {
-                // do stuff here if there's stuff inside
-            } else {
-                // do stuff here if it's empty
-            }
-        } else {
-            userVINList = new HashSet<String>();
-            SharedPreferences.Editor editor = new SecurePreferences(this).edit();
-            editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList);
-            editor.apply();
-        }
 
         toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         toolbarExitButton = (ImageButton) findViewById(R.id.settings_toolbar_exit_button);
@@ -112,13 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
         // (server will keep track of it? add a vehicle retrofit w/ boolean selected?)
         selectedVehicleButtonPosition = 0;
 
-        // Configure the vehicle list's adapter
-        vehicleListAdapter = new VehicleListAdapter();
-        myVehiclesList.setAdapter(vehicleListAdapter);
-
-        // TODO: Configure the location list's adapter
-        locationListAdapter = new LocationListAdapter();
-        myLocationsList.setAdapter(locationListAdapter);
+        getProfile();
 
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle(getString(R.string.settings_toolbar_title));
@@ -146,13 +120,22 @@ public class SettingsActivity extends AppCompatActivity {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
                 } else { // user taps to end edit
-                    getAndUpdateProfile();
-                    nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
-                    nameEditText.setFocusableInTouchMode(false);
-                    nameEditText.clearFocus();
-                    nameEditText.setInputType(InputType.TYPE_NULL);
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                    aspaceService.updateProfile(nameEditText.getText().toString(), userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
+                            nameEditText.setFocusableInTouchMode(false);
+                            nameEditText.clearFocus();
+                            nameEditText.setInputType(InputType.TYPE_NULL);
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
                 }
             }
         });
@@ -162,13 +145,22 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (((event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) || actionId == EditorInfo.IME_ACTION_DONE) && nameEditText.isFocusableInTouchMode()) {
-                    getAndUpdateProfile();
-                    nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
-                    nameEditText.setFocusableInTouchMode(false);
-                    nameEditText.clearFocus();
-                    nameEditText.setInputType(InputType.TYPE_NULL);
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                    aspaceService.updateProfile(nameEditText.getText().toString(), userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            nameEditButton.setColorFilter(ContextCompat.getColor(SettingsActivity.this, R.color.greyed_out));
+                            nameEditText.setFocusableInTouchMode(false);
+                            nameEditText.clearFocus();
+                            nameEditText.setInputType(InputType.TYPE_NULL);
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
                     return true;
                 }
                 return false;
@@ -214,34 +206,25 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     // Retrieves the user's profile and uses the information retrieved to update with the new NAME
-    private void getAndUpdateProfile() {
+    private void getProfile() {
         aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
-                //TODO check resp code 7, otherwise snackbar
                 Profile userProfile = response.body();
-                userName = nameEditText.getText().toString();
-                //workAddress = userProfile.getWorkAddress();
-                //homeAddress = userProfile.getHomeAddress();
-                //homeLocId = userProfile.getHomeLocId();
-                //workLocId = userProfile.getWorkLocId();
-                // update the profile with parameters retrieved from getprofile and the user's new name
-                aspaceService.updateProfile(userName, userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
-                    @Override
-                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                if (userProfile.getResponseCode() == null) {
+                    nameEditText.setText(userProfile.getName());
+                    userCars = userProfile.getCars();
+                    userLocations = userProfile.getLocations();
+                    locationListAdapter = new LocationListAdapter(userLocations);
+                    vehicleListAdapter = new VehicleListAdapter(userCars);
 
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseCode> call, Throwable t) {
-
-                    }
-                });
+                    myLocationsList.setAdapter(locationListAdapter);
+                    myVehiclesList.setAdapter(vehicleListAdapter);
+                }
             }
 
             @Override
             public void onFailure(Call<Profile> call, Throwable t) {
-                //TODO as of July 10, a failed getProfile will go here :/
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
             }
         });
@@ -249,14 +232,20 @@ public class SettingsActivity extends AppCompatActivity {
 
     private class VehicleListAdapter extends BaseAdapter {
 
+        List<Car> carList;
+
+        public VehicleListAdapter(List<Car> carList) {
+            this.carList = carList;
+        }
+
         @Override
         public int getCount() {
-            return userVINList.size();
+            return carList.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return null;
+            return carList.get(position);
         }
 
         @Override
@@ -265,22 +254,15 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            final int pos = position;
+        public View getView(final int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.vehicle_list_row, parent, false);
             ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
             final TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
             RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
 
-            // currently iterating through vin list to populate vehicle name since we don't have VIN API yet
-            Iterator<String> iterator = userVINList.iterator();
-            String vin = "VIN Number";
-            for (int i = 0; i <= position; i++) {
-                vin = iterator.next();
-            }
+            vehicleNameLabel.setText(carList.get(position).getName());
 
-            vehicleNameLabel.setText(vin);
-
+            //TODO: when car is selected, save the car length in SharedPrefs for other parts of app to use
             // if the row is selected, check the radio button.
             selectVehicleButton.setChecked(position == selectedVehicleButtonPosition);
             if (position == selectedVehicleButtonPosition) { // if this row is the selected one
@@ -304,18 +286,24 @@ public class SettingsActivity extends AppCompatActivity {
             removeVehicleButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Need to wait for endpoint
-                    // do stuff here to delete the vehicle and update profile
-                    // selectVehicleButtonPosition = -1; ?
-                    Iterator<String> iterator = userVINList.iterator();
-                    for (int i = 0; i <= pos; i++) {
-                        iterator.next();
-                    }
-                    iterator.remove(); // removes the vehicle's VIN from the user's VIN list.
-                    SharedPreferences.Editor editor = new SecurePreferences(SettingsActivity.this).edit();
-                    editor.putStringSet(getString(R.string.user_vin_list_tag), userVINList); // update user's saved vin list.
-                    editor.apply();
-                    notifyDataSetChanged();
+
+                    aspaceService.removeCar(userPhoneNumber, userAccessToken, userID, carList.get(position).getVin()).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            if (response.body().getRespCode().equals("100")) {
+                                userCars.remove(position);
+                                carList.remove(position);
+                                notifyDataSetChanged();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
+
+
                 }
             });
 
@@ -325,14 +313,20 @@ public class SettingsActivity extends AppCompatActivity {
 
     private class LocationListAdapter extends BaseAdapter {
 
+        List<SavedLocation> locationList;
+
+        public LocationListAdapter(List<SavedLocation> locationList) {
+            this.locationList = locationList;
+        }
+
         @Override
         public int getCount() {
-            return 3; // placeholder
+            return locationList.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return null;
+            return locationList.get(position);
         }
 
         @Override
@@ -341,37 +335,42 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.settings_saved_locations_row, parent, false);
 
             ImageButton removeLocationButton = (ImageButton) convertView.findViewById(R.id.settings_my_locations_list_remove_button);
             ImageView locationIcon = (ImageView) convertView.findViewById(R.id.settings_location_icon);
-            TextView locationLabel = (TextView) convertView.findViewById(R.id.settings_my_locations_label);
+            TextView locationLabel = (TextView) convertView.findViewById(R.id.settings_saved_location_label);
             TextView locationAddress = (TextView) convertView.findViewById(R.id.settings_saved_location_address);
 
             removeLocationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // remove the clicked row from the user's list, notifydatasetchanged.
-                    // update profile
+                    aspaceService.removeSavedLocation(userPhoneNumber, userAccessToken, userID, locationList.get(position).getLocId()).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            if (response.body().getRespCode().equals("100")) {
+                                userLocations.remove(position);
+                                locationList.remove(position);
+                                notifyDataSetChanged();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
                 }
             });
 
             // set the icon
-            // set the label
-            // set the address
 
+            // set the label
+            locationLabel.setText(locationList.get(position).getName());
+            // set the address
+            locationAddress.setText(locationList.get(position).getAddress());
             return convertView;
         }
-    }
-
-    // Returns a list of the user's saved VINs
-    protected Set<String> getUserVINList() {
-        return userVINList;
-    }
-
-    // Updates the list of vehicles, non-private for use in add vehicle fragment
-    protected void updateVehicleListAdapter() {
-        vehicleListAdapter.notifyDataSetChanged();
     }
 }

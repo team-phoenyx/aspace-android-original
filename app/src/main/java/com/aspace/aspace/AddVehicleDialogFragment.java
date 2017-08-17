@@ -6,24 +6,11 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.aspace.aspace.chromedatamodels.AccountInfo;
 import com.securepreferences.SecurePreferences;
-
-import org.ksoap2.SoapEnvelope;
-import org.ksoap2.serialization.PropertyInfo;
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapPrimitive;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by Zula on 7/24/17.
@@ -51,7 +38,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
 
         vinNumberEditText = (EditText) dialogView.findViewById(R.id.add_vehicle_dialog_vin_edit_text);
         builder.setView(dialogView).setCancelable(false);
-        final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
+        //final Set<String> userVINList = ((SettingsActivity)getActivity()).getUserVINList();
         SharedPreferences securePreferences = new SecurePreferences(getActivity());
         /*
         if (securePreferences.contains(getString(R.string.user_vin_list_tag))) {
@@ -117,6 +104,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // do stuff in here to update list and server with new vehicle
+                /*
                 String vin = vinNumberEditText.getText().toString();
                 userVINList.add(vin);
                 SharedPreferences.Editor editor = new SecurePreferences(getActivity()).edit();
@@ -128,6 +116,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                     Log.i("SETTINGS", vinNum + "");
                 }
                 dialog.dismiss();
+                */
             }
         });
         return builder.create();
