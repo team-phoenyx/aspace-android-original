@@ -35,9 +35,11 @@ public interface AspaceRetrofitService {
                                            @Field("upper_lat") String upper_lat, @Field("upper_lon") String upper_long);
 
     //TODO: DEPRECATED, REMOVE AFTER NAV ALGORITHM IMPLEMENTED
+    /*
     @FormUrlEncoded
     @POST("spots/closest/")
     Call<ParkingSpot> getClosestSpot(@Field("lat") String lat, @Field("lon") String lon);
+    */
 
     //********AUTH ENDPOINTS********
     @FormUrlEncoded

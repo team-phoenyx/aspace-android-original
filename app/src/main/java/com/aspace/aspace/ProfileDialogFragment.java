@@ -91,7 +91,7 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
-                if (!userProfile.getResponseCode().equals("7")) {
+                if (userProfile.getResponseCode() == null) {
                     nameTextView.setText(userProfile.getName());
                     List<SavedLocation> locations = userProfile.getLocations();
 
