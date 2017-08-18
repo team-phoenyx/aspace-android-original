@@ -31,14 +31,13 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.ksoap2.SoapEnvelope;
-import org.ksoap2.serialization.PropertyInfo;
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapPrimitive;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,6 +56,15 @@ public class AddVehicleDialogFragment extends DialogFragment {
     private static String LANGUAGE ="en";
 
     private static String METHOD_NAME = "describeVehicle";
+
+    private static String getVersionInfoEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <urn:VersionInfoRequest>\n" +
+            "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
+            "      </urn:VersionInfoRequest>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -83,9 +91,19 @@ public class AddVehicleDialogFragment extends DialogFragment {
                 String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
                         "   <soapenv:Header/>\n" +
                         "   <soapenv:Body>\n" +
-                        "      <urn:VersionInfoRequest>\n" +
+                        "      <urn:VehicleDescriptionRequest>\n" +
                         "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
-                        "      </urn:VersionInfoRequest>\n" +
+                        "         <urn:vin>JTEHT05J542053195</urn:vin>\n" +
+                        "         <urn:includeTechnicalSpecificationTitleId>304</urn:includeTechnicalSpecificationTitleId>\n" +
+                        "         <!-- Everything below is optional\n" +
+                        "         <urn:reducingStyleId>?</urn:reducingStyleId>\n" +
+                        "         <urn:reducingAcode>?</urn:reducingAcode>\n" +
+                        "         <urn:styleId>?</urn:styleId>\n" +
+                        "         <urn:acode>?</urn:acode>\n" +
+                        "         <urn:styleName>?</urn:styleName>\n" +
+                        "         <urn:trimName>?</urn:trimName>\n" +
+                        "         -->\n" +
+                        "      </urn:VehicleDescriptionRequest>\n" +
                         "   </soapenv:Body>\n" +
                         "</soapenv:Envelope>";
                 HttpClient httpClient = new DefaultHttpClient();
@@ -100,7 +118,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                 httppost.setHeader("soapaction", null);
                 httppost.setHeader("Content-Type", "text/xml; charset=utf-8");
 
-                String responseString="";
+                String responseString= "";
                 try {
 
                     // the entity holds the request
@@ -126,7 +144,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                         }
                     };
 
-                    responseString=httpClient.execute(httppost, rh).toString();
+                    responseString = httpClient.execute(httppost, rh).toString();
 
                 }
                 catch (Exception e) {
@@ -136,6 +154,44 @@ public class AddVehicleDialogFragment extends DialogFragment {
                 // close the connection
                 httpClient.getConnectionManager().shutdown();
                 Log.i("SETTINGS", "RESPONSE: " + responseString);
+
+                try {
+                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    XmlPullParser xpp = factory.newPullParser();
+
+                    xpp.setInput(new StringReader(responseString));
+                    int eventType = xpp.getEventType();
+                    while (eventType != XmlPullParser.END_DOCUMENT) {
+                        if (eventType == XmlPullParser.START_DOCUMENT) {
+                            System.out.println("Start document");
+                        } else if (eventType == XmlPullParser.START_TAG) {
+                            //System.out.println("Start tag " + xpp.getName());
+                            if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
+                                Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
+                                        xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
+                                        xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
+                            } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
+                                String tagName = "";
+                                while (!tagName.equalsIgnoreCase("value")) { // keep going until we get to length value within tech specs
+                                    eventType = xpp.next();
+                                    if (eventType == XmlPullParser.START_TAG) {
+                                        tagName = xpp.getName();
+                                    }
+                                }
+                                Log.i("Vehicle", "Overall Length (inches): " + xpp.getAttributeValue(0)); // very first attribute is the length
+                            }
+                        } else if (eventType == XmlPullParser.END_TAG) {
+                            //System.out.println("End tag " + xpp.getName());
+                        } else if (eventType == XmlPullParser.TEXT) {
+                            //System.out.println("Text " + xpp.getText());
+                        }
+                        eventType = xpp.next();
+                    }
+                    System.out.println("End document");
+                } catch (XmlPullParserException | IOException e) {
+
+                }
             }
         }).start();
 
