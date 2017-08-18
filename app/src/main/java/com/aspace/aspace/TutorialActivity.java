@@ -23,6 +23,9 @@ import com.aspace.aspace.tutorialfragments.TutorialNameFragment;
 import com.aspace.aspace.tutorialfragments.TutorialStartFragment;
 import com.aspace.aspace.tutorialfragments.TutorialWelcomeFragment;
 
+import java.util.HashMap;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -119,47 +122,46 @@ public class TutorialActivity extends FragmentActivity {
                     case WELCOME_FRAGMENT_TAG:
                         backButton.setVisibility(View.GONE);
 
+                        viewPager.setAllowedSwipeDirection(SwipeDirection.none);
+                        nextButton.setVisibility(View.VISIBLE);
+                        nextButton.setText("Start");
+
                         TutorialLocationsFragment locationsFragment = (TutorialLocationsFragment) pagerAdapter.instantiateItem(viewPager, LOCATIONS_FRAGMENT_TAG);
-
-                        View locationsFragmentView = locationsFragment.getView();
-
-                        EditText homeAddressEditText = (EditText) locationsFragmentView.findViewById(R.id.home_address_edittext);
-                        EditText workAddressEditText = (EditText) locationsFragmentView.findViewById(R.id.work_address_edittext);
 
                         //TODO send car info up to server (if the user inputted one)
 
-                        String[] locationIDs = locationsFragment.getLocationIDs();
-                        aspaceService.updateProfile(
-                                name, userPhoneNumber, userAccessToken, userID)
-                                .enqueue(new Callback<ResponseCode>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
-                                        if (response.body().getRespCode().equals("100")) {
-                                            nextButton.setVisibility(View.VISIBLE);
-                                            nextButton.setText("Start");
-                                        } else {
-                                            View view = TutorialActivity.this.getCurrentFocus();
-                                            if (view != null) {
-                                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                                                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                            }
-                                            Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
-                                        }
+                        List<HashMap<String, String>> locationsMaps = locationsFragment.getLocationInfo();
+                        aspaceService.updateProfile(name, userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
+                            @Override
+                            public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                                if (!response.body().getRespCode().equals("100")) {
+                                    profileUploadError();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseCode> call, Throwable t) {
+                                profileUploadError();
+                            }
+                        });
+
+                        for (HashMap<String, String> locationMap : locationsMaps) {
+                            aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, locationMap.get("loc_address"), locationMap.get("loc_name"), locationMap.get("loc_id")).enqueue(new Callback<ResponseCode>() {
+                                @Override
+                                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                                    if (!response.body().getRespCode().equals("100")) {
+                                        profileUploadError();
                                     }
+                                }
 
-                                    @Override
-                                    public void onFailure(Call<ResponseCode> call, Throwable t) {
-                                        View view = TutorialActivity.this.getCurrentFocus();
-                                        if (view != null) {
-                                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                        }
-                                        Snackbar.make(findViewById(android.R.id.content), "Something went wrong, please try again", Snackbar.LENGTH_LONG).show();
-                                    }
-                                });
+                                @Override
+                                public void onFailure(Call<ResponseCode> call, Throwable t) {
+                                    profileUploadError();
+                                }
+                            });
+                        }
 
 
-                        viewPager.setAllowedSwipeDirection(SwipeDirection.none);
                         break;
                 }
             }
@@ -196,6 +198,15 @@ public class TutorialActivity extends FragmentActivity {
 
         backButton.setVisibility(View.GONE);
         viewPager.setAllowedSwipeDirection(SwipeDirection.right);
+    }
+
+    private void profileUploadError() {
+        View view = TutorialActivity.this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        Snackbar.make(findViewById(android.R.id.content), "Profile update failed", Snackbar.LENGTH_LONG).show();
     }
 
     @Override

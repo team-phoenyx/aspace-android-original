@@ -37,6 +37,7 @@ import com.mapbox.services.android.telemetry.location.LocationEngine;
 import com.mapbox.services.android.telemetry.location.LocationEngineListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import retrofit2.Call;
@@ -51,7 +52,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class TutorialLocationsFragment extends Fragment {
 
-    String homeLocationID = "", workLocationID = "";
     AutoCompleteTextView homeAddressEditText, workAddressEditText;
     TextView errorTextView;
     ArrayAdapter<String> autocompleteAdapter;
@@ -62,6 +62,8 @@ public class TutorialLocationsFragment extends Fragment {
     Location currentLocation;
     TutorialViewPager parentViewPager;
     Button nextButton, backButton;
+    Feature homeAddressFeature;
+    Feature workAddressFeature;
 
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
     private static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
@@ -127,7 +129,7 @@ public class TutorialLocationsFragment extends Fragment {
         homeAddressEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                homeLocationID = "";
+                homeAddressFeature = null;
             }
 
             @Override
@@ -142,7 +144,7 @@ public class TutorialLocationsFragment extends Fragment {
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                     homeAddressEditText.setAdapter(autocompleteAdapter);
 
-                    if (workAddressEditText.getText().toString().equals("") || !workLocationID.isEmpty()) {
+                    if (workAddressEditText.getText().toString().equals("") || workAddressFeature != null) {
                         parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
                         nextButton.setVisibility(View.VISIBLE);
                         backButton.setVisibility(View.VISIBLE);
@@ -189,7 +191,7 @@ public class TutorialLocationsFragment extends Fragment {
         workAddressEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                workLocationID = "";
+                workAddressFeature = null;
             }
 
             @Override
@@ -202,7 +204,7 @@ public class TutorialLocationsFragment extends Fragment {
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                     workAddressEditText.setAdapter(autocompleteAdapter);
 
-                    if (homeAddressEditText.getText().toString().equals("") || !homeLocationID.isEmpty()) {
+                    if (homeAddressEditText.getText().toString().equals("") || homeAddressFeature != null) {
                         parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
                         nextButton.setVisibility(View.VISIBLE);
                         backButton.setVisibility(View.VISIBLE);
@@ -249,13 +251,13 @@ public class TutorialLocationsFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Feature result = rawSuggestions.get(position);
                 homeAddressEditText.setText(result.getPlaceName());
-                homeLocationID = result.getId();
 
-                if (workAddressEditText.getText().toString().isEmpty() || !workLocationID.isEmpty()) {
+                if (workAddressEditText.getText().toString().isEmpty() || workAddressFeature != null) {
                     parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
                     nextButton.setVisibility(View.VISIBLE);
                     backButton.setVisibility(View.VISIBLE);
                 }
+                homeAddressFeature = result;
             }
         });
 
@@ -264,21 +266,53 @@ public class TutorialLocationsFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Feature result = rawSuggestions.get(position);
                 workAddressEditText.setText(result.getPlaceName());
-                workLocationID = result.getId();
 
-                if (homeAddressEditText.getText().toString().isEmpty() || !homeLocationID.isEmpty()) {
+                if (homeAddressEditText.getText().toString().isEmpty() || homeAddressFeature != null) {
                     parentViewPager.setAllowedSwipeDirection(SwipeDirection.all);
                     nextButton.setVisibility(View.VISIBLE);
                     backButton.setVisibility(View.VISIBLE);
                 }
+                workAddressFeature = result;
             }
         });
 
         return viewGroup;
     }
 
-    public String[] getLocationIDs() {
-        return new String[]{homeLocationID, workLocationID};
+    //Returns... homeLocationID, homeName, homeAddress, workLocationID, workName, workAddress
+    public List<HashMap<String, String>> getLocationInfo() {
+
+        List<HashMap<String, String>> list = new ArrayList<>();
+
+        if (homeAddressFeature != null) {
+            String homeName = homeAddressFeature.getText();
+            String homeLocationID = homeAddressFeature.getId();
+            if (homeAddressFeature.getAddress() != null) homeName = homeAddressFeature.getAddress() + " " + homeName;
+            String homeAddress = homeAddressFeature.getPlaceName().substring(homeName.length() + 2);
+
+            HashMap<String, String> map = new HashMap<>();
+            map.put("loc_id", homeLocationID);
+            map.put("loc_name", homeName);
+            map.put("loc_address", homeAddress);
+
+            list.add(map);
+        }
+
+        if (workAddressEditText != null) {
+            String workName = workAddressFeature.getText();
+            String workLocationID = workAddressFeature.getId();
+            if (workAddressFeature.getAddress() != null) workName = workAddressFeature.getAddress() + " " + workName;
+            String workAddress = workAddressFeature.getPlaceName().substring(workName.length() + 2);
+
+            HashMap<String, String> map = new HashMap<>();
+            map.put("loc_id", workLocationID);
+            map.put("loc_name", workName);
+            map.put("loc_address", workAddress);
+
+            list.add(map);
+        }
+
+        return list;
     }
 
     private void enableGps() {
