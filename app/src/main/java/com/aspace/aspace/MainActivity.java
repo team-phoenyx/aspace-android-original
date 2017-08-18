@@ -1603,20 +1603,24 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     public void onDismiss(DialogInterface dialog) {
         //TODO get coords from the location to do reverse geocoding for search
         if (clickedSavedLocation != null) {
-            String lat = Double.toString(clickedSavedLocation.getLat());
-            String lon = Double.toString(clickedSavedLocation.getLon());
+            final String lat = Double.toString(clickedSavedLocation.getLat());
+            final String lon = Double.toString(clickedSavedLocation.getLon());
             mapboxService.getFeatureFromCoords(lat, lon, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
                 @Override
                 public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
                     List<Feature> features = response.body().getFeatures();
-                    if (features.size() > 0) {
-                        Feature feature = features.get(0);
-                        onSearch(feature);
+                    for (Feature feature : features) {
+                        double featureLat = feature.getCenter().get(1);
+                        double featureLon = feature.getCenter().get(0);
+                        if (Double.parseDouble(lat) == featureLat && Double.parseDouble(lon) == featureLon) {
+                            onSearch(feature);
 
-                        String name = feature.getText();
-                        if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
+                            String name = feature.getText();
+                            if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
 
-                        searchView.setSearchText(name);
+                            searchView.setSearchText(name);
+                            break;
+                        }
                     }
                 }
 
