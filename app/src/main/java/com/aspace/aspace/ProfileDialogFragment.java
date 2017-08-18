@@ -1,5 +1,6 @@
 package com.aspace.aspace;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -46,6 +48,8 @@ public class ProfileDialogFragment extends DialogFragment {
     AspaceRetrofitService aspaceService;
     Realm realm;
     ProfileDialogListAdapter profileDialogListAdapter;
+    List<SavedLocation> locations = new ArrayList<>();
+    SavedLocation clickedItem;
 
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
@@ -84,6 +88,14 @@ public class ProfileDialogFragment extends DialogFragment {
         locationsListView = (ListView) dialogView.findViewById(R.id.locations_listview);
         locationsListView.setAdapter(profileDialogListAdapter);
 
+        locationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                clickedItem = locations.get(position);
+                getDialog().dismiss();
+            }
+        });
+
         nameTextView = (TextView) dialogView.findViewById(R.id.name_textview);
         noLocationsLabel = (TextView) dialogView.findViewById(R.id.no_locations_label);
 
@@ -93,7 +105,7 @@ public class ProfileDialogFragment extends DialogFragment {
                 Profile userProfile = response.body();
                 if (userProfile.getResponseCode() == null) {
                     nameTextView.setText(userProfile.getName().isEmpty() ? "Your Profile" : userProfile.getName());
-                    List<SavedLocation> locations = userProfile.getLocations();
+                    locations = userProfile.getLocations();
 
                     profileDialogListAdapter = new ProfileDialogListAdapter(locations);
                     locationsListView.setAdapter(profileDialogListAdapter);
@@ -163,6 +175,19 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
         return builder.create();
+    }
+
+    public SavedLocation getClickedItem() {
+        return clickedItem;
+    }
+
+    @Override
+    public void onDismiss(final DialogInterface dialog) {
+        super.onDismiss(dialog);
+        final Activity activity = getActivity();
+        if (activity instanceof DialogInterface.OnDismissListener) {
+            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
+        }
     }
 
     private class ProfileDialogListAdapter extends BaseAdapter {

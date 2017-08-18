@@ -109,5 +109,8 @@ public interface AspaceRetrofitService {
     @GET("geocoding/v5/mapbox.places/{query}.json")
     Call<GeocodingResponse> getGeocodingSuggestions(@Path("query") String query, @Query("proximity") String proximityString, @Query("access_token") String accessToken);
 
+    @GET("geocoding/v5/mapbox.places/{lat},{lon}.json")
+    Call<GeocodingResponse> getFeatureFromCoords(@Path("lat") String lat, @Path("lon") String lon, @Query("access_token") String accessToken);
+
     //********VIN DECODING ENDPOINT********
 }

@@ -46,6 +46,7 @@ import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
 import com.aspace.aspace.retrofitmodels.ParkingSpot;
+import com.aspace.aspace.retrofitmodels.SavedLocation;
 import com.aspace.aspace.retrofitmodels.Suggestion;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -111,7 +112,7 @@ import static com.mapbox.services.android.navigation.v5.NavigationConstants.LOW_
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.MEDIUM_ALERT_LEVEL;
 import static com.mapbox.services.android.navigation.v5.NavigationConstants.NONE_ALERT_LEVEL;
 
-public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener, GestureDetector.OnGestureListener {
+public class MainActivity extends AppCompatActivity implements PermissionsListener, TextToSpeech.OnInitListener, GestureDetector.OnGestureListener, DialogInterface.OnDismissListener {
 
     private MapView mMapView;
     private MapboxMap map;
@@ -693,7 +694,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
                 int rawSuggestionIndex = rawSuggestions.size() - 1 - newSuggestions.indexOf(searchSuggestion);
-                onSearch(rawSuggestionIndex); //moves the map camera
+                onSearch(rawSuggestions.get(rawSuggestionIndex)); //moves the map camera
                 searchView.clearSearchFocus(); //collapses suggestions and search bar
                 searchView.setSearchText(searchSuggestion.getBody()); //sets the search text to the selected suggestion
             }
@@ -703,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 //Check if there is any query at all
                 if (currentQuery != null && !currentQuery.isEmpty() && !currentQuery.equals("")) {
                     if (rawSuggestions != null && rawSuggestions.size() > 0) {
-                        onSearch(0); //automatically search the first suggestion, move the map camera
+                        onSearch(rawSuggestions.get(0)); //automatically search the first suggestion, move the map camera
                         searchView.clearSearchFocus(); //collapses suggestions and search bar
                         searchView.setSearchText(newSuggestions.get(0).getBody());
                         //searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
@@ -721,7 +722,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 TextView locationAddress = (TextView) view.findViewById(R.id.location_address);
-                onSearch(position);
+                onSearch(rawSuggestions.get(position));
                 searchView.clearSearchFocus();
                 searchView.setSearchText(locationAddress.getText());
             }
@@ -909,15 +910,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     }
 
     //When user selects a search suggestion
-    private void onSearch(int searchedIndex) {
+    private void onSearch(Feature selectedFeature) {
 
         isUpdatingSpots = true;
 
-        Feature selectedFeature = rawSuggestions.get(searchedIndex);
-
         int zoomScale = 16;
 
-        switch (rawSuggestions.get(searchedIndex).getPlaceType().get(0)) {
+        switch (selectedFeature.getPlaceType().get(0)) {
             case "country":
                 zoomScale = 2;
                 break;
@@ -1584,6 +1583,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             fragmentTransaction.commit();
         }
         return true;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        SavedLocation location = ((ProfileDialogFragment) dialog).getClickedItem();
+        //TODO get coords from the location to do reverse geocoding for search
+
     }
 
     private class SearchListAdapter extends BaseAdapter {
