@@ -154,7 +154,10 @@ public class AddLocationDialogFragment extends DialogFragment {
                 if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;
                 String address = selectedLocation.getPlaceName().substring(name.length() + 2);
 
-                aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, name, locationID).enqueue(new Callback<ResponseCode>() {
+                String lon = Double.toString(selectedLocation.getCenter().get(0));
+                String lat = Double.toString(selectedLocation.getCenter().get(1));
+
+                aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, name, lat, lon).enqueue(new Callback<ResponseCode>() {
                     @Override
                     public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                         if ("100".equals(response.body().getRespCode())) {

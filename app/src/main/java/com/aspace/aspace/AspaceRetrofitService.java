@@ -89,7 +89,7 @@ public interface AspaceRetrofitService {
 
     @FormUrlEncoded
     @POST("users/profile/locs/add")
-    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("loc_id") String locationID);
+    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("lat") String lat, @Field("lon") String lon);
 
     @FormUrlEncoded
     @POST("users/profile/locs/remove")
@@ -98,7 +98,8 @@ public interface AspaceRetrofitService {
     @FormUrlEncoded
     @POST("users/profile/locs/update")
     Call<ResponseCode> updateSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
-                                        @Field("address") String locationAddress, @Field("location_name") String locationName, @Field("location_id") String locationID);
+                                        @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("loc_id") String locationID,
+                                           @Field("lat") String lat, @Field("lon") String lon);
 
     //ACCOUNT TERMINATION
     @FormUrlEncoded
