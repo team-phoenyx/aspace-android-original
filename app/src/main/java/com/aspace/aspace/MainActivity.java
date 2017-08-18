@@ -156,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private GestureDetector gestureDetector;
     private Fragment directionsFragment;
     private FragmentManager fragmentManager;
+    private SavedLocation clickedSavedLocation;
 
     //CONSTANTS
     private static final int DEFAULT_SNAP_ZOOM = 16;
@@ -694,9 +695,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             @Override
             public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
                 int rawSuggestionIndex = rawSuggestions.size() - 1 - newSuggestions.indexOf(searchSuggestion);
-                onSearch(rawSuggestions.get(rawSuggestionIndex)); //moves the map camera
+                Feature feature = rawSuggestions.get(rawSuggestionIndex);
+
+                onSearch(feature); //moves the map camera
                 searchView.clearSearchFocus(); //collapses suggestions and search bar
-                searchView.setSearchText(searchSuggestion.getBody()); //sets the search text to the selected suggestion
+
+                String name = feature.getText();
+                if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
+                searchView.setSearchText(name); //sets the search text to the selected suggestion
             }
 
             @Override
@@ -704,10 +710,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 //Check if there is any query at all
                 if (currentQuery != null && !currentQuery.isEmpty() && !currentQuery.equals("")) {
                     if (rawSuggestions != null && rawSuggestions.size() > 0) {
-                        onSearch(rawSuggestions.get(0)); //automatically search the first suggestion, move the map camera
+                        Feature feature = rawSuggestions.get(0);
+                        onSearch(feature); //automatically search the first suggestion, move the map camera
                         searchView.clearSearchFocus(); //collapses suggestions and search bar
-                        searchView.setSearchText(newSuggestions.get(0).getBody());
-                        //searchView.setSearchText(newSuggestions.get(newSuggestions.size() - 1).getBody()); //sets the search text to the first suggestion
+
+                        String name = feature.getText();
+                        if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
+                        searchView.setSearchText(name);
                     } else {
                         AlertDialog.Builder searchFailedDB = new AlertDialog.Builder(MainActivity.this);
                         searchFailedDB.setTitle("Unable to search").setMessage("Either we cannot find anything related to '" + currentQuery + "', or you are disconnected.");
@@ -722,9 +731,14 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 TextView locationAddress = (TextView) view.findViewById(R.id.location_address);
-                onSearch(rawSuggestions.get(position));
+                Feature feature = rawSuggestions.get(position);
+                onSearch(feature);
                 searchView.clearSearchFocus();
-                searchView.setSearchText(locationAddress.getText());
+
+                String name = feature.getText();
+                if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
+
+                searchView.setSearchText(name);
             }
         });
 
@@ -1587,9 +1601,36 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        SavedLocation location = ((ProfileDialogFragment) dialog).getClickedItem();
         //TODO get coords from the location to do reverse geocoding for search
+        if (clickedSavedLocation != null) {
+            String lat = Double.toString(clickedSavedLocation.getLat());
+            String lon = Double.toString(clickedSavedLocation.getLon());
+            mapboxService.getFeatureFromCoords(lat, lon, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
+                @Override
+                public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                    List<Feature> features = response.body().getFeatures();
+                    if (features.size() > 0) {
+                        Feature feature = features.get(0);
+                        onSearch(feature);
 
+                        String name = feature.getText();
+                        if (feature.getAddress() != null) name = feature.getAddress() + " " + name;
+
+                        searchView.setSearchText(name);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<GeocodingResponse> call, Throwable t) {
+
+                }
+            });
+            clickedSavedLocation = null;
+        }
+    }
+
+    public void setClickedLocation(SavedLocation location) {
+        clickedSavedLocation = location;
     }
 
     private class SearchListAdapter extends BaseAdapter {

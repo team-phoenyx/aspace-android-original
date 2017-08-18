@@ -92,6 +92,7 @@ public class ProfileDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 clickedItem = locations.get(position);
+                ((MainActivity) getActivity()).setClickedLocation(clickedItem);
                 getDialog().dismiss();
             }
         });
@@ -175,10 +176,6 @@ public class ProfileDialogFragment extends DialogFragment {
             }
         });
         return builder.create();
-    }
-
-    public SavedLocation getClickedItem() {
-        return clickedItem;
     }
 
     @Override
