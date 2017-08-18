@@ -406,7 +406,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             removeLocationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    aspaceService.removeSavedLocation(userPhoneNumber, userAccessToken, userID, locationList.get(position).getLocId()).enqueue(new Callback<ResponseCode>() {
+                    aspaceService.removeSavedLocation(userPhoneNumber, userAccessToken, userID, locationList.get(position).getId()).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if (response.body().getRespCode().equals("100")) {

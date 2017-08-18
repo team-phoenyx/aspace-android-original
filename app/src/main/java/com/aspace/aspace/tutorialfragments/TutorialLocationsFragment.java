@@ -290,10 +290,13 @@ public class TutorialLocationsFragment extends Fragment {
             if (homeAddressFeature.getAddress() != null) homeName = homeAddressFeature.getAddress() + " " + homeName;
             String homeAddress = homeAddressFeature.getPlaceName().substring(homeName.length() + 2);
 
+
             HashMap<String, String> map = new HashMap<>();
             map.put("loc_id", homeLocationID);
             map.put("loc_name", homeName);
             map.put("loc_address", homeAddress);
+            map.put("lat", Double.toString(homeAddressFeature.getCenter().get(1)));
+            map.put("lon", Double.toString(homeAddressFeature.getCenter().get(0)));
 
             list.add(map);
         }
@@ -308,6 +311,8 @@ public class TutorialLocationsFragment extends Fragment {
             map.put("loc_id", workLocationID);
             map.put("loc_name", workName);
             map.put("loc_address", workAddress);
+            map.put("lat", Double.toString(workAddressFeature.getCenter().get(1)));
+            map.put("lon", Double.toString(workAddressFeature.getCenter().get(0)));
 
             list.add(map);
         }
