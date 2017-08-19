@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Feature;
 import com.aspace.aspace.retrofitmodels.GeocodingResponse;
@@ -45,7 +46,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AddLocationDialogFragment extends DialogFragment {
 
     private AutoCompleteTextView locationEditText;
-    private String locationID;
+    private TextView titleTextView;
     private ArrayAdapter<String> autocompleteAdapter;
     private AspaceRetrofitService mapboxService;
     private AspaceRetrofitService aspaceService;
@@ -56,6 +57,7 @@ public class AddLocationDialogFragment extends DialogFragment {
     private Location currentLocation;
 
     private String userID, userAccessToken, userPhoneNumber;
+    private String lastLocationString;
     private static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
 
@@ -64,17 +66,28 @@ public class AddLocationDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        Bundle args = getArguments();
-        userID = args.getString(getString(R.string.user_id_tag));
-        userAccessToken = args.getString(getString(R.string.user_access_token_tag));
-        userPhoneNumber = args.getString(getString(R.string.user_phone_number_tag));
+        locationEngine = LocationSource.getLocationEngine(getActivity());
+        locationEngine.activate();
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.add_location_dialog, null);
         dialogView.requestFocus();
 
-        locationEngine = LocationSource.getLocationEngine(getActivity());
-        locationEngine.activate();
+        locationEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.add_location_edittext);
+        titleTextView = (TextView) dialogView.findViewById(R.id.add_location_title);
+        builder.setView(dialogView).setCancelable(false);
+
+        Bundle args = getArguments();
+        userID = args.getString(getString(R.string.user_id_tag));
+        userAccessToken = args.getString(getString(R.string.user_access_token_tag));
+        userPhoneNumber = args.getString(getString(R.string.user_phone_number_tag));
+
+        lastLocationString = args.getString("previous_location");
+
+        if (lastLocationString != null) {
+            titleTextView.setText("Edit Location");
+
+        }
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
         mapboxService = retrofit.create(AspaceRetrofitService.class);
@@ -82,8 +95,7 @@ public class AddLocationDialogFragment extends DialogFragment {
         retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         aspaceService = retrofit.create(AspaceRetrofitService.class);
 
-        locationEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.add_location_edittext);
-        builder.setView(dialogView).setCancelable(false);
+
 
         enableGps();
 
@@ -97,7 +109,7 @@ public class AddLocationDialogFragment extends DialogFragment {
         locationEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                locationID = "";
+
             }
 
             @Override
@@ -148,7 +160,6 @@ public class AddLocationDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final Feature selectedLocation = rawSuggestions.get(position);
-                locationID = selectedLocation.getId();
 
                 String name = selectedLocation.getText();
                 if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;

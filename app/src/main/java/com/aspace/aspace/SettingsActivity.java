@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -101,6 +102,20 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
         // of the user's selected vehicle in the listview that will be saved
         // (server will keep track of it? add a vehicle retrofit w/ boolean selected?)
         selectedVehicleButtonPosition = 0;
+
+        myLocationsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                AddLocationDialogFragment locationDialogFragment = new AddLocationDialogFragment();
+                Bundle args = new Bundle();
+                args.putString(getString(R.string.user_id_tag), userID);
+                args.putString(getString(R.string.user_access_token_tag), userAccessToken);
+                args.putString(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                args.putString("previous_location", userLocations.get(position).getName() + " " + userLocations.get(position).getAddress());
+                locationDialogFragment.setArguments(args);
+                locationDialogFragment.show(getFragmentManager(), "addLocationDialogFragment");
+            }
+        });
 
         getProfile();
 
