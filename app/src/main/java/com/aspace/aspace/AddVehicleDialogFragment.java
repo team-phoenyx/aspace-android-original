@@ -5,14 +5,17 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import com.aspace.aspace.chromedatamodels.AccountInfo;
 import com.aspace.aspace.chromedatamodels.BaseRequest;
+import com.aspace.aspace.chromedatamodels.VINDecoder;
 import com.securepreferences.SecurePreferences;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -54,9 +57,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
     private static String SECRET = "4277c6d3e66646b7";
     private static String COUNTRY = "US";
     private static String LANGUAGE ="en";
-
     private static String METHOD_NAME = "describeVehicle";
-
     private static String getVersionInfoEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
             "   <soapenv:Header/>\n" +
             "   <soapenv:Body>\n" +
@@ -65,6 +66,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
             "      </urn:VersionInfoRequest>\n" +
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
+    private static int STANDARD_VIN_LENGTH = 17;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -84,7 +86,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
 
         } */
 
-
+        /*
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -155,7 +157,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                 httpClient.getConnectionManager().shutdown();
                 Log.i("SETTINGS", "RESPONSE: " + responseString);
 
-                try {
+                try { // parsing response for year/make/model/length
                     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                     factory.setNamespaceAware(true);
                     XmlPullParser xpp = factory.newPullParser();
@@ -257,8 +259,37 @@ public class AddVehicleDialogFragment extends DialogFragment {
                 }
                 dialog.dismiss();
                 */
+
             }
         });
+
         return builder.create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        AlertDialog d = (AlertDialog)getDialog();
+        if(d != null) {
+            Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Boolean suitableVIN = false;
+                    if (vinNumberEditText.getText().toString().length() == STANDARD_VIN_LENGTH) {
+                        suitableVIN = true;
+                    }
+                    if (suitableVIN) {
+                        String inputtedVIN = vinNumberEditText.getText().toString();
+                        if (inputtedVIN.length() == STANDARD_VIN_LENGTH) {
+                            new VINDecoder(getActivity()).execute(inputtedVIN);
+                            dismiss();
+                        }
+                    } else {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Please make sure your VIN is 17 characters long!", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
     }
 }
