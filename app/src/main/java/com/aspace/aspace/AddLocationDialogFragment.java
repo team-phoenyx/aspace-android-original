@@ -206,19 +206,30 @@ public class AddLocationDialogFragment extends DialogFragment {
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                String lon = Double.toString(selectedLocation.getCenter().get(0));
-                String lat = Double.toString(selectedLocation.getCenter().get(1));
+                String lon, lat, name, address, originalName;
+                name = locationNameEditText.getText().toString();
+                if (selectedLocation != null) {
+                    lon = Double.toString(selectedLocation.getCenter().get(0));
+                    lat = Double.toString(selectedLocation.getCenter().get(1));
 
-                String name = selectedLocation.getText();
-                if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;
-                String address = selectedLocation.getPlaceName().substring(name.length() + 2);
+                    originalName = selectedLocation.getText();
+                    if (selectedLocation.getAddress() != null) originalName = selectedLocation.getAddress() + " " + originalName;
+                    address = selectedLocation.getPlaceName().substring(originalName.length() + 2);
+
+                    if (!originalName.equals(name)) address = originalName + ", " + address;
+                } else {
+                    lon = "";
+                    lat = "";
+                    originalName = editLocOriginalName;
+                    address = editLocAddress;
+                    if (!editLocName.equals(editLocOriginalName) && name.equals(editLocOriginalName)) address.substring(name.length() + 2);
+                }
+
 
                 final DialogInterface.OnDismissListener listener = (DialogInterface.OnDismissListener) getActivity();
 
-                if (!locationNameEditText.getText().toString().equals(name)) address = name + ", " + address;
-
                 if (editLocID == null) {
-                    aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, locationNameEditText.getText().toString(), name, lat, lon).enqueue(new Callback<ResponseCode>() {
+                    aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, name, originalName, lat, lon).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if ("100".equals(response.body().getRespCode())) {
@@ -233,7 +244,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                         }
                     });
                 } else {
-                    aspaceService.updateSavedLocation(userPhoneNumber, userAccessToken, userID, address, locationNameEditText.getText().toString(), editLocID, lat, lon).enqueue(new Callback<ResponseCode>() {
+                    aspaceService.updateSavedLocation(userPhoneNumber, userAccessToken, userID, address, name, originalName, editLocID, lat, lon).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if ("100".equals(response.body().getRespCode())) {
