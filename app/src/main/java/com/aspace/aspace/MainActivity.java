@@ -661,6 +661,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                 } else {
                     if (oldQuery.isEmpty() && !newQuery.isEmpty()) {
                         searchListView.startAnimation(fadeIn);
+                        searchView.showProgress();
                     }
                     if (currentLocation != null) {
                         String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
@@ -679,11 +680,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                                 }
                                 // Update list view
                                 searchListAdapter.notifyDataSetChanged();
+                                searchView.hideProgress();
                             }
 
                             @Override
                             public void onFailure(Call<GeocodingResponse> call, Throwable t) {
                                 Log.e("MAPBOX_GEOCODER_API", "Geocoder request failed");
+                                searchView.hideProgress();
                             }
                         });
                     }
