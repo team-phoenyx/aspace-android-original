@@ -25,10 +25,10 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * Created by Zula on 8/19/17.
+ * Created by Zula on 8/20/17.
  */
 
-public class VINDecoder extends AsyncTask<String, Void, Void> {
+public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
     private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
     private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
     private static String ACCOUNT_NUMBER = "310699";
@@ -38,7 +38,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private ProgressDialog progressDialog;
     private Context context;
 
-    public VINDecoder(Context context) {
+    public YearMakeModelDecoder(Context context) {
         this.context = context;
     }
 
@@ -56,7 +56,9 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 "   <soapenv:Body>\n" +
                 "      <urn:VehicleDescriptionRequest>\n" +
                 "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
-                "         <urn:vin>%s</urn:vin>\n" +
+                "         <urn:modelYear>%s</urn:modelYear>\n" +
+                "         <urn:makeName>%s</urn:makeName>\n" +
+                "         <urn:modelName>%s</urn:modelName>\n" +
                 "         <urn:includeTechnicalSpecificationTitleId>304</urn:includeTechnicalSpecificationTitleId>\n" +
                 "         <!-- Everything below is optional\n" +
                 "         <urn:reducingStyleId>?</urn:reducingStyleId>\n" +
@@ -70,7 +72,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 "   </soapenv:Body>\n" +
                 "</soapenv:Envelope>";
 
-        String envelope = String.format(generalEnvelope, params[0]);
+        String envelope = String.format(generalEnvelope, params[0], params[1], params[2]);
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpParams parameters = httpClient.getParams();
