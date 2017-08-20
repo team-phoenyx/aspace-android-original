@@ -22,19 +22,21 @@
 
     <TextView
         android:id="@+id/settings_my_vehicle_list_vehicle_label"
-        android:layout_width="230dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="14dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:text="Honda Oddessey"
         android:textColor="#90909090"
         android:textSize="16sp"
-        android:ellipsize="end"
-        app:layout_constraintLeft_toRightOf="@+id/settings_my_vehicle_list_remove_button"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/settings_my_vehicle_list_remove_button"
+        app:layout_constraintRight_toLeftOf="@+id/settings_my_vehicle_list_select_button"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.523" />
     
     <android.support.v7.widget.AppCompatRadioButton
