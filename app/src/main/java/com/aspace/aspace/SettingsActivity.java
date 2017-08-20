@@ -334,7 +334,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            convertView = getLayoutInflater().inflate(R.layout.vehicle_list_row, parent, false);
+            convertView = getLayoutInflater().inflate(R.layout.settings_vehicle_list_row, parent, false);
             ImageButton removeVehicleButton = (ImageButton) convertView.findViewById(R.id.settings_my_vehicle_list_remove_button);
             final TextView vehicleNameLabel = (TextView) convertView.findViewById(R.id.settings_my_vehicle_list_vehicle_label);
             RadioButton selectVehicleButton = (RadioButton) convertView.findViewById(R.id.settings_my_vehicle_list_select_button);
