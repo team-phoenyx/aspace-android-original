@@ -86,117 +86,6 @@ public class AddVehicleDialogFragment extends DialogFragment {
 
         } */
 
-        /*
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
-                        "   <soapenv:Header/>\n" +
-                        "   <soapenv:Body>\n" +
-                        "      <urn:VehicleDescriptionRequest>\n" +
-                        "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
-                        "         <urn:vin>JTEHT05J542053195</urn:vin>\n" +
-                        "         <urn:includeTechnicalSpecificationTitleId>304</urn:includeTechnicalSpecificationTitleId>\n" +
-                        "         <!-- Everything below is optional\n" +
-                        "         <urn:reducingStyleId>?</urn:reducingStyleId>\n" +
-                        "         <urn:reducingAcode>?</urn:reducingAcode>\n" +
-                        "         <urn:styleId>?</urn:styleId>\n" +
-                        "         <urn:acode>?</urn:acode>\n" +
-                        "         <urn:styleName>?</urn:styleName>\n" +
-                        "         <urn:trimName>?</urn:trimName>\n" +
-                        "         -->\n" +
-                        "      </urn:VehicleDescriptionRequest>\n" +
-                        "   </soapenv:Body>\n" +
-                        "</soapenv:Envelope>";
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpParams params = httpClient.getParams();
-                HttpConnectionParams.setConnectionTimeout(params, 10000);
-                HttpConnectionParams.setSoTimeout(params, 15000);
-                HttpProtocolParams.setUseExpectContinue(httpClient.getParams(), true);
-
-                // POST the envelope
-                HttpPost httppost = new HttpPost(URL);
-                // add headers
-                httppost.setHeader("soapaction", null);
-                httppost.setHeader("Content-Type", "text/xml; charset=utf-8");
-
-                String responseString= "";
-                try {
-
-                    // the entity holds the request
-                    HttpEntity entity = new StringEntity(envelope);
-                    httppost.setEntity(entity);
-
-                    // Response handler
-                    ResponseHandler rh=new ResponseHandler() {
-                        // invoked when client receives response
-                        public String handleResponse(HttpResponse response)
-                                throws ClientProtocolException, IOException {
-
-                            // get response entity
-                            HttpEntity entity = response.getEntity();
-
-                            // read the response as byte array
-                            StringBuffer out = new StringBuffer();
-                            byte[] b = EntityUtils.toByteArray(entity);
-
-                            // write the response byte array to a string buffer
-                            out.append(new String(b, 0, b.length));
-                            return out.toString();
-                        }
-                    };
-
-                    responseString = httpClient.execute(httppost, rh).toString();
-
-                }
-                catch (Exception e) {
-                    Log.v("exception", e.toString());
-                }
-
-                // close the connection
-                httpClient.getConnectionManager().shutdown();
-                Log.i("SETTINGS", "RESPONSE: " + responseString);
-
-                try { // parsing response for year/make/model/length
-                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    XmlPullParser xpp = factory.newPullParser();
-
-                    xpp.setInput(new StringReader(responseString));
-                    int eventType = xpp.getEventType();
-                    while (eventType != XmlPullParser.END_DOCUMENT) {
-                        if (eventType == XmlPullParser.START_DOCUMENT) {
-                            System.out.println("Start document");
-                        } else if (eventType == XmlPullParser.START_TAG) {
-                            //System.out.println("Start tag " + xpp.getName());
-                            if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
-                                Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
-                                        xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
-                                        xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
-                            } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
-                                String tagName = "";
-                                while (!tagName.equalsIgnoreCase("value")) { // keep going until we get to length value within tech specs
-                                    eventType = xpp.next();
-                                    if (eventType == XmlPullParser.START_TAG) {
-                                        tagName = xpp.getName();
-                                    }
-                                }
-                                Log.i("Vehicle", "Overall Length (inches): " + xpp.getAttributeValue(0)); // very first attribute is the length
-                            }
-                        } else if (eventType == XmlPullParser.END_TAG) {
-                            //System.out.println("End tag " + xpp.getName());
-                        } else if (eventType == XmlPullParser.TEXT) {
-                            //System.out.println("Text " + xpp.getText());
-                        }
-                        eventType = xpp.next();
-                    }
-                    System.out.println("End document");
-                } catch (XmlPullParserException | IOException e) {
-
-                }
-            }
-        }).start();
-
         /* KSOAP2 ATTEMPT, BROKEN
         new Thread(new Runnable() {
             @Override
@@ -275,16 +164,14 @@ public class AddVehicleDialogFragment extends DialogFragment {
             positiveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Boolean suitableVIN = false;
-                    if (vinNumberEditText.getText().toString().length() == STANDARD_VIN_LENGTH) {
+                    boolean suitableVIN = false;
+                    String inputtedVIN = vinNumberEditText.getText().toString();
+                    if (inputtedVIN.length() == STANDARD_VIN_LENGTH) {
                         suitableVIN = true;
                     }
                     if (suitableVIN) {
-                        String inputtedVIN = vinNumberEditText.getText().toString();
-                        if (inputtedVIN.length() == STANDARD_VIN_LENGTH) {
-                            new VINDecoder(getActivity()).execute(inputtedVIN);
-                            dismiss();
-                        }
+                        new VINDecoder(getActivity()).execute(inputtedVIN);
+                        dismiss();
                     } else {
                         Snackbar.make(getActivity().findViewById(android.R.id.content), "Please make sure your VIN is 17 characters long!", Snackbar.LENGTH_LONG).show();
                     }
