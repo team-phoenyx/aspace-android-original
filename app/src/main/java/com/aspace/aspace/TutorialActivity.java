@@ -146,7 +146,7 @@ public class TutorialActivity extends FragmentActivity {
                         });
 
                         for (HashMap<String, String> locationMap : locationsMaps) {
-                            aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, locationMap.get("loc_address"), locationMap.get("loc_name"), locationMap.get("lat"), locationMap.get("lon")).enqueue(new Callback<ResponseCode>() {
+                            aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, locationMap.get("loc_address"), locationMap.get("loc_name"), locationMap.get("loc_original_name"), locationMap.get("lat"), locationMap.get("lon")).enqueue(new Callback<ResponseCode>() {
                                 @Override
                                 public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                                     if (!response.body().getRespCode().equals("100")) {

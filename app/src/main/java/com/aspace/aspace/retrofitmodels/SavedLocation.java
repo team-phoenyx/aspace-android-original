@@ -18,6 +18,9 @@ public class SavedLocation {
     @SerializedName("name")
     @Expose
     private String name;
+    @SerializedName("original_name")
+    @Expose
+    private String originalName;
     @SerializedName("lat")
     @Expose
     private double lat;
@@ -47,6 +50,14 @@ public class SavedLocation {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 
     public double getLat() {

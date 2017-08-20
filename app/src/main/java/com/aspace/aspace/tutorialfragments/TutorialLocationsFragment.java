@@ -293,7 +293,8 @@ public class TutorialLocationsFragment extends Fragment {
 
             HashMap<String, String> map = new HashMap<>();
             map.put("loc_id", homeLocationID);
-            map.put("loc_name", homeName);
+            map.put("loc_name", "Home");
+            map.put("loc_original_name", homeName);
             map.put("loc_address", homeAddress);
             map.put("lat", Double.toString(homeAddressFeature.getCenter().get(1)));
             map.put("lon", Double.toString(homeAddressFeature.getCenter().get(0)));
@@ -309,7 +310,8 @@ public class TutorialLocationsFragment extends Fragment {
 
             HashMap<String, String> map = new HashMap<>();
             map.put("loc_id", workLocationID);
-            map.put("loc_name", workName);
+            map.put("loc_name", "Work");
+            map.put("loc_original_name", workName);
             map.put("loc_address", workAddress);
             map.put("lat", Double.toString(workAddressFeature.getCenter().get(1)));
             map.put("lon", Double.toString(workAddressFeature.getCenter().get(0)));

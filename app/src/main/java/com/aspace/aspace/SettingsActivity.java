@@ -111,7 +111,11 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                 args.putString(getString(R.string.user_id_tag), userID);
                 args.putString(getString(R.string.user_access_token_tag), userAccessToken);
                 args.putString(getString(R.string.user_phone_number_tag), userPhoneNumber);
-                args.putString("previous_location", userLocations.get(position).getName() + " " + userLocations.get(position).getAddress());
+                SavedLocation clickedLocation = userLocations.get(position);
+                args.putString("loc_name", clickedLocation.getName());
+                args.putString("loc_original_name", clickedLocation.getOriginalName());
+                args.putString("loc_address", clickedLocation.getAddress());
+                args.putString("loc_id", clickedLocation.getId());
                 locationDialogFragment.setArguments(args);
                 locationDialogFragment.show(getFragmentManager(), "addLocationDialogFragment");
             }

@@ -89,7 +89,7 @@ public interface AspaceRetrofitService {
 
     @FormUrlEncoded
     @POST("users/profile/locs/add")
-    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("lat") String lat, @Field("lon") String lon);
+    Call<ResponseCode> addSavedLocation(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("loc_address") String locationAddress, @Field("loc_name") String locationName, @Field("loc_original_name") String originalName, @Field("lat") String lat, @Field("lon") String lon);
 
     @FormUrlEncoded
     @POST("users/profile/locs/remove")

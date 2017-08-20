@@ -11,6 +11,19 @@
     android:paddingEnd="8dp">
 
     <TextView
+        android:id="@+id/add_location_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Add Location"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/enter_address_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,8 +40,8 @@
         android:id="@+id/add_location_edittext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="0dp"
         android:ellipsize="end"
         android:hint="e.g. 123 Maple Street"
@@ -41,30 +54,34 @@
         app:layout_constraintTop_toBottomOf="@+id/enter_address_label" />
 
     <TextView
-        android:id="@+id/add_location_note_label"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Please select an item from the dropdown to save the location :)"
-        android:textAlignment="center"
-        android:textColor="@color/greyed_out"
-        android:textSize="12sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/add_location_edittext" />
-
-    <TextView
-        android:id="@+id/add_location_title"
+        android:id="@+id/enter_name_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Add Location"
-        android:textAppearance="@style/TextAppearance.AppCompat"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:text="Give the location a name"
+        android:textAlignment="textStart"
+        android:textColor="@color/greyed_out"
+        android:textSize="14sp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/add_location_edittext" />
+
+    <EditText
+        android:id="@+id/add_location_name_edittext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="0dp"
+        android:ems="10"
+        android:hint="e.g. Work"
+        android:inputType="text|textCapWords"
+        android:textAlignment="center"
+        android:textColorHint="@color/greyed_out"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/enter_name_label" />
+
 </android.support.constraint.ConstraintLayout>

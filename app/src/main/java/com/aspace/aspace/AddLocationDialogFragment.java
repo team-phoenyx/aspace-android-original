@@ -1,6 +1,5 @@
 package com.aspace.aspace;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -21,6 +20,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Feature;
@@ -45,8 +45,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AddLocationDialogFragment extends DialogFragment {
 
+    private AlertDialog dialog;
     private AutoCompleteTextView locationEditText;
-    private TextView titleTextView;
+    private TextView addLocationTitleTextView;
+    private EditText locationNameEditText;
     private ArrayAdapter<String> autocompleteAdapter;
     private AspaceRetrofitService mapboxService;
     private AspaceRetrofitService aspaceService;
@@ -56,15 +58,18 @@ public class AddLocationDialogFragment extends DialogFragment {
     private LocationEngine locationEngine;
     private Location currentLocation;
 
+    private Feature selectedLocation;
+
+    private String editLocID, editLocName, editLocOriginalName, editLocAddress;
+
     private String userID, userAccessToken, userPhoneNumber;
-    private String lastLocationString;
     private static final String MAPBOX_BASE_URL = "https://api.mapbox.com/";
     private static final int REQUEST_LOCATION_PERMISSION = 3139;
 
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         locationEngine = LocationSource.getLocationEngine(getActivity());
         locationEngine.activate();
@@ -74,7 +79,8 @@ public class AddLocationDialogFragment extends DialogFragment {
         dialogView.requestFocus();
 
         locationEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.add_location_edittext);
-        titleTextView = (TextView) dialogView.findViewById(R.id.add_location_title);
+        locationNameEditText = (EditText) dialogView.findViewById(R.id.add_location_name_edittext);
+        addLocationTitleTextView = (TextView) dialogView.findViewById(R.id.add_location_title);
         builder.setView(dialogView).setCancelable(false);
 
         Bundle args = getArguments();
@@ -82,11 +88,15 @@ public class AddLocationDialogFragment extends DialogFragment {
         userAccessToken = args.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = args.getString(getString(R.string.user_phone_number_tag));
 
-        lastLocationString = args.getString("previous_location");
+        editLocID = args.getString("loc_id");
+        editLocName = args.getString("loc_name");
+        editLocOriginalName = args.getString("loc_original_name");
+        editLocAddress = args.getString("loc_address");
 
-        if (lastLocationString != null) {
-            titleTextView.setText("Edit Location");
-
+        if (editLocID != null) {
+            locationNameEditText.setText(editLocName);
+            locationEditText.setText(editLocOriginalName + ", " + editLocAddress);
+            addLocationTitleTextView.setText("Edit Location");
         }
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(MAPBOX_BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
@@ -94,8 +104,6 @@ public class AddLocationDialogFragment extends DialogFragment {
 
         retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         aspaceService = retrofit.create(AspaceRetrofitService.class);
-
-
 
         enableGps();
 
@@ -105,11 +113,30 @@ public class AddLocationDialogFragment extends DialogFragment {
             e.printStackTrace();
         }
 
+        locationNameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() == 0) dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                else dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
 
         locationEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                selectedLocation = null;
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
             }
 
             @Override
@@ -159,28 +186,13 @@ public class AddLocationDialogFragment extends DialogFragment {
         locationEditText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final Feature selectedLocation = rawSuggestions.get(position);
+                selectedLocation = rawSuggestions.get(position);
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
 
                 String name = selectedLocation.getText();
                 if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;
-                String address = selectedLocation.getPlaceName().substring(name.length() + 2);
 
-                String lon = Double.toString(selectedLocation.getCenter().get(0));
-                String lat = Double.toString(selectedLocation.getCenter().get(1));
-
-                aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, name, lat, lon).enqueue(new Callback<ResponseCode>() {
-                    @Override
-                    public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
-                        if ("100".equals(response.body().getRespCode())) {
-                            getDialog().dismiss();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseCode> call, Throwable t) {
-
-                    }
-                });
+                if (locationNameEditText.getText().toString().isEmpty()) locationNameEditText.setText(name);
             }
         });
 
@@ -191,7 +203,63 @@ public class AddLocationDialogFragment extends DialogFragment {
             }
         });
 
-        return builder.create();
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialog, int which) {
+                String lon = Double.toString(selectedLocation.getCenter().get(0));
+                String lat = Double.toString(selectedLocation.getCenter().get(1));
+
+                String name = selectedLocation.getText();
+                if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;
+                String address = selectedLocation.getPlaceName().substring(name.length() + 2);
+
+                final DialogInterface.OnDismissListener listener = (DialogInterface.OnDismissListener) getActivity();
+
+                if (!locationNameEditText.getText().toString().equals(name)) address = name + ", " + address;
+
+                if (editLocID == null) {
+                    aspaceService.addSavedLocation(userPhoneNumber, userAccessToken, userID, address, locationNameEditText.getText().toString(), name, lat, lon).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            if ("100".equals(response.body().getRespCode())) {
+                                dialog.dismiss();
+                                listener.onDismiss(dialog);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
+                } else {
+                    aspaceService.updateSavedLocation(userPhoneNumber, userAccessToken, userID, address, locationNameEditText.getText().toString(), editLocID, lat, lon).enqueue(new Callback<ResponseCode>() {
+                        @Override
+                        public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                            if ("100".equals(response.body().getRespCode())) {
+                                dialog.dismiss();
+                                listener.onDismiss(dialog);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+                        }
+                    });
+                }
+
+            }
+        });
+
+        dialog = builder.create();
+        return dialog;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
     private void enableGps() {
@@ -260,15 +328,6 @@ public class AddLocationDialogFragment extends DialogFragment {
                     locationEditText.clearFocus();
                 }
                 break;
-        }
-    }
-
-    @Override
-    public void onDismiss(final DialogInterface dialog) {
-        super.onDismiss(dialog);
-        final Activity activity = getActivity();
-        if (activity instanceof DialogInterface.OnDismissListener) {
-            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
         }
     }
 }
