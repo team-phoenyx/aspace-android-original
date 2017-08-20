@@ -53,6 +53,7 @@ public class AddLocationDialogFragment extends DialogFragment {
     private AspaceRetrofitService mapboxService;
     private AspaceRetrofitService aspaceService;
     private List<Feature> rawSuggestions;
+    private Context activityContext;
 
     private LocationEngineListener locationEngineListener;
     private LocationEngine locationEngine;
@@ -73,6 +74,8 @@ public class AddLocationDialogFragment extends DialogFragment {
 
         locationEngine = LocationSource.getLocationEngine(getActivity());
         locationEngine.activate();
+
+        activityContext = getActivity().getApplicationContext();
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.add_location_dialog, null);
@@ -165,7 +168,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                                 autocompleteSuggestions.add(feature.getPlaceName());
                             }
 
-                            autocompleteAdapter = new ArrayAdapter<>(getActivity().getApplicationContext(), android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
+                            autocompleteAdapter = new ArrayAdapter<>(activityContext, android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                             locationEditText.setAdapter(autocompleteAdapter);
                         }
 
@@ -192,7 +195,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                 String name = selectedLocation.getText();
                 if (selectedLocation.getAddress() != null) name = selectedLocation.getAddress() + " " + name;
 
-                if (locationNameEditText.getText().toString().isEmpty()) locationNameEditText.setText(name);
+                locationNameEditText.setText(name);
             }
         });
 
@@ -222,7 +225,8 @@ public class AddLocationDialogFragment extends DialogFragment {
                     lat = "";
                     originalName = editLocOriginalName;
                     address = editLocAddress;
-                    if (!editLocName.equals(editLocOriginalName) && name.equals(editLocOriginalName)) address.substring(name.length() + 2);
+                    if (!name.equals(originalName) && editLocName.equals(editLocOriginalName)) address = editLocOriginalName + ", " + address;
+                    if (!editLocName.equals(editLocOriginalName) && name.equals(editLocOriginalName)) address = address.substring(name.length() + 2);
                 }
 
 
