@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aspace.aspace.realmmodels.UserCredentials;
@@ -50,6 +51,7 @@ public class ProfileDialogFragment extends DialogFragment {
     ProfileDialogListAdapter profileDialogListAdapter;
     List<SavedLocation> locations = new ArrayList<>();
     SavedLocation clickedItem;
+    ProgressBar nameProgressCircle, locationsProgressCircle;
 
     private double lat, lng;
     private String userID, userAccessToken, userPhoneNumber, realmEncryptionKey;
@@ -86,6 +88,8 @@ public class ProfileDialogFragment extends DialogFragment {
 
         profileDialogListAdapter = new ProfileDialogListAdapter(new ArrayList<SavedLocation>());
         locationsListView = (ListView) dialogView.findViewById(R.id.locations_listview);
+        locationsProgressCircle = (ProgressBar) dialogView.findViewById(R.id.saved_locations_progresscircle);
+        nameProgressCircle = (ProgressBar) dialogView.findViewById(R.id.name_progress_circle);
         locationsListView.setAdapter(profileDialogListAdapter);
 
         locationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -105,6 +109,9 @@ public class ProfileDialogFragment extends DialogFragment {
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
                 if (userProfile.getResponseCode() == null) {
+                    nameProgressCircle.setVisibility(View.GONE);
+                    locationsProgressCircle.setVisibility(View.GONE);
+
                     nameTextView.setText(userProfile.getName().isEmpty() ? "Your Profile" : userProfile.getName());
                     locations = userProfile.getLocations();
 
