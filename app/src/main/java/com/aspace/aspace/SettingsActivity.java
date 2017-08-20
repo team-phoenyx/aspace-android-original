@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -57,6 +58,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
     Button deleteAccountButton;
     NonScrollListView myLocationsList;
     Button addLocationButton;
+    ProgressBar nameProgressCircle, carsProgressCircle, locationsProgressCircle;
     AspaceRetrofitService aspaceService;
     String userName;
     List<Car> userCars;
@@ -95,6 +97,9 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
         myLocationsList = (NonScrollListView) findViewById(R.id.settings_my_locations_list);
         addLocationButton = (Button) findViewById(R.id.settings_add_location_button);
         deleteAccountButton = (Button) findViewById(R.id.settings_delete_account_button);
+        nameProgressCircle = (ProgressBar) findViewById(R.id.name_progress_circle);
+        carsProgressCircle = (ProgressBar) findViewById(R.id.cars_progress_circle);
+        locationsProgressCircle = (ProgressBar) findViewById(R.id.locations_progress_circle);
 
         myVehiclesList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         myLocationsList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -149,6 +154,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(nameEditText, InputMethodManager.SHOW_IMPLICIT);
                 } else { // user taps to end edit
+                    nameProgressCircle.setVisibility(View.VISIBLE);
                     aspaceService.updateProfile(nameEditText.getText().toString(), userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
@@ -158,11 +164,12 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                             nameEditText.setInputType(InputType.TYPE_NULL);
                             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                            nameProgressCircle.setVisibility(View.INVISIBLE);
                         }
 
                         @Override
                         public void onFailure(Call<ResponseCode> call, Throwable t) {
-
+                            nameProgressCircle.setVisibility(View.INVISIBLE);
                         }
                     });
                 }
@@ -174,6 +181,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (((event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) || actionId == EditorInfo.IME_ACTION_DONE) && nameEditText.isFocusableInTouchMode()) {
+                    nameProgressCircle.setVisibility(View.VISIBLE);
                     aspaceService.updateProfile(nameEditText.getText().toString(), userPhoneNumber, userAccessToken, userID).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
@@ -183,11 +191,12 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                             nameEditText.setInputType(InputType.TYPE_NULL);
                             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(nameEditText.getWindowToken(), 0);
+                            nameProgressCircle.setVisibility(View.INVISIBLE);
                         }
 
                         @Override
                         public void onFailure(Call<ResponseCode> call, Throwable t) {
-
+                            nameProgressCircle.setVisibility(View.INVISIBLE);
                         }
                     });
                     return true;
@@ -281,19 +290,25 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
 
     // Retrieves the user's profile and uses the information retrieved to update with the new NAME
     private void getProfile() {
+        nameProgressCircle.setVisibility(View.VISIBLE);
+        carsProgressCircle.setVisibility(View.VISIBLE);
+        locationsProgressCircle.setVisibility(View.VISIBLE);
         aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
             @Override
             public void onResponse(Call<Profile> call, Response<Profile> response) {
                 Profile userProfile = response.body();
                 if (userProfile.getResponseCode() == null) {
                     nameEditText.setText(userProfile.getName());
+                    nameProgressCircle.setVisibility(View.INVISIBLE);
                     userCars = userProfile.getCars();
                     userLocations = userProfile.getLocations();
                     locationListAdapter = new LocationListAdapter(userLocations);
                     vehicleListAdapter = new VehicleListAdapter(userCars);
 
                     myLocationsList.setAdapter(locationListAdapter);
+                    locationsProgressCircle.setVisibility(View.INVISIBLE);
                     myVehiclesList.setAdapter(vehicleListAdapter);
+                    carsProgressCircle.setVisibility(View.INVISIBLE);
                 }
             }
 
@@ -420,11 +435,12 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             ImageButton removeLocationButton = (ImageButton) convertView.findViewById(R.id.settings_my_locations_list_remove_button);
             ImageView locationIcon = (ImageView) convertView.findViewById(R.id.settings_location_icon);
             TextView locationLabel = (TextView) convertView.findViewById(R.id.settings_saved_location_label);
-            TextView locationAddress = (TextView) convertView.findViewById(R.id.settings_saved_location_address);
+            final TextView locationAddress = (TextView) convertView.findViewById(R.id.settings_saved_location_address);
 
             removeLocationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    locationsProgressCircle.setVisibility(View.VISIBLE);
                     aspaceService.removeSavedLocation(userPhoneNumber, userAccessToken, userID, locationList.get(position).getId()).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
@@ -432,6 +448,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                                 if (position < userLocations.size()) userLocations.remove(position);
                                 //if (position < locationList.size()) locationList.remove(position);
                                 notifyDataSetChanged();
+                                locationsProgressCircle.setVisibility(View.INVISIBLE);
                             }
                         }
 
