@@ -315,6 +315,9 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             @Override
             public void onFailure(Call<Profile> call, Throwable t) {
                 Log.d("GET_PROFILE_FAIL", t.getMessage());
+                nameProgressCircle.setVisibility(View.INVISIBLE);
+                carsProgressCircle.setVisibility(View.INVISIBLE);
+                locationsProgressCircle.setVisibility(View.INVISIBLE);
             }
         });
     }

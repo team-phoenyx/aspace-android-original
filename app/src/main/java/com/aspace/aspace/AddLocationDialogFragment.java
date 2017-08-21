@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aspace.aspace.retrofitmodels.Feature;
@@ -49,6 +50,7 @@ public class AddLocationDialogFragment extends DialogFragment {
     private AutoCompleteTextView locationEditText;
     private TextView addLocationTitleTextView;
     private EditText locationNameEditText;
+    private ProgressBar progressCircle;
     private ArrayAdapter<String> autocompleteAdapter;
     private AspaceRetrofitService mapboxService;
     private AspaceRetrofitService aspaceService;
@@ -84,6 +86,7 @@ public class AddLocationDialogFragment extends DialogFragment {
         locationEditText = (AutoCompleteTextView) dialogView.findViewById(R.id.add_location_edittext);
         locationNameEditText = (EditText) dialogView.findViewById(R.id.add_location_name_edittext);
         addLocationTitleTextView = (TextView) dialogView.findViewById(R.id.add_location_title);
+        progressCircle = (ProgressBar) dialogView.findViewById(R.id.add_location_progress_circle);
         builder.setView(dialogView).setCancelable(false);
 
         Bundle args = getArguments();
@@ -154,6 +157,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                     autocompleteAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line);
                     locationEditText.setAdapter(autocompleteAdapter);
                 } else {
+                    progressCircle.setVisibility(View.VISIBLE);
                     String proximityString = Double.toString(currentLocation.getLongitude()) + "," + Double.toString(currentLocation.getLatitude());
                     mapboxService.getGeocodingSuggestions(s.toString(), proximityString, getString(R.string.access_token)).enqueue(new Callback<GeocodingResponse>() {
                         @Override
@@ -170,11 +174,12 @@ public class AddLocationDialogFragment extends DialogFragment {
 
                             autocompleteAdapter = new ArrayAdapter<>(activityContext, android.R.layout.simple_dropdown_item_1line, autocompleteSuggestions);
                             locationEditText.setAdapter(autocompleteAdapter);
+                            progressCircle.setVisibility(View.INVISIBLE);
                         }
 
                         @Override
                         public void onFailure(Call<GeocodingResponse> call, Throwable t) {
-
+                            progressCircle.setVisibility(View.INVISIBLE);
                         }
                     });
                 }
@@ -209,6 +214,7 @@ public class AddLocationDialogFragment extends DialogFragment {
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
+                progressCircle.setVisibility(View.VISIBLE);
                 String lon, lat, name, address, originalName;
                 name = locationNameEditText.getText().toString();
                 if (selectedLocation != null) {
@@ -237,6 +243,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if ("100".equals(response.body().getRespCode())) {
+                                progressCircle.setVisibility(View.INVISIBLE);
                                 dialog.dismiss();
                                 listener.onDismiss(dialog);
                             }
@@ -244,7 +251,7 @@ public class AddLocationDialogFragment extends DialogFragment {
 
                         @Override
                         public void onFailure(Call<ResponseCode> call, Throwable t) {
-
+                            progressCircle.setVisibility(View.INVISIBLE);
                         }
                     });
                 } else {
@@ -252,6 +259,7 @@ public class AddLocationDialogFragment extends DialogFragment {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if ("100".equals(response.body().getRespCode())) {
+                                progressCircle.setVisibility(View.INVISIBLE);
                                 dialog.dismiss();
                                 listener.onDismiss(dialog);
                             }
@@ -259,7 +267,7 @@ public class AddLocationDialogFragment extends DialogFragment {
 
                         @Override
                         public void onFailure(Call<ResponseCode> call, Throwable t) {
-
+                            progressCircle.setVisibility(View.INVISIBLE);
                         }
                     });
                 }
