@@ -23,6 +23,8 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Zula on 8/19/17.
@@ -51,21 +53,14 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
     @Override
     protected Void doInBackground(String... params) {
+        VehicleInfo vehicleInfo = new VehicleInfo();
         String generalEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
                 "   <soapenv:Header/>\n" +
                 "   <soapenv:Body>\n" +
                 "      <urn:VehicleDescriptionRequest>\n" +
                 "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
                 "         <urn:vin>%s</urn:vin>\n" +
-                "         <urn:includeTechnicalSpecificationTitleId>304</urn:includeTechnicalSpecificationTitleId>\n" +
-                "         <!-- Everything below is optional\n" +
-                "         <urn:reducingStyleId>?</urn:reducingStyleId>\n" +
-                "         <urn:reducingAcode>?</urn:reducingAcode>\n" +
-                "         <urn:styleId>?</urn:styleId>\n" +
-                "         <urn:acode>?</urn:acode>\n" +
-                "         <urn:styleName>?</urn:styleName>\n" +
-                "         <urn:trimName>?</urn:trimName>\n" +
-                "         -->\n" +
+                "         <urn:switch>ShowExtendedTechnicalSpecifications</urn:switch>\n" +
                 "      </urn:VehicleDescriptionRequest>\n" +
                 "   </soapenv:Body>\n" +
                 "</soapenv:Envelope>";
@@ -86,7 +81,6 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
         String responseString= "";
         try {
-
             // the entity holds the request
             HttpEntity entity = new StringEntity(envelope);
             httppost.setEntity(entity);
@@ -112,8 +106,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
             responseString = httpClient.execute(httppost, rh).toString();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.v("exception", e.toString());
         }
 
@@ -134,18 +127,37 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 } else if (eventType == XmlPullParser.START_TAG) {
                     //System.out.println("Start tag " + xpp.getName());
                     if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
+                        vehicleInfo.setModelYear(xpp.getAttributeValue(2));
+                        vehicleInfo.setMakeName(xpp.getAttributeValue(3));
+                        vehicleInfo.setModelName(xpp.getAttributeValue(4));
                         Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
                                 xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
                                 xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
                     } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
                         String tagName = "";
-                        while (!tagName.equalsIgnoreCase("value")) { // keep going until we get to length value within tech specs
+                        while (!tagName.equalsIgnoreCase("titleId")) {
                             eventType = xpp.next();
                             if (eventType == XmlPullParser.START_TAG) {
                                 tagName = xpp.getName();
                             }
                         }
-                        Log.i("Vehicle", "Overall Length (inches): " + xpp.getAttributeValue(0)); // very first attribute is the length
+                        String titleId = xpp.nextText();
+                        tagName = "";
+                        while (!tagName.equalsIgnoreCase("value")) {
+                            eventType = xpp.next();
+                            if (eventType == XmlPullParser.START_TAG) {
+                                tagName = xpp.getName();
+                            }
+                        }
+                        String titleIdValue = xpp.getAttributeValue(0);
+                        if (titleId.equalsIgnoreCase("302")) {
+                            Log.i("Vehicle", titleId + ": Length, Overall w/o rear bumper (inches): " + titleIdValue);
+                        } else if (titleId.equalsIgnoreCase("303")) {
+                            Log.i("Vehicle", titleId + ": Length, Overall w/ rear bumper (inches):  " + titleIdValue);
+                        } else if (titleId.equalsIgnoreCase("304")) {
+                            Log.i("Vehicle", titleId + ": Length, Overall (inches): " + titleIdValue);
+                        }
+                        vehicleInfo.addLengthSpecification(titleId, titleIdValue);
                     }
                 } else if (eventType == XmlPullParser.END_TAG) {
                     //System.out.println("End tag " + xpp.getName());
@@ -159,6 +171,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
         }
         //TODO: Update server w/ VIN here, call adapter update method
+        Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
         return null;
     }
 

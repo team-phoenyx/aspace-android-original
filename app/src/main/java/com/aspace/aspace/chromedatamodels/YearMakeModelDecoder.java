@@ -56,9 +56,9 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
                 "   <soapenv:Body>\n" +
                 "      <urn:VehicleDescriptionRequest>\n" +
                 "         <urn:accountInfo number=\"310699\" secret=\"4277c6d3e66646b7\" country=\"US\" language=\"en\" behalfOf=\"?\"/>\n" +
-                "         <urn:modelYear>%s</urn:modelYear>\n" +
-                "         <urn:makeName>%s</urn:makeName>\n" +
-                "         <urn:modelName>%s</urn:modelName>\n" +
+                "         <urn:modelYear>%1$s</urn:modelYear>\n" +
+                "         <urn:makeName>%2$s</urn:makeName>\n" +
+                "         <urn:modelName>%3$s</urn:modelName>\n" +
                 "         <urn:includeTechnicalSpecificationTitleId>304</urn:includeTechnicalSpecificationTitleId>\n" +
                 "         <!-- Everything below is optional\n" +
                 "         <urn:reducingStyleId>?</urn:reducingStyleId>\n" +
