@@ -50,6 +50,9 @@ import java.util.Set;
 
 public class AddVehicleDialogFragment extends DialogFragment {
     private EditText vinNumberEditText;
+    private String userID;
+    private String userAccessToken;
+    private String userPhoneNumber;
 
     private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
     private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
@@ -70,6 +73,10 @@ public class AddVehicleDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Bundle extras = getArguments();
+        userID = extras.getString(getString(R.string.user_id_tag));
+        userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
+        userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.add_vehicle_dialog, null);
@@ -170,7 +177,15 @@ public class AddVehicleDialogFragment extends DialogFragment {
                         suitableVIN = true;
                     }
                     if (suitableVIN) {
-                        new VINDecoder(getActivity()).execute(inputtedVIN);
+                        VINDecoder vinDecoder = new VINDecoder(getActivity(), getActivity(), userPhoneNumber, userAccessToken, userID);
+                        vinDecoder.execute(inputtedVIN);
+                        try {
+                            //String vehicleName = vinDecoder.get(); // halts thread, maybe just update inside vindecoder, progress dialog does not show
+                            // TODO: add vehicle name to car list or modify to return car instead of string
+                            //Log.i("Vehicle", "VEHICLE NAME" + vehicleName);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         dismiss();
                     } else {
                         Snackbar.make(getActivity().findViewById(android.R.id.content), "Please make sure your VIN is 17 characters long!", Snackbar.LENGTH_LONG).show();

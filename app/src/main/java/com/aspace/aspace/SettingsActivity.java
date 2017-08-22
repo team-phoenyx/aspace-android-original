@@ -209,6 +209,11 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             @Override
             public void onClick(View v) {
                 AddVehicleDialogFragment addVehicleDialogFragment = new AddVehicleDialogFragment();
+                Bundle args = new Bundle();
+                args.putString(getString(R.string.user_id_tag), userID);
+                args.putString(getString(R.string.user_access_token_tag), userAccessToken);
+                args.putString(getString(R.string.user_phone_number_tag), userPhoneNumber);
+                addVehicleDialogFragment.setArguments(args);
                 addVehicleDialogFragment.show(getFragmentManager(), "addVehicleDialogFragment");
             }
         });
