@@ -1,9 +1,15 @@
 package com.aspace.aspace.chromedatamodels;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.aspace.aspace.AspaceRetrofitService;
+import com.aspace.aspace.R;
+import com.aspace.aspace.SettingsActivity;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -26,11 +32,17 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 /**
  * Created by Zula on 8/19/17.
  */
 
-public class VINDecoder extends AsyncTask<String, Void, Void> {
+public class VINDecoder extends AsyncTask<String, Void, String> {
     private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
     private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
     private static String ACCOUNT_NUMBER = "310699";
@@ -39,9 +51,18 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private static String LANGUAGE ="en";
     private ProgressDialog progressDialog;
     private Context context;
+    private String userPhone;
+    private String userAccessToken;
+    private String userId;
+    private Activity activity;
+    private VehicleInfo vehicleInfo;
 
-    public VINDecoder(Context context) {
+    public VINDecoder(Activity activity, Context context, String phone, String accessToken, String userId) {
+        this.activity = activity;
         this.context = context;
+        this.userPhone = phone;
+        this.userAccessToken = accessToken;
+        this.userId = userId;
     }
 
     @Override
@@ -52,8 +73,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(String... params) {
-        VehicleInfo vehicleInfo = new VehicleInfo();
+    protected String doInBackground(String... params) {
+        vehicleInfo = new VehicleInfo();
         String generalEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
                 "   <soapenv:Header/>\n" +
                 "   <soapenv:Body>\n" +
@@ -65,7 +86,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 "   </soapenv:Body>\n" +
                 "</soapenv:Envelope>";
 
-        String envelope = String.format(generalEnvelope, params[0]);
+        String inputtedVIN = params[0];
+        String envelope = String.format(generalEnvelope, inputtedVIN);
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpParams parameters = httpClient.getParams();
@@ -152,12 +174,14 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                         String titleIdValue = xpp.getAttributeValue(0);
                         if (titleId.equalsIgnoreCase("302")) {
                             Log.i("Vehicle", titleId + ": Length, Overall w/o rear bumper (inches): " + titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
                         } else if (titleId.equalsIgnoreCase("303")) {
                             Log.i("Vehicle", titleId + ": Length, Overall w/ rear bumper (inches):  " + titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
                         } else if (titleId.equalsIgnoreCase("304")) {
                             Log.i("Vehicle", titleId + ": Length, Overall (inches): " + titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
                         }
-                        vehicleInfo.addLengthSpecification(titleId, titleIdValue);
                     }
                 } else if (eventType == XmlPullParser.END_TAG) {
                     //System.out.println("End tag " + xpp.getName());
@@ -172,13 +196,32 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         }
         //TODO: Update server w/ VIN here, call adapter update method
         Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
-        return null;
+        String vehicleLength = vehicleInfo.getLengthSpecifications().values().iterator().next();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(this.context.getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
+        AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
+
+        aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
+                vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
+                inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(), vehicleLength).enqueue(new Callback<ResponseCode>() {
+            @Override
+            public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                Log.i("Vehicle", "ASPACE SERVER: " + response.toString());
+                //((SettingsActivity)activity).updateVehicleListAdapter(); // maybe put this in postexecute?
+            }
+
+            @Override
+            public void onFailure(Call<ResponseCode> call, Throwable t) {
+
+            }
+        });
+        return vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName();
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
+    protected void onPostExecute(String s) {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+        super.onPostExecute(s);
     }
 }
