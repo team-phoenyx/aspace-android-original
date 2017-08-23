@@ -171,12 +171,8 @@ public class AddVehicleDialogFragment extends DialogFragment {
             positiveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    boolean suitableVIN = false;
                     String inputtedVIN = vinNumberEditText.getText().toString();
                     if (inputtedVIN.length() == STANDARD_VIN_LENGTH) {
-                        suitableVIN = true;
-                    }
-                    if (suitableVIN) {
                         VINDecoder vinDecoder = new VINDecoder(getActivity(), getActivity(), userPhoneNumber, userAccessToken, userID);
                         vinDecoder.execute(inputtedVIN);
                         try {

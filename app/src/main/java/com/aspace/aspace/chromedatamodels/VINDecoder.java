@@ -202,11 +202,13 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
 
         aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
                 vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
-                inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(), vehicleLength).enqueue(new Callback<ResponseCode>() {
+                inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
+                vehicleLength).enqueue(new Callback<ResponseCode>() {
             @Override
             public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                 Log.i("Vehicle", "ASPACE SERVER: " + response.toString());
-                //((SettingsActivity)activity).updateVehicleListAdapter(); // maybe put this in postexecute?
+                 // maybe put this in postexecute?
+                ((SettingsActivity)activity).getVehicleListAdapter().updateList();
             }
 
             @Override
@@ -214,6 +216,7 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
 
             }
         });
+
         return vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName();
     }
 

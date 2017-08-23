@@ -332,7 +332,7 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
         getProfile();
     }
 
-    private class VehicleListAdapter extends BaseAdapter {
+    public class VehicleListAdapter extends BaseAdapter {
 
         List<Car> carList;
 
@@ -411,6 +411,24 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
 
             return convertView;
         }
+
+        public void updateList() {
+            aspaceService.getProfile(userPhoneNumber, userAccessToken, userID).enqueue(new Callback<Profile>() {
+                @Override
+                public void onResponse(Call<Profile> call, Response<Profile> response) {
+                    Profile userProfile = response.body();
+                    carList = userProfile.getCars();
+                    //Log.i("SETTINGS", "CAR: " + carList.get(0).toString());
+
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onFailure(Call<Profile> call, Throwable t) {
+                    Log.d("GET_PROFILE_FAIL", t.getMessage());
+                }
+            });
+        }
     }
 
     private class LocationListAdapter extends BaseAdapter {
@@ -476,5 +494,9 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             locationAddress.setText(locationList.get(position).getAddress());
             return convertView;
         }
+    }
+
+    public VehicleListAdapter getVehicleListAdapter() {
+        return this.vehicleListAdapter;
     }
 }
