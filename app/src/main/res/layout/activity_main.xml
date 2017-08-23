@@ -98,20 +98,20 @@
             app:floatingSearch_showSearchKey="true"
             app:floatingSearch_suggestionsListAnimDuration="250"
             mapbox:floatingSearch_menu="@menu/search_menu" />
+
         <ListView
             android:id="@+id/search_list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="56dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:layout_marginTop="52dp"
             android:background="@android:color/white"
-            android:headerDividersEnabled="false"
-            android:footerDividersEnabled="false"
-            android:visibility="gone"
             android:elevation="4dp"
-            android:scrollbars="vertical">
-        </ListView>
+            android:footerDividersEnabled="false"
+            android:headerDividersEnabled="false"
+            android:scrollbars="vertical"
+            android:visibility="gone"></ListView>
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/nav_subview"
