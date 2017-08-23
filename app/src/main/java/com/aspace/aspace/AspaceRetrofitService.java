@@ -71,11 +71,11 @@ public interface AspaceRetrofitService {
     @FormUrlEncoded
     @POST("users/profile/cars/add")
     Call<ResponseCode> addCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID,
-                              @Field("car_name") String carName, @Field("car_name") String carVIN, @Field("car_name") String carMake, @Field("car_name") String carModel, @Field("car_name") String carYear, @Field("car_name") String carLength);
+                              @Field("car_name") String carName, @Field("car_vin") String carVIN, @Field("car_make") String carMake, @Field("car_model") String carModel, @Field("car_year") String carYear, @Field("car_length") String carLength);
 
     @FormUrlEncoded
     @POST("users/profile/cars/remove")
-    Call<ResponseCode> removeCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("car_vin") String carVIN);
+    Call<ResponseCode> removeCar(@Field("phone") String phone, @Field("access_token") String accessToken, @Field("user_id") String userID, @Field("car_id") String carId);
 
     @FormUrlEncoded
     @POST("users/profile/cars/update")

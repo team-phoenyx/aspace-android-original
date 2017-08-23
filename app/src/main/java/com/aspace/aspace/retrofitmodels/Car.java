@@ -26,7 +26,7 @@ public class Car {
     private String name;
     @SerializedName("length")
     @Expose
-    private Integer length;
+    private Double length;
 
     public String getId() {
         return id;
@@ -76,11 +76,11 @@ public class Car {
         this.name = name;
     }
 
-    public Integer getLength() {
+    public Double getLength() {
         return length;
     }
 
-    public void setLength(Integer length) {
+    public void setLength(Double length) {
         this.length = length;
     }
 }

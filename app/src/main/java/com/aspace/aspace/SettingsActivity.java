@@ -388,14 +388,17 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             removeVehicleButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    aspaceService.removeCar(userPhoneNumber, userAccessToken, userID, carList.get(position).getVin()).enqueue(new Callback<ResponseCode>() {
+                    Log.i("SETTINGS", carList.get(position).getId());
+                    aspaceService.removeCar(userPhoneNumber, userAccessToken, userID, carList.get(position).getId()).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
                             if (response.body().getRespCode().equals("100")) {
-                                userCars.remove(position);
+                                //userCars.remove(position); replaced with userCars = carList
                                 carList.remove(position);
+                                userCars = carList;
                                 notifyDataSetChanged();
+                            } else {
+                                Log.i("SETTINGS", response.body().getRespCode() + " " + response.body().getRespMessage());
                             }
                         }
 
@@ -418,7 +421,8 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
                 public void onResponse(Call<Profile> call, Response<Profile> response) {
                     Profile userProfile = response.body();
                     carList = userProfile.getCars();
-                    //Log.i("SETTINGS", "CAR: " + carList.get(0).toString());
+                    userCars = userProfile.getCars();
+                    Log.i("SETTINGS", "CAR: " + carList.get(0).toString());
 
                     notifyDataSetChanged();
                 }
