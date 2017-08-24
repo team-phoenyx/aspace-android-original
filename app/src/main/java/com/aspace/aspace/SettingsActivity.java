@@ -388,7 +388,10 @@ public class SettingsActivity extends AppCompatActivity implements DialogInterfa
             removeVehicleButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i("SETTINGS", carList.get(position).getId());
+                    if (position == selectedVehicleButtonPosition) {
+                        selectedVehicleButtonPosition = 0;
+                    }
+
                     aspaceService.removeCar(userPhoneNumber, userAccessToken, userID, carList.get(position).getId()).enqueue(new Callback<ResponseCode>() {
                         @Override
                         public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {

@@ -42,7 +42,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by Zula on 8/19/17.
  */
 
-public class VINDecoder extends AsyncTask<String, Void, String> {
+public class VINDecoder extends AsyncTask<String, Void, Void> {
     private static String URL = "http://services.chromedata.com/Description/7b?wsdl";
     private static String TARGET_NAMESPACE ="urn:description7b.services.chrome.com";
     private static String ACCOUNT_NUMBER = "310699";
@@ -73,7 +73,7 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
         vehicleInfo = new VehicleInfo();
         String generalEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
                 "   <soapenv:Header/>\n" +
@@ -87,6 +87,7 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
                 "</soapenv:Envelope>";
 
         String inputtedVIN = params[0];
+        String customCarName = params[1];
         String envelope = String.format(generalEnvelope, inputtedVIN);
 
         HttpClient httpClient = new DefaultHttpClient();
@@ -129,7 +130,7 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
             responseString = httpClient.execute(httppost, rh).toString();
 
         } catch (Exception e) {
-            Log.v("exception", e.toString());
+            e.printStackTrace();
         }
 
         // close the connection
@@ -192,39 +193,51 @@ public class VINDecoder extends AsyncTask<String, Void, String> {
             }
             System.out.println("End document");
         } catch (XmlPullParserException | IOException e) {
-
+            e.printStackTrace();
         }
-        //TODO: Update server w/ VIN here, call adapter update method
         Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
         String vehicleLength = vehicleInfo.getLengthSpecifications().values().iterator().next();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(this.context.getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
 
-        aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
-                vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
-                inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
-                vehicleLength).enqueue(new Callback<ResponseCode>() {
-            @Override
-            public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
-                Log.i("Vehicle", "ASPACE SERVER: " + response.toString());
-                 // maybe put this in postexecute?
-                ((SettingsActivity)activity).getVehicleListAdapter().updateList();
-            }
+        if (customCarName == null || customCarName.length() == 0 || customCarName.equals("")) {
+            aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
+                    vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
+                    inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
+                    vehicleLength).enqueue(new Callback<ResponseCode>() {
+                @Override
+                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                    ((SettingsActivity)activity).getVehicleListAdapter().updateList();
+                }
 
-            @Override
-            public void onFailure(Call<ResponseCode> call, Throwable t) {
+                @Override
+                public void onFailure(Call<ResponseCode> call, Throwable t) {
+                    Log.i("Vehicle", t.toString());
+                }
+            });
+        } else {
+            aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId, customCarName,
+                    inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
+                    vehicleLength).enqueue(new Callback<ResponseCode>() {
+                @Override
+                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                    ((SettingsActivity)activity).getVehicleListAdapter().updateList();
+                }
 
-            }
-        });
+                @Override
+                public void onFailure(Call<ResponseCode> call, Throwable t) {
+                    Log.i("Vehicle", t.toString());
+                }
+            });
+        }
 
-        return vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName();
+        return null;
     }
 
     @Override
-    protected void onPostExecute(String s) {
+    protected void onPostExecute(Void aVoid) {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-        super.onPostExecute(s);
     }
 }
