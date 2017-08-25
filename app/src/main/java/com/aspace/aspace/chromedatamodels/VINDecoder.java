@@ -3,7 +3,9 @@ package com.aspace.aspace.chromedatamodels;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.aspace.aspace.AspaceRetrofitService;
@@ -49,6 +51,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private static String SECRET = "4277c6d3e66646b7";
     private static String COUNTRY = "US";
     private static String LANGUAGE ="en";
+    private static String STANDARD_CAR_LENGTH = "4.4";
     private ProgressDialog progressDialog;
     private Context context;
     private String userPhone;
@@ -56,6 +59,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private String userId;
     private Activity activity;
     private VehicleInfo vehicleInfo;
+    private boolean isSuccessful;
+    private boolean hasLengthSpecification;
 
     public VINDecoder(Activity activity, Context context, String phone, String accessToken, String userId) {
         this.activity = activity;
@@ -149,13 +154,22 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                     System.out.println("Start document");
                 } else if (eventType == XmlPullParser.START_TAG) {
                     //System.out.println("Start tag " + xpp.getName());
-                    if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
-                        vehicleInfo.setModelYear(xpp.getAttributeValue(2));
-                        vehicleInfo.setMakeName(xpp.getAttributeValue(3));
-                        vehicleInfo.setModelName(xpp.getAttributeValue(4));
-                        Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
-                                xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
-                                xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
+                    if (xpp.getName().equalsIgnoreCase("responseStatus")) {
+                        int num = xpp.getAttributeCount();
+                        String responseCode = xpp.getAttributeValue(0);
+                        isSuccessful = responseCode.equalsIgnoreCase("Successful");
+                        if (!isSuccessful) { // if the VIN is not found, break out of parsing immediately
+                            return null;
+                        }
+                    } else if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
+                        if (xpp.getAttributeCount() > 4) {
+                            vehicleInfo.setModelYear(xpp.getAttributeValue(2));
+                            vehicleInfo.setMakeName(xpp.getAttributeValue(3));
+                            vehicleInfo.setModelName(xpp.getAttributeValue(4));
+                            Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
+                                    xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
+                                    xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
+                        }
                     } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
                         String tagName = "";
                         while (!tagName.equalsIgnoreCase("titleId")) {
@@ -174,14 +188,17 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                         }
                         String titleIdValue = xpp.getAttributeValue(0);
                         if (titleId.equalsIgnoreCase("302")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall w/o rear bumper (inches): " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         } else if (titleId.equalsIgnoreCase("303")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall w/ rear bumper (inches):  " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         } else if (titleId.equalsIgnoreCase("304")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall (inches): " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         }
                     }
                 } else if (eventType == XmlPullParser.END_TAG) {
@@ -196,6 +213,11 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             e.printStackTrace();
         }
         Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
+
+        if (!hasLengthSpecification) { // if no length was found, use a standard car length
+            vehicleInfo.addLengthSpecification("standard", STANDARD_CAR_LENGTH);
+        }
+
         String vehicleLength = vehicleInfo.getLengthSpecifications().values().iterator().next();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(this.context.getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
@@ -239,5 +261,24 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+
+        if (!isSuccessful) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setTitle("Invalid VIN: Vehicle Not Found");
+            builder.setMessage("We're sorry, you're vehicle was not found. Please try again with a different VIN.");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            builder.setCancelable(false);
+            builder.create().show();
+        }
+    }
+
+    private String inchesToMeters(String inches) {
+        double in = Double.valueOf(inches);
+        return in * 0.0254 + "";
     }
 }
