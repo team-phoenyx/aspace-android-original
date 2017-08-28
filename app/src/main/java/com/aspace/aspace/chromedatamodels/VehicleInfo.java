@@ -74,4 +74,8 @@ public class VehicleInfo {
         }
         return result;
     }
+
+    public boolean isIncomplete() { // does not include lengthspecification since we are handling that case differently.
+        return this.modelYear == null || this.makeName == null || this.getModelName() == null;
+    }
 }

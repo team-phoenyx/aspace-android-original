@@ -61,6 +61,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private VehicleInfo vehicleInfo;
     private boolean isSuccessful;
     private boolean hasLengthSpecification;
+    private String responseCode;
 
     public VINDecoder(Activity activity, Context context, String phone, String accessToken, String userId) {
         this.activity = activity;
@@ -156,7 +157,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                     //System.out.println("Start tag " + xpp.getName());
                     if (xpp.getName().equalsIgnoreCase("responseStatus")) {
                         int num = xpp.getAttributeCount();
-                        String responseCode = xpp.getAttributeValue(0);
+                        responseCode = xpp.getAttributeValue(0);
+                        // String descriptionCode = xpp.getAttributeValue(1); // not sure what's the difference between responseCode and description but maybe we'll need this
                         isSuccessful = responseCode.equalsIgnoreCase("Successful");
                         if (!isSuccessful) { // if the VIN is not found, break out of parsing immediately
                             return null;
@@ -169,7 +171,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                             Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
                                     xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
                                     xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
-                        }
+                        } // maybe move isSuccessful check to here? treat no year/make/model the same?
                     } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
                         String tagName = "";
                         while (!tagName.equalsIgnoreCase("titleId")) {
@@ -262,7 +264,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             progressDialog.dismiss();
         }
 
-        if (!isSuccessful) {
+        if (!isSuccessful) { // remove this branch once unsuccessful/conditional responses are handled, placeholder.
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Invalid VIN: Vehicle Not Found");
             builder.setMessage("We're sorry, you're vehicle was not found. Please try again with a different VIN.");
@@ -274,6 +276,23 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             });
             builder.setCancelable(false);
             builder.create().show();
+        } else if (responseCode.equalsIgnoreCase("Unsuccessful")) {
+            // execute YearMakeModel decoder here via dialog UI using activity reference.
+        } else if (vehicleInfo.isIncomplete()) { // if it's missing vital information year/make/model/length
+            // maybe fill in some of the fields in year make model with what is returned from vin decode
+            if (vehicleInfo.getModelYear() == null) {
+                // do stuff here if year is missing
+            }
+
+            if (vehicleInfo.getMakeName() == null) {
+                // do stuff here if make is missing
+            }
+
+            if (vehicleInfo.getModelName() == null) {
+                // do stuff here if model is missing
+            }
+        } else if (vehicleInfo.getLengthSpecifications().isEmpty()) {
+            // open up prompt here to let the user enter length in some form themselves.
         }
     }
 

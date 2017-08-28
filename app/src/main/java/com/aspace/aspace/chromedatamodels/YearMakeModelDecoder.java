@@ -1,9 +1,15 @@
 package com.aspace.aspace.chromedatamodels;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.aspace.aspace.AspaceRetrofitService;
+import com.aspace.aspace.R;
+import com.aspace.aspace.SettingsActivity;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,6 +30,12 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 /**
  * Created by Zula on 8/20/17.
  */
@@ -35,11 +47,24 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
     private static String SECRET = "4277c6d3e66646b7";
     private static String COUNTRY = "US";
     private static String LANGUAGE ="en";
+    private static String STANDARD_CAR_LENGTH = "4.4";
     private ProgressDialog progressDialog;
     private Context context;
+    private String userPhone;
+    private String userAccessToken;
+    private String userId;
+    private Activity activity;
+    private VehicleInfo vehicleInfo;
+    private boolean isSuccessful;
+    private boolean hasLengthSpecification;
+    private String responseCode;
 
-    public YearMakeModelDecoder(Context context) {
+    public YearMakeModelDecoder(Activity activity, Context context, String phone, String accessToken, String userId) {
+        this.activity = activity;
         this.context = context;
+        this.userPhone = phone;
+        this.userAccessToken = accessToken;
+        this.userId = userId;
     }
 
     @Override
@@ -51,7 +76,6 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
 
     @Override
     protected Void doInBackground(String... params) {
-        VehicleInfo vehicleInfo = new VehicleInfo();
         String generalEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:description7b.services.chrome.com\">\n" +
                 "   <soapenv:Header/>\n" +
                 "   <soapenv:Body>\n" +
@@ -65,7 +89,10 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
                 "   </soapenv:Body>\n" +
                 "</soapenv:Envelope>";
 
+        // retrieve params
         String envelope = String.format(generalEnvelope, Integer.valueOf(params[0]), params[1], params[2]);
+        String customCarName = params[3];
+        String inputtedVIN = params[4];
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpParams parameters = httpClient.getParams();
@@ -107,7 +134,7 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
             responseString = httpClient.execute(httppost, rh).toString();
 
         } catch (Exception e) {
-            Log.v("exception", e.toString());
+            e.printStackTrace();
         }
 
         // close the connection
@@ -126,13 +153,23 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
                     System.out.println("Start document");
                 } else if (eventType == XmlPullParser.START_TAG) {
                     //System.out.println("Start tag " + xpp.getName());
-                    if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
-                        vehicleInfo.setModelYear(xpp.getAttributeValue(2));
-                        vehicleInfo.setMakeName(xpp.getAttributeValue(3));
-                        vehicleInfo.setModelName(xpp.getAttributeValue(4));
-                        Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
-                                xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
-                                xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
+                    if (xpp.getName().equalsIgnoreCase("responseStatus")) {
+                        int num = xpp.getAttributeCount();
+                        responseCode = xpp.getAttributeValue(0);
+                        // String descriptionCode = xpp.getAttributeValue(1); // not sure what's the difference between responseCode and description but maybe we'll need this
+                        isSuccessful = responseCode.equalsIgnoreCase("Successful");
+                        if (!isSuccessful) { // if the VIN is not found, break out of parsing immediately
+                            return null;
+                        }
+                    } else if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
+                        if (xpp.getAttributeCount() > 4) {
+                            vehicleInfo.setModelYear(xpp.getAttributeValue(2));
+                            vehicleInfo.setMakeName(xpp.getAttributeValue(3));
+                            vehicleInfo.setModelName(xpp.getAttributeValue(4));
+                            Log.i("Vehicle", xpp.getAttributeName(2) + ": " + xpp.getAttributeValue(2) + " " +
+                                    xpp.getAttributeName(3) + ": " + xpp.getAttributeValue(3) + " " +
+                                    xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
+                        } // maybe move isSuccessful check to here? treat no year/make/model the same?
                     } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
                         String tagName = "";
                         while (!tagName.equalsIgnoreCase("titleId")) {
@@ -151,14 +188,17 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
                         }
                         String titleIdValue = xpp.getAttributeValue(0);
                         if (titleId.equalsIgnoreCase("302")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall w/o rear bumper (inches): " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         } else if (titleId.equalsIgnoreCase("303")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall w/ rear bumper (inches):  " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         } else if (titleId.equalsIgnoreCase("304")) {
+                            hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall (inches): " + titleIdValue);
-                            vehicleInfo.addLengthSpecification(titleId, titleIdValue);
+                            vehicleInfo.addLengthSpecification(titleId, inchesToMeters(titleIdValue));
                         }
                     }
                 } else if (eventType == XmlPullParser.END_TAG) {
@@ -170,10 +210,49 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
             }
             System.out.println("End document");
         } catch (XmlPullParserException | IOException e) {
-
+            e.printStackTrace();
         }
-        //TODO: Update server w/ VIN here, call adapter update method
         Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
+
+        if (!hasLengthSpecification) { // if no length was found, use a standard car length
+            vehicleInfo.addLengthSpecification("standard", STANDARD_CAR_LENGTH);
+        }
+
+        String vehicleLength = vehicleInfo.getLengthSpecifications().values().iterator().next();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(this.context.getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
+        AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
+
+        if (customCarName == null || customCarName.length() == 0 || customCarName.equals("")) {
+            aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
+                    vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
+                    inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
+                    vehicleLength).enqueue(new Callback<ResponseCode>() {
+                @Override
+                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                    ((SettingsActivity)activity).getVehicleListAdapter().updateList();
+                }
+
+                @Override
+                public void onFailure(Call<ResponseCode> call, Throwable t) {
+                    Log.i("Vehicle", t.toString());
+                }
+            });
+        } else {
+            aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId, customCarName,
+                    inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
+                    vehicleLength).enqueue(new Callback<ResponseCode>() {
+                @Override
+                public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                    ((SettingsActivity)activity).getVehicleListAdapter().updateList();
+                }
+
+                @Override
+                public void onFailure(Call<ResponseCode> call, Throwable t) {
+                    Log.i("Vehicle", t.toString());
+                }
+            });
+        }
+
         return null;
     }
 
@@ -182,5 +261,12 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+
+        // if still can't find anything maybe just have user enter everything manually
+    }
+
+    private String inchesToMeters(String inches) {
+        double in = Double.valueOf(inches);
+        return in * 0.0254 + "";
     }
 }
