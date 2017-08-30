@@ -31,8 +31,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.List;
-import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -93,8 +91,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 "</soapenv:Envelope>";
 
         String inputtedVIN = params[0];
-        String customCarName = params[1];
-        String envelope = String.format(generalEnvelope, inputtedVIN);
+        String customCarName = params[1]; // empty string if user did not enter custom name
+        String envelope = String.format(generalEnvelope, inputtedVIN); // insert VIN into SOAP envelope
 
         HttpClient httpClient = new DefaultHttpClient();
         HttpParams parameters = httpClient.getParams();
@@ -108,7 +106,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         httppost.setHeader("soapaction", null);
         httppost.setHeader("Content-Type", "text/xml; charset=utf-8");
 
-        String responseString= "";
+        String responseString = ""; // declare response string in outer scope to capture and reuse.
         try {
             // the entity holds the request
             HttpEntity entity = new StringEntity(envelope);
@@ -133,8 +131,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 }
             };
 
-            responseString = httpClient.execute(httppost, rh).toString();
-
+            responseString = httpClient.execute(httppost, rh).toString(); // capture response string
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,17 +150,18 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_DOCUMENT) {
                     System.out.println("Start document");
-                } else if (eventType == XmlPullParser.START_TAG) {
+                } else if (eventType == XmlPullParser.START_TAG) { // all parsing currently being done when we first hit a tag
                     //System.out.println("Start tag " + xpp.getName());
                     if (xpp.getName().equalsIgnoreCase("responseStatus")) {
-                        int num = xpp.getAttributeCount();
-                        responseCode = xpp.getAttributeValue(0);
+                        responseCode = xpp.getAttributeValue(0); // retrieve the response status
                         // String descriptionCode = xpp.getAttributeValue(1); // not sure what's the difference between responseCode and description but maybe we'll need this
                         isSuccessful = responseCode.equalsIgnoreCase("Successful");
                         if (!isSuccessful) { // if the VIN is not found, break out of parsing immediately
                             return null;
                         }
                     } else if (xpp.getName().equalsIgnoreCase("VehicleDescription")) {
+                        // ASSUMPTION: incomplete vehicle descriptions will still have the same amount of attributes
+                        // as a complete description, just with empty values.
                         if (xpp.getAttributeCount() > 4) {
                             vehicleInfo.setModelYear(xpp.getAttributeValue(2));
                             vehicleInfo.setMakeName(xpp.getAttributeValue(3));
@@ -173,13 +171,14 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                                     xpp.getAttributeName(4) + ": " + xpp.getAttributeValue(4));
                         } // maybe move isSuccessful check to here? treat no year/make/model the same?
                     } else if (xpp.getName().equalsIgnoreCase("technicalSpecification")) {
-                        String tagName = "";
+                        String tagName = ""; // prime loop
                         while (!tagName.equalsIgnoreCase("titleId")) {
                             eventType = xpp.next();
                             if (eventType == XmlPullParser.START_TAG) {
                                 tagName = xpp.getName();
                             }
                         }
+                        // get length specification ID and reset primer
                         String titleId = xpp.nextText();
                         tagName = "";
                         while (!tagName.equalsIgnoreCase("value")) {
@@ -189,6 +188,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                             }
                         }
                         String titleIdValue = xpp.getAttributeValue(0);
+                        // 302, 303, and 304 are the only length spec IDs applicable.
                         if (titleId.equalsIgnoreCase("302")) {
                             hasLengthSpecification = true;
                             Log.i("Vehicle", titleId + ": Length, Overall w/o rear bumper (inches): " + titleIdValue);
@@ -211,11 +211,13 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 eventType = xpp.next();
             }
             System.out.println("End document");
-        } catch (XmlPullParserException | IOException e) {
+        } catch (XmlPullParserException | IOException | IllegalArgumentException e) {
             e.printStackTrace();
+
         }
         Log.i("Vehicle", "VEHICLE INFO: " + vehicleInfo.toString());
 
+        // remove this once conditional response is handled completely, placeholder.
         if (!hasLengthSpecification) { // if no length was found, use a standard car length
             vehicleInfo.addLengthSpecification("standard", STANDARD_CAR_LENGTH);
         }
@@ -224,7 +226,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         Retrofit retrofit = new Retrofit.Builder().baseUrl(this.context.getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
         AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
 
-        if (customCarName == null || customCarName.length() == 0 || customCarName.equals("")) {
+        if (customCarName == null || customCarName.isEmpty()) {
+            // if user did not enter custom car name, set name as "{year} {make} {model}" (e.g 2005 Toyota Camry)
             aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
                     vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
                     inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
@@ -265,6 +268,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         }
 
         if (!isSuccessful) { // remove this branch once unsuccessful/conditional responses are handled, placeholder.
+            // move this stuff to unsuccessful branch
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Invalid VIN: Vehicle Not Found");
             builder.setMessage("We're sorry, you're vehicle was not found. Please try again with a different VIN.");
@@ -277,7 +281,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             builder.setCancelable(false);
             builder.create().show();
         } else if (responseCode.equalsIgnoreCase("Unsuccessful")) {
-            // execute YearMakeModel decoder here via dialog UI using activity reference.
+            // execute YearMakeModel decoder here via some form of dialog UI using activity reference.
         } else if (vehicleInfo.isIncomplete()) { // if it's missing vital information year/make/model/length
             // maybe fill in some of the fields in year make model with what is returned from vin decode
             if (vehicleInfo.getModelYear() == null) {
@@ -296,6 +300,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         }
     }
 
+    // converts the given inches into meters, returns meter conversion as a STRING.
     private String inchesToMeters(String inches) {
         double in = Double.valueOf(inches);
         return in * 0.0254 + "";

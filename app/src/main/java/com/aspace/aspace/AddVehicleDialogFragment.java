@@ -7,42 +7,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.aspace.aspace.chromedatamodels.AccountInfo;
-import com.aspace.aspace.chromedatamodels.BaseRequest;
 import com.aspace.aspace.chromedatamodels.VINDecoder;
 import com.securepreferences.SecurePreferences;
-import com.squareup.okhttp.OkHttpClient;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by Zula on 7/24/17.
@@ -80,6 +51,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
             }
         });
 
+        // positive button on click function is handled in onStart instead.
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -107,11 +79,11 @@ public class AddVehicleDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
         AlertDialog d = (AlertDialog)getDialog();
-        if(d != null) {
+        if (d != null) {
             Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(View v) { // the dialog will only close if the user either cancels or enters a valid VIN.
                     String inputtedVIN = vinNumberEditText.getText().toString();
                     if (inputtedVIN.length() == STANDARD_VIN_LENGTH) {
                         String customCarName = addCarNameEditText.getText().toString();
@@ -119,6 +91,7 @@ public class AddVehicleDialogFragment extends DialogFragment {
                         vinDecoder.execute(inputtedVIN, customCarName);
                         dismiss();
                     } else {
+                        // placeholder
                         Snackbar.make(getActivity().findViewById(android.R.id.content), "Please make sure your VIN is 17 characters long!", Snackbar.LENGTH_LONG).show();
                     }
                 }
