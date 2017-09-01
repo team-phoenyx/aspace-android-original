@@ -263,6 +263,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
+        // TODO: TRIGGER YEAR MAKE MODEL DECODER IF NEEDED
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
