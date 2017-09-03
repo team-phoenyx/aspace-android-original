@@ -282,7 +282,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             builder.setCancelable(false);
             builder.create().show();
         } else if (responseCode.equalsIgnoreCase("Unsuccessful")) {
-            // execute YearMakeModel decoder here via some form of dialog UI using activity reference.
+            // TODO: execute YearMakeModel decoder here via some form of dialog UI using activity reference.
         } else if (vehicleInfo.isIncomplete()) { // if it's missing vital information year/make/model/length
             // maybe fill in some of the fields in year make model with what is returned from vin decode
             if (vehicleInfo.getModelYear() == null) {
@@ -297,7 +297,10 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 // do stuff here if model is missing
             }
         } else if (vehicleInfo.getLengthSpecifications().isEmpty()) {
+            // TODO:
             // open up prompt here to let the user enter length in some form themselves.
+            // pass in bundle containing all of the vehicle info to fragment
+            // inside length dialog, add in the lengtht to update car.
         }
     }
 

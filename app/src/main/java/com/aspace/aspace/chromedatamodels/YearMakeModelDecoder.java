@@ -261,7 +261,6 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-
         // if still can't find anything maybe just have user enter everything manually
     }
 
