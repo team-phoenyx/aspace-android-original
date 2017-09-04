@@ -26,14 +26,23 @@ public class AddVehicleYearMakeModelDialogFragment extends DialogFragment {
     private String userPhoneNumber;
     private String inputtedVIN;
     private String customCarName;
+    private String carYear;
+    private String carMake;
+    private String carModel;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle extras = getArguments();
         // retrieve user values to update server by passing into yearmakemodel decoder in onstart.
+
         userID = extras.getString(getString(R.string.user_id_tag));
         userAccessToken = extras.getString(getString(R.string.user_access_token_tag));
         userPhoneNumber = extras.getString(getString(R.string.user_phone_number_tag));
+        inputtedVIN = extras.getString("inputtedVIN");
+        customCarName = extras.getString("customCarName");
+        carYear = extras.getString("carYear");
+        carMake = extras.getString("carMake");
+        carModel = extras.getString("carModel");
 
         // inputtedVIN and customCarName needed to pass into yearmakemodel decoder as mandatory params for updating server.
         inputtedVIN = extras.getString("inputtedVIN");
@@ -45,6 +54,8 @@ public class AddVehicleYearMakeModelDialogFragment extends DialogFragment {
         carYearEditText = (EditText) dialogView.findViewById(R.id.enter_year_edittext);
         carMakeEditText = (EditText) dialogView.findViewById(R.id.enter_make_edittext);
         carModelEditText = (EditText) dialogView.findViewById(R.id.enter_model_edittext);
+
+        // TODO: Check which caryear/make/model args from bundle are null and populate the edittexts based on that.
         dialogView.requestFocus();
 
         builder.setView(dialogView).setCancelable(false);

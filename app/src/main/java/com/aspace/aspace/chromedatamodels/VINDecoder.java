@@ -5,10 +5,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.aspace.aspace.AddVehicleLengthDialogFragment;
+import com.aspace.aspace.AddVehicleYearMakeModelDialogFragment;
 import com.aspace.aspace.AspaceRetrofitService;
+import com.aspace.aspace.ProfileDialogFragment;
 import com.aspace.aspace.R;
 import com.aspace.aspace.SettingsActivity;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
@@ -55,6 +59,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
     private String userPhone;
     private String userAccessToken;
     private String userId;
+    private String inputtedVIN;
+    private String customCarName;
     private Activity activity;
     private VehicleInfo vehicleInfo;
     private boolean isSuccessful;
@@ -91,6 +97,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 "</soapenv:Envelope>";
 
         String inputtedVIN = params[0];
+        this.inputtedVIN = inputtedVIN;
         String customCarName = params[1]; // empty string if user did not enter custom name
         String envelope = String.format(generalEnvelope, inputtedVIN); // insert VIN into SOAP envelope
 
@@ -227,6 +234,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
         AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
 
         if (customCarName == null || customCarName.isEmpty()) {
+            this.customCarName = vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName();
             // if user did not enter custom car name, set name as "{year} {make} {model}" (e.g 2005 Toyota Camry)
             aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId,
                     vehicleInfo.getModelYear() + " " + vehicleInfo.getMakeName() + " " + vehicleInfo.getModelName(),
@@ -243,6 +251,7 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 }
             });
         } else {
+            this.customCarName = customCarName;
             aspaceRetrofitService.addCar(this.userPhone, this.userAccessToken, this.userId, customCarName,
                     inputtedVIN, vehicleInfo.getMakeName(), vehicleInfo.getModelName(), vehicleInfo.getModelYear(),
                     vehicleLength).enqueue(new Callback<ResponseCode>() {
@@ -283,8 +292,21 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             builder.create().show();
         } else if (responseCode.equalsIgnoreCase("Unsuccessful")) {
             // TODO: execute YearMakeModel decoder here via some form of dialog UI using activity reference.
+            Bundle extras = new Bundle();
+            extras.putString(context.getString(R.string.user_id_tag), userId);
+            extras.putString(context.getString(R.string.user_access_token_tag), userAccessToken);
+            extras.putString(context.getString(R.string.user_phone_number_tag), userPhone);
+            extras.putString("inputtedVIN", this.inputtedVIN);
+            extras.putString("customCarName", this.customCarName);
+            extras.putString("carYear", vehicleInfo.getModelYear());
+            extras.putString("carMake", vehicleInfo.getMakeName());
+            extras.putString("carModel", vehicleInfo.getModelName());
+            AddVehicleYearMakeModelDialogFragment addVehicleYearMakeModelDialogFragment = new AddVehicleYearMakeModelDialogFragment();
+            addVehicleYearMakeModelDialogFragment.setArguments(extras);
+            addVehicleYearMakeModelDialogFragment.show(activity.getFragmentManager(), "addVehicleYearMakeModelDialog");
         } else if (vehicleInfo.isIncomplete()) { // if it's missing vital information year/make/model/length
             // maybe fill in some of the fields in year make model with what is returned from vin decode
+            // TODO: Consider merging this with unsuccessful branch and moving null checks into AVYMMD fragment.
             if (vehicleInfo.getModelYear() == null) {
                 // do stuff here if year is missing
             }
@@ -297,10 +319,19 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
                 // do stuff here if model is missing
             }
         } else if (vehicleInfo.getLengthSpecifications().isEmpty()) {
-            // TODO:
-            // open up prompt here to let the user enter length in some form themselves.
-            // pass in bundle containing all of the vehicle info to fragment
-            // inside length dialog, add in the lengtht to update car.
+            // TODO: Untested dialog
+            Bundle extras = new Bundle();
+            extras.putString(context.getString(R.string.user_id_tag), userId);
+            extras.putString(context.getString(R.string.user_access_token_tag), userAccessToken);
+            extras.putString(context.getString(R.string.user_phone_number_tag), userPhone);
+            extras.putString("inputtedVIN", this.inputtedVIN);
+            extras.putString("customCarName", this.customCarName);
+            extras.putString("carYear", vehicleInfo.getModelYear());
+            extras.putString("carMake", vehicleInfo.getMakeName());
+            extras.putString("carModel", vehicleInfo.getModelName());
+            AddVehicleLengthDialogFragment addVehicleLengthDialogFragment = new AddVehicleLengthDialogFragment();
+            addVehicleLengthDialogFragment.setArguments(extras);
+            addVehicleLengthDialogFragment.show(activity.getFragmentManager(), "addVehicleLengthDialog");
         }
     }
 

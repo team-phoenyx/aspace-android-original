@@ -12,6 +12,13 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.aspace.aspace.chromedatamodels.YearMakeModelDecoder;
+import com.aspace.aspace.retrofitmodels.ResponseCode;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Zula on 9/3/17.
@@ -70,7 +77,7 @@ public class AddVehicleLengthDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        AlertDialog d = (AlertDialog)getDialog();
+        AlertDialog d = (AlertDialog) getDialog();
         if (d != null) {
             Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(new View.OnClickListener() {
@@ -78,11 +85,24 @@ public class AddVehicleLengthDialogFragment extends DialogFragment {
                 public void onClick(View v) { // the dialog will only close if the user either cancels or enters a valid VIN.
                     String carLength = carLengthEditText.getText().toString();
                     if (!carLength.isEmpty()) {
-                        // TODO: retrofit callback here to add car to user's profile using bundle args + inputted length
+                        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.aspace_base_url_api)).addConverterFactory(GsonConverterFactory.create()).build();
+                        AspaceRetrofitService aspaceRetrofitService = retrofit.create(AspaceRetrofitService.class);
+
+                        aspaceRetrofitService.addCar(userPhoneNumber, userAccessToken, userID, customCarName, inputtedVIN, carMake, carModel, carYear, carLength).enqueue(new Callback<ResponseCode>() {
+                            @Override
+                            public void onResponse(Call<ResponseCode> call, Response<ResponseCode> response) {
+                                // handle response
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseCode> call, Throwable t) {
+                                // handle failure
+                            }
+                        });
                         dismiss();
                     } else {
                         // placeholder
-                        Snackbar.make(getActivity().findViewById(android.R.id.content), "No car length found!", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Please enter car length before continuing!", Snackbar.LENGTH_LONG).show();
                     }
                 }
             });
