@@ -12,7 +12,6 @@ import android.util.Log;
 import com.aspace.aspace.AddVehicleLengthDialogFragment;
 import com.aspace.aspace.AddVehicleYearMakeModelDialogFragment;
 import com.aspace.aspace.AspaceRetrofitService;
-import com.aspace.aspace.ProfileDialogFragment;
 import com.aspace.aspace.R;
 import com.aspace.aspace.SettingsActivity;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
@@ -272,13 +271,11 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        // TODO: TRIGGER YEAR MAKE MODEL DECODER IF NEEDED
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
 
-        if (!isSuccessful) { // remove this branch once unsuccessful/conditional responses are handled, placeholder.
-            // move this stuff to unsuccessful branch
+        if (!isSuccessful) { // remove this branch once unsuccessful/conditional responses are handled and TESTED, placeholder.
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Invalid VIN: Vehicle Not Found");
             builder.setMessage("We're sorry, you're vehicle was not found. Please try again with a different VIN.");
@@ -290,8 +287,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             });
             builder.setCancelable(false);
             builder.create().show();
-        } else if (responseCode.equalsIgnoreCase("Unsuccessful")) {
-            // TODO: execute YearMakeModel decoder here via some form of dialog UI using activity reference.
+        } else if (responseCode.equalsIgnoreCase("Unsuccessful") || vehicleInfo.isIncomplete()) {
+            // TODO: Untested YMM dialog
             Bundle extras = new Bundle();
             extras.putString(context.getString(R.string.user_id_tag), userId);
             extras.putString(context.getString(R.string.user_access_token_tag), userAccessToken);
@@ -304,22 +301,8 @@ public class VINDecoder extends AsyncTask<String, Void, Void> {
             AddVehicleYearMakeModelDialogFragment addVehicleYearMakeModelDialogFragment = new AddVehicleYearMakeModelDialogFragment();
             addVehicleYearMakeModelDialogFragment.setArguments(extras);
             addVehicleYearMakeModelDialogFragment.show(activity.getFragmentManager(), "addVehicleYearMakeModelDialog");
-        } else if (vehicleInfo.isIncomplete()) { // if it's missing vital information year/make/model/length
-            // maybe fill in some of the fields in year make model with what is returned from vin decode
-            // TODO: Consider merging this with unsuccessful branch and moving null checks into AVYMMD fragment.
-            if (vehicleInfo.getModelYear() == null) {
-                // do stuff here if year is missing
-            }
-
-            if (vehicleInfo.getMakeName() == null) {
-                // do stuff here if make is missing
-            }
-
-            if (vehicleInfo.getModelName() == null) {
-                // do stuff here if model is missing
-            }
         } else if (vehicleInfo.getLengthSpecifications().isEmpty()) {
-            // TODO: Untested dialog
+            // TODO: Untested length dialog
             Bundle extras = new Bundle();
             extras.putString(context.getString(R.string.user_id_tag), userId);
             extras.putString(context.getString(R.string.user_access_token_tag), userAccessToken);

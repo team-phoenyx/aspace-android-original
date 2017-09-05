@@ -55,7 +55,18 @@ public class AddVehicleYearMakeModelDialogFragment extends DialogFragment {
         carMakeEditText = (EditText) dialogView.findViewById(R.id.enter_make_edittext);
         carModelEditText = (EditText) dialogView.findViewById(R.id.enter_model_edittext);
 
-        // TODO: Check which caryear/make/model args from bundle are null and populate the edittexts based on that.
+        if (!carYear.isEmpty()) {
+            carYearEditText.setText(carYear);
+        }
+
+        if (!carMake.isEmpty()) {
+            carMakeEditText.setText(carMake);
+        }
+
+        if (!carModel.isEmpty()) {
+            carModelEditText.setText(carModel);
+        }
+
         dialogView.requestFocus();
 
         builder.setView(dialogView).setCancelable(false);

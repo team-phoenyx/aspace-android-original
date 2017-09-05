@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.aspace.aspace.chromedatamodels.YearMakeModelDecoder;
 import com.aspace.aspace.retrofitmodels.ResponseCode;
@@ -26,6 +27,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AddVehicleLengthDialogFragment extends DialogFragment {
     private EditText carLengthEditText;
+    private TextView carNameTextView;
     private String userID;
     private String userAccessToken;
     private String userPhoneNumber;
@@ -52,6 +54,9 @@ public class AddVehicleLengthDialogFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.add_vehicle_length_dialog, null);
         carLengthEditText = (EditText) dialogView.findViewById(R.id.enter_length_edittext);
+        carNameTextView = (TextView) dialogView.findViewById(R.id.add_vehicle_length_car_name_label);
+        carNameTextView.setText(customCarName);
+
         dialogView.requestFocus();
 
         builder.setView(dialogView).setCancelable(false);

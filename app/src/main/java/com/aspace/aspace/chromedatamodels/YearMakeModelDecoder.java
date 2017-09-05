@@ -261,6 +261,7 @@ public class YearMakeModelDecoder extends AsyncTask<String, Void, Void> {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+        // TODO: CONSIDER WHAT TO DO WHEN YEAR MAKE MODEL CANT RETRIEVE CAR INFORMATION
         // if still can't find anything maybe just have user enter everything manually
     }
 
